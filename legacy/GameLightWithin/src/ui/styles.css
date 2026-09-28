@@ -1,0 +1,1029 @@
+/* Light Within — quiet, minimal UI. One self-hosted humanist sans. */
+
+@font-face {
+  font-family: 'Light Within Sans';
+  src: url('/fonts/WorkSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Light Within Sans';
+  src: url('/fonts/WorkSans-Bold.ttf') format('truetype');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Light Within Hand';
+  src: url('/fonts/NothingYouCouldDo-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  --ink: #23262b;
+  --ink-soft: #4a4f57;
+  --panel: rgba(250, 246, 239, 0.86);
+  --panel-strong: rgba(250, 246, 239, 0.95);
+  --warm: #e8b84b;
+  --rose: #e98ba3;
+  --focus: #2f5d8a;
+  --radius: 18px;
+  --tap: 48px;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #cfd2d6;
+  font-family:
+    'Light Within Sans',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+}
+
+canvas#scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- shared ---------- */
+
+.lw-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(20px + var(--safe-t)) 20px calc(20px + var(--safe-b));
+  background: rgba(207, 210, 214, 0.55);
+  backdrop-filter: blur(9px);
+  -webkit-backdrop-filter: blur(9px);
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.lw-panel {
+  width: min(560px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: clamp(22px, 5vw, 38px);
+  box-shadow: 0 18px 50px rgba(40, 40, 48, 0.18);
+  text-align: center;
+}
+
+.lw-title {
+  font-size: clamp(30px, 7vw, 46px);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: 0 0 6px;
+  color: var(--ink);
+}
+
+.lw-sub {
+  margin: 0 0 26px;
+  color: var(--ink-soft);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.lw-text {
+  margin: 0 0 22px;
+  color: var(--ink);
+  font-size: clamp(17px, 2.4vw, 20px);
+  line-height: 1.6;
+}
+
+.lw-build {
+  margin: -14px 0 18px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
+.lw-note {
+  margin: 18px 0 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.lw-heading {
+  font-size: clamp(21px, 3.6vw, 27px);
+  font-weight: 600;
+  margin: 0 0 4px;
+}
+
+.lw-question {
+  margin: 26px 0 10px;
+  font-size: 17px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.lw-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--tap);
+  min-width: 132px;
+  padding: 12px 26px;
+  margin: 6px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(232, 184, 75, 0.3);
+  color: var(--ink);
+  font-size: 17px;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.lw-btn:hover {
+  background: rgba(232, 184, 75, 0.48);
+}
+
+.lw-btn--quiet {
+  background: rgba(70, 78, 90, 0.1);
+}
+
+.lw-btn--quiet:hover {
+  background: rgba(70, 78, 90, 0.18);
+}
+
+.lw-btn[disabled] {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.lw-btn[disabled]:hover {
+  background: rgba(232, 184, 75, 0.3);
+}
+
+.lw-btn--stack {
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 22px;
+}
+
+.lw-btn small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+.lw-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+}
+
+.lw-scale {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.lw-scale button {
+  flex: 1;
+  min-height: var(--tap);
+  min-width: var(--tap);
+  border: none;
+  border-radius: 12px;
+  background: rgba(70, 78, 90, 0.1);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.lw-scale button[aria-checked='true'] {
+  background: rgba(232, 184, 75, 0.62);
+  font-weight: 600;
+}
+
+.lw-scale-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+.lw-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0;
+  text-align: left;
+}
+
+.lw-field > span {
+  font-size: 16px;
+}
+
+.lw-seg {
+  display: flex;
+  gap: 6px;
+}
+
+.lw-seg button {
+  min-height: var(--tap);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(70, 78, 90, 0.1);
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.lw-seg button[aria-pressed='true'] {
+  background: rgba(232, 184, 75, 0.62);
+  font-weight: 600;
+}
+
+input[type='range'] {
+  flex: 1;
+  min-width: 140px;
+  height: var(--tap);
+  accent-color: #a8822a;
+}
+
+/* ---------- head-up display ---------- */
+
+#lw-hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#lw-hud [data-ui] {
+  pointer-events: auto;
+}
+
+.lw-breath {
+  position: absolute;
+  left: 50%;
+  bottom: calc(18px + var(--safe-b));
+  transform: translateX(-50%);
+  width: 168px;
+  height: 168px;
+}
+
+.lw-breath svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.lw-breath-label {
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--ink);
+  /* A frosted pill rather than a halo. The chapter 2 meadows go to night,
+     and dark text with a pale glow disappears against a dark meadow. */
+  background: rgba(250, 248, 244, 0.72);
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+
+.lw-corner {
+  position: absolute;
+  top: calc(14px + var(--safe-t));
+  right: 14px;
+  display: flex;
+  gap: 8px;
+}
+
+.lw-icon-btn {
+  width: var(--tap);
+  height: var(--tap);
+  border: none;
+  border-radius: 50%;
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 18px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(40, 40, 48, 0.14);
+}
+
+/* The breath pair. One button per thumb, both at the same height: the
+   in-breath and the out-breath are two halves of one thing, and a control
+   that sits higher on one side than the other does not read that way. */
+.lw-touch-left,
+.lw-touch-right {
+  position: absolute;
+  bottom: calc(184px + var(--safe-b));
+}
+
+.lw-touch-left {
+  left: 20px;
+}
+
+.lw-touch-right {
+  right: 20px;
+}
+
+/* Push and plant, where the right thumb already is. */
+.lw-touch-actions {
+  position: absolute;
+  right: 20px;
+  bottom: calc(26px + var(--safe-b));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.lw-breath-btn {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(232, 184, 75, 0.34);
+  box-shadow: 0 6px 20px rgba(40, 40, 48, 0.16);
+  font-size: 15px;
+  line-height: 1.3;
+  padding: 10px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+/* The out-breath is the quieter half, so it sits cooler than the in-breath. */
+.lw-breath-btn--out {
+  background: rgba(116, 178, 141, 0.32);
+}
+
+.lw-breath-btn--out:active,
+.lw-breath-btn--out[data-held='true'] {
+  background: rgba(116, 178, 141, 0.6);
+}
+
+.lw-breath-btn:active,
+.lw-breath-btn[data-held='true'] {
+  background: rgba(232, 184, 75, 0.64);
+}
+
+.lw-push-btn {
+  min-width: 96px;
+  min-height: var(--tap);
+  border-radius: 999px;
+  border: none;
+  background: rgba(74, 85, 120, 0.26);
+  font-size: 16px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+
+.lw-joystick {
+  position: absolute;
+  left: 22px;
+  bottom: calc(30px + var(--safe-b));
+  width: 132px;
+  height: 132px;
+  border-radius: 50%;
+  background: rgba(250, 246, 239, 0.34);
+  box-shadow: inset 0 0 0 2px rgba(250, 246, 239, 0.5);
+  touch-action: none;
+}
+
+.lw-joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 56px;
+  height: 56px;
+  margin: -28px 0 0 -28px;
+  border-radius: 50%;
+  background: rgba(250, 246, 239, 0.8);
+  transition: transform 90ms ease-out;
+}
+
+/* The joystick and the big breath button are for touch only. The push and
+   plant buttons stay on every device, next to their key. */
+body:not(.lw-touch) .lw-joystick,
+body:not(.lw-touch) .lw-touch-left {
+  display: none;
+}
+
+body:not(.lw-touch) .lw-breath-btn {
+  display: none;
+}
+
+/* With no touch there is no breath pair, so the actions keep the corner. */
+body:not(.lw-touch) .lw-touch-right {
+  display: none;
+}
+
+.lw-key {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 6px;
+  background: rgba(35, 38, 43, 0.14);
+  font-size: 13px;
+}
+
+body.lw-touch .lw-key {
+  display: none;
+}
+
+.lw-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(252px + var(--safe-b));
+  transform: translateX(-50%);
+  background: var(--panel);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 500ms ease;
+  white-space: nowrap;
+}
+
+.lw-hint[data-show='true'] {
+  opacity: 1;
+}
+
+/* The thought inside the fog, in a handwritten style. */
+.lw-fog-text {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  font-family: 'Light Within Hand', cursive;
+  font-size: clamp(30px, 6vw, 52px);
+  color: #dfe3ee;
+  text-shadow: 0 2px 18px rgba(30, 34, 52, 0.75);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ---------- debug ---------- */
+
+.lw-debug {
+  /* The panel is a developer read-out. It must never swallow a tap meant for
+     the game or for an overlay panel underneath it. */
+  pointer-events: none;
+  position: absolute;
+  left: 12px;
+  top: calc(12px + var(--safe-t));
+  background: rgba(20, 22, 26, 0.82);
+  color: #eef0f2;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 10px 12px;
+  border-radius: 10px;
+  max-width: 260px;
+  /* It has to be readable on a phone without covering the game it is
+     reporting on, so it keeps to the top half. It stays untappable, so what
+     it cannot fit is clipped rather than scrolled: the lines that matter for
+     a device report are first in the list. */
+  max-height: 46vh;
+  overflow: hidden;
+  z-index: 30;
+}
+
+.lw-debug button {
+  pointer-events: auto;
+  margin-top: 8px;
+  min-height: 34px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background: #43485a;
+  color: #eef0f2;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.lw-debug dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  margin: 0;
+}
+
+.lw-debug dt {
+  color: #a7aec0;
+}
+
+.lw-debug dd {
+  margin: 0;
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (max-width: 460px) {
+  .lw-debug {
+    font-size: 10px;
+    max-width: 62vw;
+    max-height: 44vh;
+    padding: 7px 8px;
+  }
+  .lw-breath {
+    width: 128px;
+    height: 128px;
+    bottom: calc(150px + var(--safe-b));
+    left: 50%;
+  }
+  .lw-hint {
+    bottom: calc(290px + var(--safe-b));
+    font-size: 14px;
+    white-space: normal;
+    max-width: 78vw;
+    text-align: center;
+  }
+}
+
+/* The screen fade between chapters. The page reloads behind it. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: #0b0d12;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  z-index: 100;
+}
+body.fading::after {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* The chapter 2 dream: a flat night village, shown for a few seconds. */
+.lw-dream {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #0b101f;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 900ms ease;
+}
+.lw-dream--on {
+  opacity: 1;
+}
+.lw-dream-sky {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* The bird crosses the same roof twice, which is the whole point of it. */
+.lw-dream-bird {
+  transform: translate(-40px, 108px);
+}
+.lw-dream--on .lw-dream-bird {
+  animation: lw-dream-cross var(--lw-dream-seconds, 13s) ease-in-out 1 both;
+}
+@keyframes lw-dream-cross {
+  0% {
+    transform: translate(-40px, 112px) scale(1);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  40% {
+    transform: translate(440px, 96px) scale(1);
+    opacity: 1;
+  }
+  46% {
+    transform: translate(440px, 96px) scale(1);
+    opacity: 0;
+  }
+  54% {
+    transform: translate(-40px, 112px) scale(1);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+  92% {
+    transform: translate(440px, 96px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(440px, 96px) scale(1);
+    opacity: 0;
+  }
+}
+/* Reduced motion: the bird still crosses twice, but it glides. */
+@media (prefers-reduced-motion: reduce) {
+  .lw-dream--on .lw-dream-bird {
+    animation-timing-function: linear;
+  }
+}
+.lw-dream--calm.lw-dream--on .lw-dream-bird {
+  animation-timing-function: linear;
+}
+
+/*
+ * What the guide says.
+ *
+ * It sits above the breath controls and never in the middle of the screen,
+ * because the player is looking at the world and not at her. It does not
+ * take the pointer unless it is a teaching that waits to be closed.
+ */
+.lw-guide {
+  /* Main controls for size, colour, glow, and motion. */
+  --guide-width: 350px;
+  --guide-gold: var(--warm);
+  --guide-cream: #fff4ca;
+  --guide-glow-strength: 42%;
+  --guide-float-distance: 3px;
+  --guide-float-seconds: 6.5s;
+  position: absolute;
+  top: var(--guide-y, calc(136px + var(--safe-t)));
+  left: var(--guide-x, 50%);
+  width: min(var(--guide-width), calc(100vw - 32px));
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translate(-50%, -100%) translateY(10px) scale(0.97);
+  transform-origin: var(--guide-tail-x, 50%) 100%;
+  transition:
+    opacity 420ms ease,
+    transform 520ms cubic-bezier(0.2, 0.8, 0.25, 1);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.lw-guide[data-show='true'] {
+  opacity: 1;
+  transform: translate(-50%, -100%) translateY(0) scale(1);
+  animation: lw-guide-float var(--guide-float-seconds) ease-in-out 600ms infinite;
+}
+
+.lw-guide[data-anchor-visible='false'] {
+  opacity: 0;
+}
+
+.lw-guide-bubble {
+  position: relative;
+  overflow: visible;
+  min-height: 112px;
+  padding: 18px 27px 21px;
+  border: 1px solid color-mix(in srgb, var(--guide-cream) 82%, transparent);
+  border-radius: 38% 29% 35% 31% / 33% 42% 36% 45%;
+  background:
+    radial-gradient(
+      ellipse at 12% 10%,
+      color-mix(in srgb, var(--guide-cream) 34%, transparent),
+      transparent 46%
+    ),
+    radial-gradient(
+      ellipse at 88% 83%,
+      color-mix(in srgb, var(--guide-gold) 25%, transparent),
+      transparent 44%
+    ),
+    linear-gradient(135deg, rgba(119, 88, 50, 0.52), rgba(64, 51, 48, 0.42));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--guide-gold) 18%, transparent) inset,
+    0 6px 18px rgba(55, 35, 25, 0.1),
+    0 0 30px color-mix(in srgb, var(--guide-gold) var(--guide-glow-strength), transparent),
+    0 0 58px color-mix(in srgb, var(--guide-gold) 14%, transparent);
+  backdrop-filter: blur(5px) saturate(1.08);
+  -webkit-backdrop-filter: blur(5px) saturate(1.08);
+  text-align: left;
+  transform: rotate(-0.8deg);
+}
+
+.lw-guide-bubble::before {
+  position: absolute;
+  inset: 6px 8px 7px 6px;
+  border: 1px solid color-mix(in srgb, var(--guide-cream) 18%, transparent);
+  border-radius: 34% 32% 39% 28% / 39% 32% 43% 35%;
+  content: '';
+  pointer-events: none;
+}
+
+.lw-guide-bubble::after {
+  position: absolute;
+  inset: -8px -7px -6px -9px;
+  border: 1px solid color-mix(in srgb, var(--guide-gold) 34%, transparent);
+  border-radius: 32% 38% 29% 41% / 45% 31% 42% 33%;
+  content: '';
+  opacity: 0.55;
+  pointer-events: none;
+  transform: rotate(0.8deg);
+  animation: lw-guide-glow 4.8s ease-in-out infinite;
+}
+
+.lw-guide-label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: -5px 4px 10px -6px;
+  color: var(--guide-cream);
+  font-family: 'Light Within Hand', cursive;
+  font-size: 17px;
+  letter-spacing: 0.055em;
+}
+
+.lw-guide-mark {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border: 1px solid color-mix(in srgb, var(--guide-cream) 78%, transparent);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 6px 9px at 35% 36%, var(--guide-cream) 0 86%, transparent 92%),
+    radial-gradient(ellipse 6px 9px at 65% 36%, var(--guide-cream) 0 86%, transparent 92%),
+    radial-gradient(ellipse 4px 6px at 39% 64%, var(--guide-cream) 0 82%, transparent 90%),
+    radial-gradient(ellipse 4px 6px at 61% 64%, var(--guide-cream) 0 82%, transparent 90%),
+    radial-gradient(ellipse 2px 7px at 50% 53%, var(--guide-cream) 0 82%, transparent 90%);
+  box-shadow:
+    0 0 12px color-mix(in srgb, var(--guide-gold) 46%, transparent),
+    0 0 24px color-mix(in srgb, var(--guide-gold) 18%, transparent);
+}
+
+.lw-guide-mark::before {
+  position: absolute;
+  top: 7px;
+  left: 16px;
+  width: 1px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--guide-cream);
+  box-shadow: 0 0 7px var(--guide-gold);
+  content: '';
+  transform: rotate(-8deg);
+}
+
+.lw-guide-label::after {
+  height: 1px;
+  flex: 1;
+  margin-left: 3px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--guide-cream) 42%, transparent),
+    transparent
+  );
+  content: '';
+}
+
+.lw-guide-label-star {
+  font-family: Georgia, serif;
+  font-size: 12px;
+  text-shadow: 0 0 8px var(--guide-gold);
+}
+
+.lw-guide[data-hold='true'] {
+  pointer-events: auto;
+}
+
+.lw-guide-text {
+  margin: 0;
+  max-width: 288px;
+  padding: 0 5px 0 7px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(17px, 2vw, 19px);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.38;
+  letter-spacing: 0.005em;
+  color: #fff9e9;
+  text-wrap: balance;
+  text-shadow: 0 1px 8px rgba(45, 28, 14, 0.3);
+}
+
+.lw-guide-film {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  background: #1e2234;
+}
+
+.lw-guide-film[hidden] {
+  display: none;
+}
+
+.lw-guide-close {
+  margin-top: 12px;
+  min-height: 48px;
+  padding: 0 24px;
+}
+
+.lw-guide-close[hidden] {
+  display: none;
+}
+
+.lw-guide-connection {
+  position: absolute;
+  top: calc(100% - 3px);
+  left: var(--guide-tail-x, 50%);
+  width: 120px;
+  height: 92px;
+  overflow: visible;
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--guide-gold) 58%, transparent));
+  pointer-events: none;
+  transform: translateX(-70px) rotate(-2deg);
+  transform-origin: 23px 0;
+}
+
+.lw-guide-connection-fill {
+  fill: color-mix(in srgb, var(--guide-gold) 22%, transparent);
+  stroke: color-mix(in srgb, var(--guide-cream) 38%, transparent);
+  stroke-width: 0.8;
+}
+
+.lw-guide-connection-line {
+  fill: none;
+  stroke: color-mix(in srgb, var(--guide-cream) 88%, transparent);
+  stroke-linecap: round;
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+
+.lw-guide-connection-mote {
+  fill: var(--guide-cream);
+  filter: drop-shadow(0 0 4px var(--guide-gold));
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: lw-guide-connection-mote 3.2s ease-in-out infinite;
+}
+
+.lw-guide-connection-mote--two {
+  animation-delay: -1.1s;
+}
+
+.lw-guide-connection-mote--three {
+  animation-delay: -2.1s;
+}
+
+.lw-guide-sparks i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--guide-cream);
+  box-shadow: 0 0 9px 2px color-mix(in srgb, var(--guide-gold) 75%, transparent);
+  pointer-events: none;
+  animation: lw-guide-spark 3.8s ease-in-out infinite;
+}
+
+.lw-guide-sparks i:nth-child(1) {
+  top: -8px;
+  right: 18%;
+}
+
+.lw-guide-sparks i:nth-child(2) {
+  top: 62%;
+  left: -11px;
+  width: 3px;
+  height: 3px;
+  animation-delay: -1.4s;
+}
+
+.lw-guide-sparks i:nth-child(3) {
+  right: 5px;
+  bottom: -8px;
+  width: 3px;
+  height: 3px;
+  animation-delay: -2.5s;
+}
+
+.lw-guide-sparks i:nth-child(4) {
+  top: 30%;
+  right: -12px;
+  width: 2px;
+  height: 2px;
+  animation-delay: -0.8s;
+}
+
+.lw-guide-sparks i:nth-child(5) {
+  bottom: -18px;
+  left: 18%;
+  width: 4px;
+  height: 4px;
+  animation-delay: -3.1s;
+}
+
+@keyframes lw-guide-float {
+  0%,
+  100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: calc(-1 * var(--guide-float-distance));
+  }
+}
+
+@keyframes lw-guide-glow {
+  0%,
+  100% {
+    opacity: 0.38;
+  }
+  50% {
+    opacity: 0.68;
+  }
+}
+
+@keyframes lw-guide-spark {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0) scale(0.75);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-9px) scale(1);
+  }
+}
+
+@keyframes lw-guide-connection-mote {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lw-guide[data-show='true'],
+  .lw-guide-bubble::after,
+  .lw-guide-connection-mote,
+  .lw-guide-sparks i {
+    animation: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .lw-guide {
+    --guide-width: 310px;
+  }
+
+  .lw-guide-bubble {
+    min-height: 108px;
+    padding: 17px 22px 19px;
+  }
+
+  .lw-guide-label {
+    font-size: 16px;
+  }
+
+  .lw-guide-text {
+    max-width: 260px;
+    font-size: 16px;
+  }
+}

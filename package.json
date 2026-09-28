@@ -1,0 +1,26 @@
+{
+  "name": "light-within",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "assets": "node scripts/convert-assets.mjs",
+    "assets:watch": "node scripts/convert-assets.mjs --watch",
+    "predev": "npm run assets",
+    "dev": "vite",
+    "prebuild": "npm run assets",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "check:browser": "node scripts/check-browser.mjs"
+  },
+  "dependencies": {
+    "@babylonjs/core": "^9.28.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "sharp": "^0.35.5",
+    "typescript": "~5.9",
+    "vite": "^8.3.1"
+  }
+}

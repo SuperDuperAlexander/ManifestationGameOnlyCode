@@ -1,0 +1,87 @@
+{
+  "intro": [
+    "Hello, little light. I'll walk this path with you.",
+    "This valley is full of fog. Some of it lives inside us.",
+    "Walk with me. The clearing is just ahead."
+  ],
+  "controlsMove": "Use W A S D or the arrow keys to walk.",
+  "controlsMoveTouch": "Drag on the left side to walk.",
+  "firstBlockade": [
+    "Look. This fog carries a heavy thought.",
+    "Force doesn't help here. Breathe."
+  ],
+  "breathingTip": "Breathe in… let your light grow. Breathe out… let it flow.",
+  "breathingKeys": "Hold Space to breathe in. Hold Shift to breathe out.",
+  "breathingKeysTouch": "Hold the light button to breathe in. Let go to breathe out.",
+  "force": "Force doesn't help here. Breathe.",
+  "released": [
+    "There it goes. Light again.",
+    "Softly. That is how it works.",
+    "You were never that thought.",
+    "It was only fog.",
+    "Lighter now, isn't it?",
+    "One more fog became light."
+  ],
+  "hint": "Something is waiting over there.",
+  "hintStart": "Look, the path opens to the clearing.",
+  "hintWell": "The old well remembers every wish. Rest here a moment.",
+  "hintOak": "This oak has seen many travellers. It saw them find their way.",
+  "hintForest": "Two fogs live in this forest. Take your time.",
+  "hintRuins": "Old stones, old fears. Breathe slowly here.",
+  "hintRiver": "Listen to the water. It never forces its way.",
+  "hintFord": "The stones will carry you across.",
+  "hintHiddenPath": "Breathe in while you walk. Your light shows hidden paths.",
+  "hintMonolith": "The rune glows for those who breathe.",
+  "hintChasmEarly": "A bridge of light could cross here. Every fog you release becomes a plank.",
+  "hintChasm": "Something is waiting over there.",
+  "bridge": "Every fog you released became light. Look.",
+  "bridgeMore": "Almost. The bridge needs a little more light.",
+  "bridgeReady": "The bridge is ready. Walk across. I'm with you.",
+  "gateOpen": "The gate is open. Walk through when you are ready.",
+  "chapterEnd": "You carried your light through the fog.",
+  "chapterEndTitle": "Chapter complete",
+  "chapterEndSubtitle": "The Awakening",
+  "chapterEndNext": "More of the valley awaits.",
+  "wakeUp": "…",
+  "startPrompt": "Press any key or tap to begin",
+  "valleyIntro": [
+    "Hello, little light. I'll walk this path with you.",
+    "Follow the path through the valley, all the way to the chasm."
+  ],
+  "valleyControls": "Use W A S D to walk. Drag with the mouse to look around.",
+  "valleyControlsTouch": "Drag on the left side to walk. Drag on the right side to look around.",
+  "valleyFogFirst": [
+    "Look. A blockade blocks the bridge.",
+    "Try to push it away first."
+  ],
+  "valleyPushKeys": "Press E to push.",
+  "valleyPushKeysTouch": "Tap the hand button to push.",
+  "valleyPushed": [
+    "See? It only grew. Force makes it stronger.",
+    "Let's try another way. Breathe."
+  ],
+  "valleyPushedAgain": [
+    "The harder you push, the darker it gets.",
+    "Pushing feeds the fog.",
+    "Soften. Breathe instead."
+  ],
+  "valleyBreathKeys": "Hold Space to breathe in. Then hold Shift to breathe out.",
+  "valleyBreathKeysTouch": "Hold the light button to breathe in. Let go to breathe out.",
+  "valleyBreathing": "Yes. Keep breathing. Slowly.",
+  "valleyReleased1": [
+    "Feel it? The valley is brighter now. And so are you.",
+    "The path goes on. Over the bridge."
+  ],
+  "valleyFogSecond": "Another blockade. You know the way now.",
+  "valleyReleased2": [
+    "So much light. You are glowing.",
+    "The chasm is waiting."
+  ],
+  "valleyChasmEarly": "A bridge of light could cross here. It needs the light of both fogs.",
+  "valleyBridge": "Every fog you released became light. Look.",
+  "valleyBridgeReady": "The bridge is ready. Walk across. The arch is waiting.",
+  "valleyEndTitle": "Chapter complete",
+  "valleyEndSubtitle": "The Valley",
+  "valleyEnd": "You carried your light through the fog.",
+  "valleyEndNext": "Reload the page to walk it again."
+}
