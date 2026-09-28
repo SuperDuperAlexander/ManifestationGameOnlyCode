@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Cloak Figure</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; background: #F4EEDF; }
+      #game { width: 100%; height: 100%; display: block; outline: none; touch-action: none; }
+      #help {
+        position: fixed; left: 16px; right: 16px; bottom: 16px; text-align: center;
+        font: 14px/1.4 Georgia, serif; letter-spacing: 0.08em; color: #4E5566; opacity: 0.8;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" touch-action="none"></canvas>
+    <div id="help">WASD walk · Space breathe in · drag to look around · wheel to zoom · P demo walk</div>
+    <script type="module" src="/src/demo.ts"></script>
+  </body>
+</html>

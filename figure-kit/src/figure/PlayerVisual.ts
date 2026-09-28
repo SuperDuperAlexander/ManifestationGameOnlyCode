@@ -4,17 +4,15 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
+import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Space } from '@babylonjs/core/Maths/math.axis';
 import { Curve3 } from '@babylonjs/core/Maths/math.path';
 import { Constants } from '@babylonjs/core/Engines/constants';
 import type { Scene } from '@babylonjs/core/scene';
-import { PALETTE, SHADES } from '../config/palette';
-import { TUNING } from '../config/tuning';
-import { createToonMaterial, type ToonMaterial } from '../shaders/toonShader';
-import { createPaperMaterial, setPaperColor, type PaperMaterial } from '../shaders/paperShader';
-import { procTexture } from '../world/ProceduralTextures';
-import { clamp, damp, smoothstep } from '../core/Random';
+import { FIGURE } from './config';
+import { createToonMaterial, type ToonMaterial } from './toonShader';
+import { createGlowMaterial, setGlowAlpha, type GlowMaterial } from './glowShader';
+import { clamp, damp, smoothstep } from './math';
 import { ScarfTail, type ScarfBody } from './ScarfTail';
 
 export interface PlayerVisualState {
@@ -100,7 +98,7 @@ export class PlayerVisual implements IPlayerVisual {
   private readonly shadow: Mesh;
   private readonly halo: Mesh;
   private readonly mat: ToonMaterial;
-  private readonly haloMat: PaperMaterial;
+  private readonly haloMat: GlowMaterial;
 
   // Cloak mesh buffers. Rest shape per vertex: height, radius, angle, weight (0 at the shoulders, 1 at the hem).
   private readonly ringCount = CLOAK_PROFILE.length;
@@ -132,7 +130,7 @@ export class PlayerVisual implements IPlayerVisual {
     this.root = new TransformNode('player', scene);
     this.body = new TransformNode('player.body', scene);
     this.body.parent = this.root;
-    this.root.scaling.setAll(TUNING.player.visualScale);
+    this.root.scaling.setAll(FIGURE.scale);
 
     // One toon material for the whole figure. Colours are painted into the vertices.
     // No back-face culling: the cloak's inside and both faces of the scarf are real geometry.
@@ -151,9 +149,9 @@ export class PlayerVisual implements IPlayerVisual {
     this.restW = new Float32Array(n);
     const colors = new Float32Array(n * 2 * 4);
     const top = Color3.FromHexString('#C8543C');
-    const mid = Color3.FromHexString(PALETTE.cloak);
+    const mid = Color3.FromHexString(FIGURE.colors.cloak);
     const hem = Color3.FromHexString('#A63A28');
-    const inner = Color3.FromHexString(SHADES.cloakShadow);
+    const inner = Color3.FromHexString(FIGURE.colors.cloakShadow);
     for (let i = 0; i < R; i++) {
       const [y, r] = CLOAK_PROFILE[i]!;
       const t = i / (R - 1);
@@ -195,10 +193,10 @@ export class PlayerVisual implements IPlayerVisual {
     this.cloak.parent = this.body;
 
     // Gold diamond on the back, like the reference art: gold, a cloak-red inset, a gold heart.
-    const d1 = paint(MeshBuilder.CreateDisc('player.em1', { radius: 0.068, tessellation: 4 }, scene), PALETTE.gold);
+    const d1 = paint(MeshBuilder.CreateDisc('player.em1', { radius: 0.068, tessellation: 4 }, scene), FIGURE.colors.gold);
     const d2 = paint(MeshBuilder.CreateDisc('player.em2', { radius: 0.046, tessellation: 4 }, scene), '#B8452F');
     d2.position.z = -0.003;
-    const d3 = paint(MeshBuilder.CreateDisc('player.em3', { radius: 0.02, tessellation: 4 }, scene), PALETTE.gold);
+    const d3 = paint(MeshBuilder.CreateDisc('player.em3', { radius: 0.02, tessellation: 4 }, scene), FIGURE.colors.gold);
     d3.position.z = -0.006;
     this.emblem = merge('player.emblem', [d1, d2, d3]);
     this.emblem.scaling.set(0.85, 1.3, 1);
@@ -206,7 +204,7 @@ export class PlayerVisual implements IPlayerVisual {
     this.emblem.parent = this.body;
 
     // --- Scarf wrap around the neck, with a knot at the back right. ---
-    const wrap = paint(MeshBuilder.CreateTorus('player.wrap', { diameter: 0.3, thickness: 0.105, tessellation: 22 }, scene), SHADES.scarf);
+    const wrap = paint(MeshBuilder.CreateTorus('player.wrap', { diameter: 0.3, thickness: 0.105, tessellation: 22 }, scene), FIGURE.colors.scarf);
     wrap.position.set(0, 0.77, 0.005);
     wrap.rotation.x = 0.28;
     wrap.scaling.set(1.05, 0.8, 1);
@@ -247,13 +245,13 @@ export class PlayerVisual implements IPlayerVisual {
     for (const side of [-1, 1]) {
       const leg = paint(
         MeshBuilder.CreateCylinder(`player.leg${side}`, { diameterTop: 0.085, diameterBottom: 0.07, height: 1, tessellation: 8 }, scene),
-        SHADES.legs,
+        FIGURE.colors.legs,
       );
       leg.bakeTransformIntoVertices(Matrix.Translation(0, -0.5, 0));
       leg.material = this.mat;
       leg.parent = this.root;
       this.legs.push(leg);
-      const boot = paint(MeshBuilder.CreateSphere(`player.boot${side}`, { diameter: 0.2, segments: 10 }, scene), SHADES.umber);
+      const boot = paint(MeshBuilder.CreateSphere(`player.boot${side}`, { diameter: 0.2, segments: 10 }, scene), FIGURE.colors.umber);
       boot.bakeTransformIntoVertices(Matrix.Scaling(0.58, 0.48, 1).multiply(Matrix.Translation(0, -0.015, 0.03)));
       boot.material = this.mat;
       boot.parent = this.root;
@@ -261,9 +259,9 @@ export class PlayerVisual implements IPlayerVisual {
     }
 
     // --- Scarf tails: physics ribbons in world space. ---
-    const f = TUNING.player.figure;
+    const f = FIGURE.motion;
     f.scarfTails.forEach(([len, width, segs], i) => {
-      const tail = new ScarfTail(scene, `player.scarf${i}`, this.mat, len, width, segs, i === 0 ? SHADES.scarf : '#D2703F', TUNING.player.visualScale);
+      const tail = new ScarfTail(scene, `player.scarf${i}`, this.mat, len, width, segs, i === 0 ? FIGURE.colors.scarf : '#D2703F', FIGURE.scale);
       this.scarves.push(tail);
       this.anchorPrev.push(new Vector3());
     });
@@ -279,18 +277,11 @@ export class PlayerVisual implements IPlayerVisual {
     // Soft blob shadow on the ground.
     this.shadow = MeshBuilder.CreateGround('player.shadow', { width: 1.1, height: 0.9 }, scene);
     this.shadow.position.y = 0.03;
-    this.shadow.material = createPaperMaterial('player.shadowMat', scene, {
-      texture: procTexture(scene, 'shadow'),
-      alphaBlend: true,
-    });
+    this.shadow.material = createGlowMaterial('player.shadowMat', scene, FIGURE.colors.shadow, { alpha: 0.55 });
     this.shadow.parent = this.root;
 
     // Warm halo around the figure. Visible while inhaling.
-    this.haloMat = createPaperMaterial('player.haloMat', scene, {
-      texture: procTexture(scene, 'aura'),
-      additive: true,
-      haze: false,
-    });
+    this.haloMat = createGlowMaterial('player.haloMat', scene, FIGURE.colors.halo, { alpha: 0, additive: true, core: 0.8 });
     // Light is not hidden by the ground it stands on.
     this.haloMat.depthFunction = Constants.ALWAYS;
     this.halo = MeshBuilder.CreatePlane('player.halo', { size: 2.6 }, scene);
@@ -308,7 +299,7 @@ export class PlayerVisual implements IPlayerVisual {
   }
 
   update(dt: number, s: PlayerVisualState): void {
-    const f = TUNING.player.figure;
+    const f = FIGURE.motion;
     this.time += dt;
     const moving = s.speedRatio;
 
@@ -386,7 +377,7 @@ export class PlayerVisual implements IPlayerVisual {
     const glow = Math.max(s.glow, 0);
     this.mat.glow = glow * 0.45;
     this.halo.isVisible = glow > 0.02;
-    setPaperColor(this.haloMat, new Color4(1, 1, 1, Math.min(0.5, glow * 0.65)));
+    setGlowAlpha(this.haloMat, Math.min(0.5, glow * 0.65));
     const hs = 0.9 + glow * 0.5;
     this.halo.scaling.set(hs, hs, hs);
 
@@ -519,7 +510,7 @@ function shapeHood(mesh: Mesh): void {
   const low = Color3.FromHexString('#BD4631');
   const high = Color3.FromHexString('#CF5A40');
   const brimColor = Color3.FromHexString('#D2613F');
-  const faceColor = Color3.FromHexString(SHADES.umber);
+  const faceColor = Color3.FromHexString(FIGURE.colors.umber);
   for (let i = 0; i < count; i++) {
     const x = pos[i * 3]!;
     const y = pos[i * 3 + 1]!;

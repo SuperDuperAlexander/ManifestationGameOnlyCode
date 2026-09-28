@@ -23,6 +23,8 @@ export const SHADES = {
   scarf: '#DA7A4A',
   /** Warm dark brown for feet and the face shadow. */
   umber: '#4A3428',
+  /** The figure's legs, a touch darker than the boots. */
+  legs: '#3E2C23',
   /** Light the fairy gives: brighter than gold. */
   fairyLight: '#FFF1C9',
 } as const;

@@ -81,12 +81,12 @@ export const TUNING = {
       cloakTrail: 0.15,
       /** Scarf tails: [length, width, segments]. */
       scarfTails: [
-        [0.66, 0.11, 10],
-        [0.36, 0.09, 6],
+        [0.52, 0.12, 9],
+        [0.3, 0.1, 5],
       ],
       /** Air drag on the scarf, 1/s. Higher = it flies further back when walking. */
-      scarfDrag: 3.2,
-      scarfGravity: 7.5,
+      scarfDrag: 3.6,
+      scarfGravity: 6,
       /** Gentle breeze, m/s². It blows from the right, like the light. */
       wind: 1.4,
       /** Flutter waves along the scarf while it moves through the air. */

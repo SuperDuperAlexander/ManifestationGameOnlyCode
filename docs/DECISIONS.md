@@ -138,3 +138,11 @@ style reference. It reuses the player figure, the fairy, the input and the joyst
 - The fairy leads with lines from `en.json` (keys starting with `valley`). Numbers: `TUNING.valley.mood`, `.blockade`.
 - Test: `npm run check:browser -- "http://localhost:5173/valley.html?autostart&debug" --scenario valley` (whole level)
   and `--scenario valleyviews` (look check with fps per view).
+
+**D28. New player figure from `figure-kit/`** (Alexander, 2026-09-28).
+- `src/player/PlayerVisual.ts` is now the figure from `figure-kit/src/figure/`: a moving cloak bell with a spring,
+  a scarf wrap with two physics scarf tails (`src/player/ScarfTail.ts`), legs and boots, lean, nod, look-around.
+- It uses the game's own shaders (`toonShader`, `paperShader`), so it bends with the world curve like everything else.
+  The kit's own `toonShader`/`glowShader` are not used.
+- Numbers live in `TUNING.player.figure` (values taken from the kit's `config.ts`). Colours: `PALETTE` and `SHADES`.
+- The old simple figure moved to `legacy/player-v1/PlayerVisual.ts`. `figure-kit/` stays as the stand-alone demo.
