@@ -139,6 +139,11 @@ style reference. It reuses the player figure, the fairy, the input and the joyst
 - Test: `npm run check:browser -- "http://localhost:5173/valley.html?autostart&debug" --scenario valley` (whole level)
   and `--scenario valleyviews` (look check with fps per view).
 
+**D27. The valley is the main game now** (Alexander, 2026-09-28).
+- `index.html` (the start page, also on Vercel) loads the valley: `src/valley/main.ts`.
+- `valley.html` stays, same content, so old links and test commands still work.
+- The older paper-diorama game moved from `index.html` to `diorama.html` (code unchanged, `src/main.ts`).
+
 **D28. New player figure from `figure-kit/`** (Alexander, 2026-09-28).
 - `src/player/PlayerVisual.ts` is now the figure from `figure-kit/src/figure/`: a moving cloak bell with a spring,
   a scarf wrap with two physics scarf tails (`src/player/ScarfTail.ts`), legs and boots, lean, nod, look-around.

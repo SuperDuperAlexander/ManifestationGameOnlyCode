@@ -35,8 +35,10 @@ export default defineConfig({
   build: {
     target: 'es2022',
     rollupOptions: {
-      // index.html = the game, valley.html = the code-only test valley.
-      input: { main: 'index.html', valley: 'valley.html' },
+      // index.html = the main game (the code-only valley, D27).
+      // valley.html = same valley, kept so old links and test commands still work.
+      // diorama.html = the older paper-diorama game (chapter JSON + image assets).
+      input: { main: 'index.html', valley: 'valley.html', diorama: 'diorama.html' },
     },
     chunkSizeWarningLimit: 4000,
   },
