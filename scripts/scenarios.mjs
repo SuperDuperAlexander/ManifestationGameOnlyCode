@@ -49,10 +49,12 @@ export default function scenarios({ wait, shot, hold, page }) {
       };
       await wait(9000);
       await shot('v01-intro');
+      console.log('mood at start (bright):', (await st()).mood);
       console.log('reach at start (fog 1 solid):', JSON.stringify(await reach()));
       await vtp(0, -12.5, 0);
       await wait(6000);
       await shot('v02-fog1');
+      console.log('mood near fog 1 (dark):', (await st()).mood);
       for (let i = 0; i < 3; i++) {
         await page.keyboard.press('KeyE');
         await wait(i === 0 ? 350 : 1300);
@@ -60,6 +62,10 @@ export default function scenarios({ wait, shot, hold, page }) {
       }
       await shot('v04-pushed-dark');
       console.log('after 3 pushes:', JSON.stringify((await st()).fogs[0]), 'mood', (await st()).mood);
+      await vtp(0, -30, 0);
+      await wait(1500);
+      console.log('mood after walking away (bright again):', (await st()).mood);
+      await vtp(0, -12.5, 0);
       const n1 = await breatheUntilFree('worthy');
       console.log('fog 1 released after breaths:', n1);
       await wait(900);
@@ -75,6 +81,9 @@ export default function scenarios({ wait, shot, hold, page }) {
       await wait(1000);
       await shot('v08-release2');
       console.log('state:', JSON.stringify(await st()));
+      await vtp(5, 30, 0);
+      await wait(1500);
+      console.log('bridge building at z=30 (should be false):', (await st()).bridgeBuilding);
       console.log('reach after fog 2:', JSON.stringify(await reach()));
       await vtp(0, 36, 0);
       await wait(7000);

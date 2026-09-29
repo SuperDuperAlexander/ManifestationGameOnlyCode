@@ -7,7 +7,7 @@ import { InputManager } from '../core/InputManager';
 import { Performance, isTouchDevice } from '../core/Performance';
 import { Events } from '../core/Events';
 import { Sound } from '../core/Sound';
-import { clamp, clamp01, damp } from '../core/Random';
+import { clamp, clamp01, damp, smoothstep } from '../core/Random';
 import { PlayerVisual } from '../player/PlayerVisual';
 import { BreathSystem } from '../player/BreathSystem';
 import { BreathVisuals } from '../player/BreathVisuals';
@@ -81,6 +81,13 @@ export class ValleyGame implements WalkGround {
   /** A short dark flash right after a push. */
   private flash = 0;
   private mood: number = TUNING.valley.mood.byProgress[0];
+  /** 0..1: how close the player is to a fog. Close = dark world. */
+  private approach = 0;
+  /** The fog the current breath is reaching, and how much light it got. */
+  private breathFog: ValleyFog | null = null;
+  private breathLight = 0;
+  /** Set when a whole breath ends; handled after this frame's light reached the fog. */
+  private breathEnded = false;
   /** Extra glow of the figure, grows with every released blockade. */
   private playerGlow = 0;
   private releaseGlow = 0;
@@ -180,6 +187,9 @@ export class ValleyGame implements WalkGround {
     this.transition = new Transition(ui);
     this.fairy = new Fairy(this.scene);
     this.story = new ValleyStory(this.fairy, this.dialogue, this.sound, this.touch);
+    this.breath.onBreathDone(() => {
+      this.breathEnded = true;
+    });
 
     this.debug = new DebugOverlay(this.scene, ui);
     window.addEventListener('resize', () => {
@@ -322,7 +332,18 @@ export class ValleyGame implements WalkGround {
     if (fog && inReach && light > 0) {
       this.pushDark = Math.max(0, this.pushDark - light * m.clearPerLight);
       this.story.onBreathHit();
-      if (fog.receiveLight(light)) this.onReleased(fog);
+      fog.receiveLight(light);
+      if (this.breathFog !== fog) this.breathLight = 0;
+      this.breathFog = fog;
+      this.breathLight += light;
+    }
+    // A whole breath reached the fog: one step closer to release (the demo needs two).
+    if (this.breathEnded) {
+      const hit = this.breathFog;
+      if (hit && this.breathLight >= b.minLightPerBreath && hit.breathDone()) this.onReleased(hit);
+      this.breathEnded = false;
+      this.breathFog = null;
+      this.breathLight = 0;
     }
 
     for (const f of this.fogs) {
@@ -355,7 +376,10 @@ export class ValleyGame implements WalkGround {
   private updateGoal(_dt: number): void {
     const p = this.walker.position;
     const c = LAYOUT.chasm;
-    if (!this.bridge.isBuilding && this.lightPoints.total >= LAYOUT.pointsForBridge && p.z > c.z - c.halfWidth - 9) {
+    // Only when every fog is light, and only when the player stands near the chasm edge.
+    const allReleased = this.released >= this.fogs.length;
+    const nearEdge = p.z > c.z - c.halfWidth - TUNING.valley.bridgeTriggerDistance;
+    if (!this.bridge.isBuilding && allReleased && nearEdge) {
       void this.story.onBridge();
       void this.bridge.build().then(() => this.story.onBridgeReady());
     }
@@ -381,14 +405,22 @@ export class ValleyGame implements WalkGround {
     setTimeout(() => this.engine.stopRenderLoop(), 2600);
   }
 
-  /** The world's light: dark with force, brighter with every release. */
+  /**
+   * The world's light: bright by default. Near a fog it goes dark, pushing makes it darker,
+   * walking away or releasing the fog makes it bright again.
+   */
   private updateMood(dt: number): void {
     const m = TUNING.valley.mood;
     this.flash = Math.max(0, this.flash - dt / m.flashTime);
     const step = this.bridge.walkable ? 3 : this.released;
     const base = m.byProgress[Math.min(step, m.byProgress.length - 1)]!;
-    this.mood += (base - this.mood) * damp(m.follow, dt);
-    const shown = clamp(this.mood - this.pushDark - this.flash * m.flash, -1, 1);
+    const fog = this.nearestFog();
+    const p = this.walker.position;
+    const near = fog ? 1 - smoothstep(m.approachNear, m.approachFar, fog.edgeDistance(p.x, p.z)) : 0;
+    this.approach += (near - this.approach) * damp(m.approachFollow, dt);
+    const target = base - this.approach * (m.approachDark + this.pushDark);
+    this.mood += (target - this.mood) * damp(m.approachFollow, dt);
+    const shown = clamp(this.mood - this.flash * m.flash, -1, 1);
     VALLEY_UNIFORMS.mood = shown;
     const fc = VALLEY_UNIFORMS.fogColor;
     if (shown < 0) Color3.LerpToRef(FOG_NORMAL, FOG_DARK, -shown, fc);
@@ -414,6 +446,7 @@ export class ValleyGame implements WalkGround {
       mood: +VALLEY_UNIFORMS.mood.toFixed(2),
       fogs: this.fogs.map((f) => ({ id: f.id, state: f.state, density: +f.density.toFixed(2), grow: +f.grow.toFixed(2) })),
       bridge: this.bridge.walkable,
+      bridgeBuilding: this.bridge.isBuilding,
       finished: this.finished,
     };
   }
@@ -466,7 +499,9 @@ export class ValleyGame implements WalkGround {
   /** Test helper: breath light straight into the nearest fog. */
   debugBreathe(light: number): void {
     const fog = this.nearestFog();
-    if (fog && fog.receiveLight(light)) this.onReleased(fog);
+    if (!fog) return;
+    fog.receiveLight(light);
+    if (fog.breathDone()) this.onReleased(fog);
   }
 }
 

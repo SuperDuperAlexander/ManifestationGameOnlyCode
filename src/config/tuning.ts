@@ -251,11 +251,18 @@ export const TUNING = {
     },
     /** World mood: -1 dark and grey, 0 normal, +1 bright and golden. */
     mood: {
-      /** Mood with 0, 1 and 2 blockades released (and after the bridge). */
-      byProgress: [-0.3, 0.08, 0.24, 0.32] as const,
-      /** How fast the mood follows its target. */
-      follow: 0.9,
-      /** Each push adds this much darkness; it stays until breathing clears it. */
+      /** Mood away from any fog, with 0, 1 and 2 blockades released (and after the bridge). Bright from the start. */
+      byProgress: [0.3, 0.36, 0.42, 0.5] as const,
+      /**
+       * Near a fog the world goes dark. It starts at `approachFar` metres from the fog edge
+       * and is full (`approachDark`) at `approachNear` metres. Walking away makes it bright again.
+       */
+      approachDark: 0.75,
+      approachFar: 14,
+      approachNear: 3,
+      /** How fast the approach darkness follows the player (high = at once). */
+      approachFollow: 6,
+      /** Each push adds this much darkness near the fog; breathing clears it. */
       pushDark: 0.2,
       maxPushDark: 0.7,
       /** Darkness cleared per unit of exhaled light near the fog. */
@@ -265,8 +272,12 @@ export const TUNING = {
       flashTime: 1.3,
     },
     blockade: {
-      /** Density one unit of exhaled light removes: two calm full breaths dissolve a fresh fog. */
-      densityPerLight: 0.5,
+      /** Demo: every fog dissolves after this many breaths that reach it, pushed or not. */
+      breathsToRelease: 2,
+      /** A breath counts when it gives at least this much light to the fog (about 1 s breathing in). */
+      minLightPerBreath: 0.15,
+      /** How fast the fog thins while the light flows in (one breath never goes past its share). */
+      densityPerLight: 0.8,
       /** Each push makes the fog bigger and denser. */
       pushGrow: 0.13,
       pushDensity: 0.22,
@@ -278,6 +289,8 @@ export const TUNING = {
       /** The fairy calls the player to the fog from here. */
       noticeRange: 13,
     },
+    /** The bridge of light starts only when all fogs are released and the player is this close to the chasm edge. */
+    bridgeTriggerDistance: 4,
     /** How much the player figure glows per released blockade (0..1). */
     playerGlowPerRelease: 0.22,
   },

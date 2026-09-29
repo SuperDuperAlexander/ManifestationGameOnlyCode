@@ -132,6 +132,10 @@ export class ValleyFog {
   /** Size: 1 = normal, bigger after pushes. */
   grow = 1;
   pushes = 0;
+  /** Breaths that reached this fog. At `breathsToRelease` it dissolves. */
+  breaths = 0;
+  /** Density when the current breath began (a push raises it). */
+  private stepFrom = 1;
   readonly collider: Collider;
   readonly center: Vector3;
   private readonly puffs: Mesh;
@@ -299,25 +303,41 @@ export class ValleyFog {
     this.flicker = 1;
     this.grow = Math.min(b.maxGrow, this.grow + b.pushGrow);
     this.density = Math.min(2.2, this.density + b.pushDensity);
+    this.stepFrom = this.density;
   }
 
-  /** Exhaled light reaching the fog. Returns true when this light dissolved it. */
-  receiveLight(light: number): boolean {
-    if (this.state !== 'solid') return false;
+  /**
+   * Exhaled light reaching the fog: it thins and shrinks while the light flows in,
+   * but one breath never takes more than its share. The fog dissolves in `breathDone`.
+   */
+  receiveLight(light: number): void {
+    if (this.state !== 'solid') return;
     const b = TUNING.valley.blockade;
-    this.density -= light * b.densityPerLight;
+    this.density = Math.max(this.stepFloor(), this.density - light * b.densityPerLight);
     this.grow = Math.max(1, this.grow - light * b.shrinkPerLight * (this.grow - 1 + 0.2));
-    if (this.density <= 0) {
-      this.density = 0;
-      this.state = 'dissolving';
-      this.dissolveTime = 0;
-      this.collider.active = false;
-      this.spawnBurst();
-      for (const b of this.beams) b.mesh.isVisible = true;
-      this.ring.isVisible = true;
-      return true;
-    }
-    return false;
+  }
+
+  /** The lowest density the current breath can bring: the last breath leaves only a thin wisp. */
+  private stepFloor(): number {
+    const left = TUNING.valley.blockade.breathsToRelease - this.breaths;
+    return left <= 1 ? 0.08 : (this.stepFrom * (left - 1)) / left;
+  }
+
+  /** A whole breath reached this fog. Returns true when it dissolved. */
+  breathDone(): boolean {
+    if (this.state !== 'solid') return false;
+    this.density = Math.min(this.density, this.stepFloor());
+    this.breaths++;
+    this.stepFrom = this.density;
+    if (this.breaths < TUNING.valley.blockade.breathsToRelease) return false;
+    this.density = 0;
+    this.state = 'dissolving';
+    this.dissolveTime = 0;
+    this.collider.active = false;
+    this.spawnBurst();
+    for (const b of this.beams) b.mesh.isVisible = true;
+    this.ring.isVisible = true;
+    return true;
   }
 
   /** How dark the fog looks (0..1), set by the game from the pushes and the mood. */

@@ -151,3 +151,13 @@ style reference. It reuses the player figure, the fairy, the input and the joyst
   The kit's own `toonShader`/`glowShader` are not used.
 - Numbers live in `TUNING.player.figure` (values taken from the kit's `config.ts`). Colours: `PALETTE` and `SHADES`.
 - The old simple figure moved to `legacy/player-v1/PlayerVisual.ts`. `figure-kit/` stays as the stand-alone demo.
+
+**D29. Demo tuning: bright world, dark near fog, two breaths, late bridge** (Alexander, 2026-09-29).
+- The world is bright from the start (`TUNING.valley.mood.byProgress`).
+- Near an active fog the world goes dark (`mood.approachDark`, from `approachFar` to `approachNear` metres from the fog edge).
+  Pushing adds more darkness near the fog. Walking away or releasing the fog makes it bright again.
+- Every fog dissolves after 2 breaths that reach it (`blockade.breathsToRelease`), pushed or not.
+  A breath counts when it gives at least `blockade.minLightPerBreath` light (about 1 s breathing in).
+  Reason: the level is a demo and must be quick to show.
+- The light bridge starts only when both fogs are released **and** the player is within
+  `valley.bridgeTriggerDistance` (4 m) of the chasm edge.
