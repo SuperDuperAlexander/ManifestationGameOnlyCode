@@ -1,4 +1,4 @@
-import { Walkability, type Circle, type Rect } from '../world/Walkability';
+import { Walkability, segDist, type Circle, type Rect } from '../world/Walkability';
 
 /**
  * Town colliders: walkable rectangles (the town is closed by them) plus
@@ -22,14 +22,13 @@ export class TownColliders extends Walkability {
   }
 
   override isWalkable(x: number, z: number, radius: number): boolean {
-    let inside = false;
     for (const a of this.areas) {
-      if (x >= a.minX + radius && x <= a.maxX - radius && z >= a.minZ + radius && z <= a.maxZ - radius) {
-        inside = true;
-        break;
-      }
+      if (x >= a.minX + radius && x <= a.maxX - radius && z >= a.minZ + radius && z <= a.maxZ - radius) return true;
     }
-    return inside;
+    for (const c of this.corridors) {
+      if (segDist(x, z, c) <= c.halfWidth - radius * 0.5) return true;
+    }
+    return false;
   }
 
   /** Push a point out of circles and boxes. */

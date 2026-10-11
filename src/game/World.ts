@@ -1,3 +1,4 @@
+import type { BreathSystem } from '../player/BreathSystem';
 import type { Camera, Scene, Vector3 } from '@babylonjs/core';
 
 /** Which of the two worlds is shown. */
@@ -22,6 +23,8 @@ export interface World {
   setActive(active: boolean): void;
   /** Breath state of the player ('idle' | 'inhale' | 'exhale'). Breathing lets Thought Waves pass. */
   breathState(): string;
+  /** The player's breath (for the guide ring). */
+  breathSystem(): BreathSystem;
   /** Called when the player finishes a whole breath (also for the test hook). */
   onBreathDone(cb: () => void): void;
   /** Counts one full good breath without input (test hook). */

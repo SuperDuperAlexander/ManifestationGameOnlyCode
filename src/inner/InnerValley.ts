@@ -416,6 +416,10 @@ export class InnerValley implements World, WalkGround {
     this.input.endFrame();
   }
 
+  breathSystem(): BreathSystem {
+    return this.breath;
+  }
+
   onBreathDone(cb: () => void): void {
     this.breath.onBreathDone(() => cb());
   }

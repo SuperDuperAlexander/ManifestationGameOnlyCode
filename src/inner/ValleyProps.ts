@@ -29,7 +29,7 @@ export interface ShadowSpot {
   strength: number;
 }
 
-interface Placement {
+export interface Placement {
   x: number;
   y: number;
   z: number;
@@ -40,6 +40,31 @@ interface Placement {
   tiltX?: number;
   tiltZ?: number;
   tint: Rgb;
+}
+
+/** Puts the placements on a template mesh as frozen thin instances (one draw call). */
+export function placeThin(template: Mesh, items: Placement[], material: ShaderMaterial): void {
+  const matrices = new Float32Array(items.length * 16);
+  const colors = new Float32Array(items.length * 4);
+  const q = new Quaternion();
+  const s = new Vector3();
+  const t = new Vector3();
+  const m = new Matrix();
+  items.forEach((it, i) => {
+    const st = it.stretch ?? [1, 1, 1];
+    s.set(it.scale * st[0], it.scale * st[1], it.scale * st[2]);
+    Quaternion.RotationYawPitchRollToRef(it.rotY, it.tiltX ?? 0, it.tiltZ ?? 0, q);
+    t.set(it.x, it.y, it.z);
+    Matrix.ComposeToRef(s, q, t, m);
+    m.copyToArray(matrices, i * 16);
+    colors.set([it.tint[0], it.tint[1], it.tint[2], 1], i * 4);
+  });
+  template.thinInstanceSetBuffer('matrix', matrices, 16, true);
+  template.thinInstanceSetBuffer('color', colors, 4, true);
+  template.thinInstanceRefreshBoundingInfo(false);
+  template.material = material;
+  template.isPickable = false;
+  template.freezeWorldMatrix();
 }
 
 /**
@@ -72,27 +97,7 @@ export class ValleyProps {
   }
 
   private add(template: Mesh, items: Placement[], material: ShaderMaterial): void {
-    const matrices = new Float32Array(items.length * 16);
-    const colors = new Float32Array(items.length * 4);
-    const q = new Quaternion();
-    const s = new Vector3();
-    const t = new Vector3();
-    const m = new Matrix();
-    items.forEach((it, i) => {
-      const st = it.stretch ?? [1, 1, 1];
-      s.set(it.scale * st[0], it.scale * st[1], it.scale * st[2]);
-      Quaternion.RotationYawPitchRollToRef(it.rotY, it.tiltX ?? 0, it.tiltZ ?? 0, q);
-      t.set(it.x, it.y, it.z);
-      Matrix.ComposeToRef(s, q, t, m);
-      m.copyToArray(matrices, i * 16);
-      colors.set([it.tint[0], it.tint[1], it.tint[2], 1], i * 4);
-    });
-    template.thinInstanceSetBuffer('matrix', matrices, 16, true);
-    template.thinInstanceSetBuffer('color', colors, 4, true);
-    template.thinInstanceRefreshBoundingInfo(false);
-    template.material = material;
-    template.isPickable = false;
-    template.freezeWorldMatrix();
+    placeThin(template, items, material);
     this.meshes.push(template);
   }
 
@@ -306,7 +311,7 @@ export class ValleyProps {
  * and a crown of soft clumps. Each clump is shaded on its own, so the crown
  * reads as layered cut-paper clouds. About 5 m tall.
  */
-function roundTree(scene: Scene): Mesh {
+export function roundTree(scene: Scene): Mesh {
   const wood: Mesh[] = [];
   const trunk = MeshBuilder.CreateCylinder('tree.trunk', { height: 2.4, diameterTop: 0.3, diameterBottom: 0.5, tessellation: 7 }, scene);
   trunk.position.y = 1.2;
@@ -353,7 +358,7 @@ function roundTree(scene: Scene): Mesh {
 }
 
 /** Cypress: a tall soft flame of dark green. About 5.8 m tall. */
-function cypress(scene: Scene): Mesh {
+export function cypress(scene: Scene): Mesh {
   const trunk = MeshBuilder.CreateCylinder('cyp.trunk', { height: 1.2, diameterTop: 0.14, diameterBottom: 0.24, tessellation: 6 }, scene);
   trunk.position.y = 0.6;
   trunk.bakeCurrentTransformIntoVertices();
@@ -376,7 +381,7 @@ function cypress(scene: Scene): Mesh {
 }
 
 /** A low bush of three to four soft clumps. About 1.2 m tall. */
-function bush(scene: Scene): Mesh {
+export function bush(scene: Scene): Mesh {
   const parts: Mesh[] = [];
   const blobs: [number, number, number, number][] = [
     [0, 0.55, 0, 0.75],
@@ -399,7 +404,7 @@ function bush(scene: Scene): Mesh {
 }
 
 /** A soft, lumpy rock. About 1 m wide. */
-function rock(scene: Scene, seed: number): Mesh {
+export function rock(scene: Scene, seed: number): Mesh {
   const m = MeshBuilder.CreateSphere('valley.rock', { diameter: 1, segments: 5, updatable: true }, scene);
   const pos = m.getVerticesData(VertexBuffer.PositionKind)!;
   for (let i = 0; i < pos.length; i += 3) {
@@ -423,7 +428,7 @@ function rock(scene: Scene, seed: number): Mesh {
 }
 
 /** A tuft of grass: a few thin blades. Normals point up, so it takes the ground's light. */
-function grassTuft(scene: Scene, rnd: Random): Mesh {
+export function grassTuft(scene: Scene, rnd: Random): Mesh {
   const positions: number[] = [];
   const colors: number[] = [];
   const indices: number[] = [];
@@ -458,7 +463,7 @@ function grassTuft(scene: Scene, rnd: Random): Mesh {
 }
 
 /** A small white flower on a thin stem. */
-function flower(scene: Scene): Mesh {
+export function flower(scene: Scene): Mesh {
   const stem = MeshBuilder.CreateCylinder('fl.stem', { height: 0.24, diameter: 0.02, tessellation: 3 }, scene);
   stem.position.y = 0.12;
   stem.bakeCurrentTransformIntoVertices();

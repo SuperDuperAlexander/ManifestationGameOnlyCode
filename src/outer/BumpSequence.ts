@@ -2,6 +2,7 @@ import type { Scene } from '@babylonjs/core/scene';
 import { TUNING } from '../config/tuning';
 import { CitizenVisual } from '../npc/CitizenVisual';
 import { TOWN, type CitizenDef } from './townLayout';
+import { walkHeight } from './townTerrain';
 
 export const STRANGER_DEF: CitizenDef = {
   colors: 'muted', head: 'cap', beard: false, torch: false,
@@ -45,7 +46,7 @@ export class BumpSequence {
 
   /** True once the player has crossed the trigger line on Main Street (and the bump has not started). */
   bumpTriggerReached(playerPos: { x: number; z: number }): boolean {
-    return this.phase === 'idle' && playerPos.z >= TOWN.bump.triggerZ && Math.abs(playerPos.x) < TOWN.areas.street.maxX;
+    return this.phase === 'idle' && playerPos.z >= TOWN.bump.triggerZ && Math.abs(playerPos.x) < TOWN.bump.halfX;
   }
 
   start(onImpact: () => void, onDone: () => void): void {
@@ -111,7 +112,7 @@ export class BumpSequence {
   }
 
   private place(dt: number, speed: number): void {
-    this.stranger.root.position.set(this.x, 0, this.z);
+    this.stranger.root.position.set(this.x, walkHeight(this.x, this.z), this.z);
     this.stranger.update(dt, { speed, heading: this.heading, agitation: 0.1, far: false, torchRaised: false });
   }
 }

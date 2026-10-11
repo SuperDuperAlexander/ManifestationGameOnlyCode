@@ -51,6 +51,16 @@ export const SHADES = {
   lanternWarm: '#F2A24A',
   /** Steam lightning: small gold-orange zig-zag bolts. */
   boltOrange: '#F2A23A',
+  /** Town houses: terracotta roof tile, dark and light. */
+  roofTile: '#B85F44',
+  roofTileLight: '#CC8260',
+  /** Town houses: warm wood (beams, shutters, balconies) and its dark side. */
+  timber: '#8A5E42',
+  timberDark: '#5E4030',
+  /** Town houses: dusky window glass. */
+  glass: '#6F86A6',
+  /** Town houses: soft leaf green for flower boxes. */
+  leaf: '#7F9460',
 } as const;
 
 export function color3(hex: string): Color3 {

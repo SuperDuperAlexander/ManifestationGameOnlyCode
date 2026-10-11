@@ -34,6 +34,7 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - **Steps 3 + 4 done**: 8 citizens with torches and steam mirror the anger (town 47 draw calls, 60 fps). Inner Tree, burned root, Source stream, Anger Imp (raging / calming / calm). Inner 34–39 draw calls.
 - **Step 5 done**: whole PoC playable, beats 0–9, both orders (scenarios `lantern`, `lantern-alt`). Town 42–58 draw calls, inner 31–42, 60 fps.
 - **Step 6 done**: touch controls, synth sounds, wave sources, phone grass cut. Max 59 draw calls (desktop and mobile emulation), 60 fps on this PC.
+- **Look pass done** (after Alexander's feedback): town has valley layout + charm, nicer houses, visible breath ring, start screen. Town 42–62 draw calls, 60 fps.
 - **Next: Step 7 = playtest by Alexander** on desktop and a real phone. Then tune `TUNING.anger`, `TUNING.waves`, `TUNING.citizens` only.
 
 ## 3. Next step — start here
@@ -52,3 +53,5 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 ## 5. Feedback log
 
 (Add Alexander's playtest feedback here, newest first.)
+
+- 2026-10-11: "Nothing happened" — story waited for a first breath, hint was missed; breathing was not shown. Town looked like a greybox. → Fixed in the look pass (L18).

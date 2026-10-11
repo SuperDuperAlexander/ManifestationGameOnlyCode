@@ -19,6 +19,8 @@ import { LAYOUT } from '../inner/innerLayout';
 import { WaveField } from '../thought/WaveField';
 import { Anger } from './Anger';
 import { HeatMood } from './HeatMood';
+import { BreathGuide } from '../ui/BreathGuide';
+import { StartScreen } from '../ui/StartScreen';
 import { HitTint } from '../ui/HitTint';
 import { Lantern } from './Lantern';
 import { Story } from './Story';
@@ -47,10 +49,13 @@ export class Game {
   private readonly lanterns: Lantern[];
   private lastLine = '';
   private hand: HandButton | null = null;
+  private readonly guide: BreathGuide;
+  private readonly touch: boolean;
 
   constructor(canvas: HTMLCanvasElement, ui: HTMLElement) {
     this.engine = new Engine(canvas, true, { stencil: false, powerPreference: 'high-performance', audioEngine: false });
     const touch = isTouchDevice();
+    this.touch = touch || new URLSearchParams(location.search).has('touch');
     this.perf = new Performance(this.engine, touch);
     this.outer = new Town(this.engine, canvas, ui);
     this.inner = new InnerValley(this.engine, canvas, ui);
@@ -59,6 +64,9 @@ export class Game {
     if (a !== null && Number.isFinite(parseFloat(a))) this.anger.set(parseFloat(a));
     this.fields.set('outer', new WaveField(this.outer, this.anger, TOWN.waveSource));
     this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource));
+    this.guide = new BreathGuide(ui);
+    const start = new StartScreen(ui);
+    const started = start.waitForStart();
     this.hitTint = new HitTint(ui);
     this.anger.on((e) => { if (e === 'hit') this.hitTint.flash(); });
     const events = new Events();
@@ -71,7 +79,16 @@ export class Game {
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
-      this.story.begin();
+      const dl = this.dialogue;
+      const t = this.touch;
+      this.guide.labels = {
+        holdIn: dl.line(t ? 'guideHoldIn' : 'guideHoldInDesktop'),
+        holdOut: dl.line(t ? 'guideHoldOut' : 'guideHoldOutDesktop'),
+        breatheIn: dl.line('guideIn'),
+        breatheOut: dl.line('guideOut'),
+      };
+      start.setTexts(dl.line('startTitle'), dl.line('startSubtitle'), dl.line('startPrompt'));
+      void started.then(() => this.story.begin());
     });
     if (new URLSearchParams(location.search).has('reveal')) this.inner.reveal();
     this.applyShared(this.outer);
@@ -195,6 +212,8 @@ export class Game {
       this.hand.setMode(near && this.glowTargets().length > 0 ? 'interact' : near && (field?.count ?? 0) > 0 ? 'push' : 'dim');
     }
     this.story.update(dt, shown.id, this.transition.active);
+    this.guide.wanted = this.story.needsBreathHelp();
+    this.guide.update(dt, shown.breathSystem());
     shown.scene.render();
     const o = this.overlays.get(shown.id);
     if (o) {

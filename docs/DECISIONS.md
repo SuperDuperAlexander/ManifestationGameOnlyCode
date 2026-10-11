@@ -64,4 +64,9 @@ Waves come more often near their source (alley / imp) and 40 % start at agitated
 Phones get 45 % of the inner grass. Memory stays flat after 20 world switches (43.5 → 43.3 MB).
 Known flaky test: `lantern-alt --mobile` once timed out on the apples (test reached the alley before it was shown). Not reproduced in 3 runs.
 
-(Add L18, … here.)
+**L18. Town = valley look and layout (Alexander, 2026-10-11).** The archived valley is the design guideline.
+Town sits in a basin with sandstone cliffs, curving uphill Main Street, raised round square, stream + waterfall + stone bridge at the Town Edge.
+All town surfaces use the valley shader, sky, haze and mood. Houses come from `src/outer/HouseBuilder.ts` (18 houses, 3 draw calls). Props from `TownProps.ts`.
+Breath ring (`BreathGuide`) and start screen are back. Option B: story order stays; breath and Look Within hints repeat every 12 s until done; a gold beacon on Main Street shows where to go.
+
+(Add L19, … here.)

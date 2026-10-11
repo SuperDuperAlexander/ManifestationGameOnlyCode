@@ -10,6 +10,7 @@ import { PALETTE, SHADES, color3 } from '../config/palette';
 import { TUNING } from '../config/tuning';
 import { CitizenVisual } from '../npc/CitizenVisual';
 import { TOWN, type CitizenDef } from './townLayout';
+import { ALLEY_Y } from './townTerrain';
 
 const CHILD_DEF: CitizenDef = {
   colors: 'earthy', head: 'hair', beard: false, torch: false,
@@ -59,6 +60,7 @@ export class Alley {
   constructor(scene: Scene, private readonly stranger: CitizenVisual) {
     const L = TOWN.alleyStory;
     this.group = new TransformNode('alley.group', scene);
+    this.group.position.y = ALLEY_Y;
     this.child = new CitizenVisual(scene, CHILD_DEF);
     this.child.root.parent = this.group;
     this.child.root.position.set(L.child.x, 0.02, L.child.z);
@@ -101,7 +103,7 @@ export class Alley {
     this.group.setEnabled(true);
     const S = TOWN.alleyStory.stranger;
     this.stranger.root.setEnabled(true);
-    this.stranger.root.position.set(S.x, 0.02, S.z);
+    this.stranger.root.position.set(S.x, ALLEY_Y + 0.02, S.z);
     this.strangerStanding = false;
   }
 
@@ -169,7 +171,7 @@ export class Alley {
     const s = this.stranger;
     s.update(dt, { speed: 0, heading: L.stranger.heading, agitation: this.strangerStanding ? 0 : 0.2, far: false, torchRaised: false });
     s.root.scaling.y = s.root.scaling.x * (this.strangerStanding ? 1 : KNEEL_Y);
-    s.root.position.y = 0.02;
+    s.root.position.y = ALLEY_Y + 0.02;
 
     // Tears: small drops from the cheek, falling.
     if (this.crying) {

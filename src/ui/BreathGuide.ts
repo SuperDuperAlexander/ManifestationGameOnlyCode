@@ -15,6 +15,8 @@ export class BreathGuide {
   private idleTime = 0;
   /** Set by the game when a fog is close, so the guide stays visible there. */
   wanted = false;
+  /** Teaching labels (from en.json): shown while idle and `wanted`, so the player knows what to hold. */
+  labels = { holdIn: '', holdOut: '', breatheIn: 'breathe in', breatheOut: 'breathe out' };
 
   constructor(parent: HTMLElement) {
     this.el = document.createElement('div');
@@ -46,6 +48,9 @@ export class BreathGuide {
     const close = Math.abs(breath.guideLevel - breath.breathLevel) < 0.18;
     this.el.classList.toggle('in-rhythm', close && breath.state !== 'idle');
     const phase = breath.guidePhase < 0.5 ? 'in' : 'out';
-    this.label.textContent = breath.state === 'idle' ? '' : phase === 'in' ? 'breathe in' : 'breathe out';
+    const L = this.labels;
+    if (breath.state === 'idle') this.label.textContent = this.wanted ? (phase === 'in' ? L.holdIn : L.holdOut) : '';
+    else this.label.textContent = phase === 'in' ? L.breatheIn : L.breatheOut;
+    this.label.style.opacity = this.label.textContent ? '1' : '0';
   }
 }

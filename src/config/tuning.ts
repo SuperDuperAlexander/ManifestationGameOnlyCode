@@ -346,6 +346,13 @@ export const TUNING = {
     slopeRise: 0.9,
     /** Camera height above ground stays as in TUNING.camera. Spawn point is in townLayout.ts. */
     maxDrawCalls: 60,
+    /** Look: same painted valley style as the inner world. */
+    look: {
+      /** World mood (0 normal .. 1 golden). */
+      mood: 0.25,
+      /** Centre of the ring of far mesas. */
+      mesaCentre: { x: -7, z: 28 },
+    },
   },
 
   /** Inner World (GAME_DESIGN 5.2): the small valley inside. Layout positions: src/inner/innerLayout.ts. */
@@ -488,6 +495,12 @@ export const TUNING = {
   },
 
   story: {
+    /** Hint is shown again after this many seconds of silence until the step is done. */
+    hintRepeatS: 12,
+    /** Gold guide light on Main Street: brightness waiting (before beat 2) and lit. */
+    beaconDim: 0.22,
+    beaconLit: 0.85,
+    beaconRadius: 3.2,
     /** Stranger run speed (m/s) and the pause after the bump (s). */
     strangerRunSpeed: 8,
     strangerStaggerS: 0.25,
@@ -547,6 +560,37 @@ export const TUNING = {
     relightGain: 0.08,
     /** Minimum time between two push or pass cues (s). */
     minGapS: 0.25,
+  },
+
+  /** Small charming details in the town (TownProps). */
+  townProps: {
+    /** Height of the ground outside the town walls (same as the 'town.outside' quad in Town.ts). */
+    outsideY: -1.2,
+    /** Grass tufts spread over the meadow strip. */
+    meadowTufts: 320,
+    /** Grass tufts along wall bases (inside and outside). */
+    wallTufts: 140,
+    /** White flowers in small clusters. */
+    flowers: 110,
+    /** Soft stones. */
+    stones: 18,
+    /** Half width of the lane from the start to the arch that stays free of bushes and stones (m). */
+    laneHalf: 2.4,
+  },
+
+  houses: {
+    /** Height of the stone plinth (m). */
+    plinthH: 0.34,
+    /** Height of one floor (m). */
+    floorH: 2.9,
+    /** Walls lean this much at the top (m) and get this much narrower (fraction). */
+    lean: 0.05, taper: 0.035,
+    /** Size of the chamfer on the wall corners (m) and random wobble of wall points (m). */
+    bevel: 0.17, wobble: 0.02,
+    /** Roof: slope (rise per run), overhang at the eaves and at the gable ends (m), lift of each tile row (m). */
+    roofPitch: 0.62, overhang: 0.55, gableOverhang: 0.24, tileLift: 0.055, tileRowLen: 0.42,
+    /** Chances (0..1) for the extras. */
+    chimney: 0.55, balcony: 0.45, stair: 0.25, awning: 0.32, archWindow: 0.35, flowers: 0.65, shutters: 0.75,
   },
 
   anger: {

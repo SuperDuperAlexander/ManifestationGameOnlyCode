@@ -15,7 +15,7 @@ export interface CitizenContext {
   colliders: TownColliders;
   steam: SteamPool;
   others: readonly Citizen[];
-  groundY: (z: number) => number;
+  groundY: (x: number, z: number) => number;
 }
 
 /**
@@ -160,7 +160,7 @@ export class Citizen {
         this.impulseZ += nz * T.bumpShove;
         o.impulseX -= nx * T.bumpShove;
         o.impulseZ -= nz * T.bumpShove;
-        ctx.steam.puff(this.tmp.set(this.x, ctx.groundY(this.z) + 1.4, this.z), 1);
+        ctx.steam.puff(this.tmp.set(this.x, ctx.groundY(this.x, this.z) + 1.4, this.z), 1);
         this.steamTimer = 0.2;
       }
     }
@@ -176,7 +176,7 @@ export class Citizen {
 
     // Distance to the player decides detail.
     const far = Math.hypot(this.x - ctx.playerX, this.z - ctx.playerZ) > T.lodDistance;
-    const y = ctx.groundY(this.z);
+    const y = ctx.groundY(this.x, this.z);
     this.visual.root.position.set(this.x, y, this.z);
     const shownSpeed = Math.min(this.speed, Math.hypot(vx, vz));
     this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && a > T.mediumAbove * 0.6 });

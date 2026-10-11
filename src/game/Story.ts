@@ -10,6 +10,7 @@ import type { InnerValley } from '../inner/InnerValley';
 import type { Town } from '../outer/Town';
 import { TOWN } from '../outer/townLayout';
 import { EndCard } from '../ui/EndCard';
+import { Beacon } from './Beacon';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import type { Anger } from './Anger';
 import type { Lantern } from './Lantern';
@@ -44,6 +45,8 @@ export class Story {
   private lookWithinOpen = false;
   private innerVisited = false;
   private begun = false;
+  private readonly beacon: Beacon;
+  private hintT = 0;
 
   // Imp
   private impBreaths = 0;
@@ -68,6 +71,7 @@ export class Story {
     this.sound = new SoundCues(deps.anger);
     this.endCard = new EndCard(deps.ui);
     this.bubble = new SpeechBubble(deps.ui, deps.engine);
+    this.beacon = new Beacon(deps.outer.scene, TOWN.beacon.x, TOWN.beacon.z, deps.outer.groundY(TOWN.beacon.x, TOWN.beacon.z));
     // Before the bump both trees are healthy and the root is not burned (reveal rule).
     deps.outer.setOldTreeBranchHealth(1);
     deps.inner.setBranchHealth(1);
@@ -85,6 +89,11 @@ export class Story {
   /** Q (Look Within) is locked until the beat-2 invitation. */
   canLookWithin(): boolean {
     return this.lookWithinOpen;
+  }
+
+  /** True until the first full breath is done (the breath guide stays on). */
+  needsBreathHelp(): boolean {
+    return this.begun && !this.lookWithinOpen;
   }
 
   /** Call once the dialogue table is loaded. Starts beat 0. */
@@ -141,6 +150,22 @@ export class Story {
     this.shownId = shown;
     const d = this.d;
     const f = this.state.flags;
+
+    // Gold guide light on Main Street: dim before beat 2, warm from beat 2 on, gone after the bump.
+    this.beacon.setLit(this.state.beat >= 2);
+    if (f.bumped) this.beacon.hide();
+    this.beacon.update(dt);
+
+    // Gentle repeat of the current hint until the step is done.
+    const needBreath = this.needsBreathHelp();
+    const needLook = this.lookWithinOpen && !this.innerVisited && !f.bumped && this.state.beat <= 1;
+    if (shown === 'outer' && !busy && (needBreath || needLook)) {
+      this.hintT += dt;
+      if (this.hintT >= TUNING.story.hintRepeatS && !d.dialogue.busy) {
+        this.hintT = 0;
+        this.hint(needBreath ? 'hintBreathe' : 'hintLookWithin');
+      }
+    } else this.hintT = 0;
 
     // Beat 3: the bump, once the player crosses the line on Main Street.
     if (shown === 'outer' && !busy && this.lookWithinOpen && !f.bumped && d.outer.bump.bumpTriggerReached(d.outer.playerPosition())) {
