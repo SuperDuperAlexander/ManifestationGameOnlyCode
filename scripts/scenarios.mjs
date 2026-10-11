@@ -214,6 +214,31 @@ export default function scenarios({ wait, shot, hold, page }) {
       if (failed) process.exitCode = 3;
       else console.log('lookwithin: PASS');
     },
+    /** Touch UI: buttons visible in portrait and landscape (run with --mobile and ?touch). */
+    async touchui() {
+      await page.keyboard.press('Enter');
+      await wait(1000);
+      await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
+      await lw(() => window.__lw.debugBreath());
+      await wait(2500);
+      await shot('touch-portrait');
+      await page.setViewportSize({ width: 915, height: 412 });
+      await wait(1500);
+      await shot('touch-landscape');
+      const bad = await lw(() => {
+        const r = (c) => document.querySelector(c)?.getBoundingClientRect();
+        const line = r('.dialogue-line');
+        if (!line) return 'no dialogue line';
+        for (const c of ['.hand-button', '.breath-button', '.look-button']) {
+          const b = r(c);
+          if (!b) return `missing ${c}`;
+          if (b.width < 48 || b.height < 48) return `${c} smaller than 48 px`;
+          if (b.left < line.right && b.right > line.left && b.top < line.bottom && b.bottom > line.top) return `${c} overlaps text line`;
+        }
+        return '';
+      });
+      if (bad) { console.error(`FAIL: ${bad}`); process.exitCode = 3; } else console.log('touchui: PASS');
+    },
     /** Breathing: inhale 4 s, exhale 4 s, two rounds. */
     async breath() {
       await page.keyboard.down('Space');
@@ -443,7 +468,9 @@ export default function scenarios({ wait, shot, hold, page }) {
       await waitWorld('outer');
       await wait(500);
 
-      // Go to the inner world and stage the imp.
+      // Go to the inner world and stage the imp. Q is locked until the first breath.
+      await lw(() => window.__lw.debugBreath());
+      await wait(300);
       await lw(() => window.__lw.toggle());
       await waitWorld('inner');
       await lw(() => window.__lw.reveal());

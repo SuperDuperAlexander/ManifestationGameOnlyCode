@@ -7,6 +7,7 @@ import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import type { Scene } from '@babylonjs/core/scene';
 import { TUNING } from '../config/tuning';
+import { isTouchDevice } from '../core/Performance';
 import { Random } from '../core/Random';
 import { noise2 } from './noise';
 import { paintFlat, paintGradient, rgb, type Rgb } from './colors';
@@ -57,7 +58,11 @@ export class ValleyProps {
     private readonly terrain: ValleyTerrain,
     materials: { plants: ShaderMaterial; solid: ShaderMaterial; grass: ShaderMaterial },
   ) {
-    const c = TUNING.inner.counts;
+    const c: { -readonly [K in keyof typeof TUNING.inner.counts]: number } = { ...TUNING.inner.counts };
+    if (isTouchDevice() || new URLSearchParams(location.search).has('touch')) {
+      c.grassTufts = Math.round(c.grassTufts * TUNING.performance.mobileGrassShare);
+      c.flowers = Math.round(c.flowers * TUNING.performance.mobileFlowerShare);
+    }
     this.add(roundTree(scene), this.placeRoundTrees(c.roundTrees), materials.plants);
     this.add(cypress(scene), this.placeCypresses(c.cypresses), materials.plants);
     this.add(bush(scene), this.placeBushes(c.bushes), materials.plants);

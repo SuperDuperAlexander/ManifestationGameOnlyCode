@@ -1,0 +1,16 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug&touch --scenario lookwithin --out screenshots/step6/final/lookwithin-mobile --mobile
+
+screenshot: screenshots\step6\final\lookwithin-mobile\outer-start.png
+outer player position P: {"x":0,"y":-0.22383132525588686,"z":4.766880857414967}
+draw calls outer: 53
+screenshot: screenshots\step6\final\lookwithin-mobile\inner.png
+draw calls inner: 31
+screenshot: screenshots\step6\final\lookwithin-mobile\outer-back.png
+outer player position back: {"x":0,"y":-0.22383132525588686,"z":4.766880857414967}
+position drift: 0.000 m (limit 0.05)
+lookwithin: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

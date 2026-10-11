@@ -16,6 +16,8 @@ import { PlayerController } from '../player/PlayerController';
 import { PlayerVisual } from '../player/PlayerVisual';
 import { createToonMaterial, type ToonMaterial } from '../shaders/toonShader';
 import { Joystick } from '../ui/Joystick';
+import { BreathButton } from '../ui/BreathButton';
+import { isTouchDevice } from '../core/Performance';
 import type { World } from '../game/World';
 import { TownColliders } from './Colliders';
 import { TOWN, type HouseDef } from './townLayout';
@@ -80,7 +82,7 @@ export class Town implements World {
 
     // Touch controls (left half walks). Keyboard works through the InputManager.
     let right: HTMLElement | null = null;
-    if (matchMedia('(pointer: coarse)').matches) {
+    if (this.touch) {
       right = document.createElement('div');
       right.className = 'touch-zone touch-right';
       ui.appendChild(right);
@@ -90,6 +92,7 @@ export class Town implements World {
       ui.appendChild(left);
       this.zones.push(left);
       new Joystick(ui, this.input, left);
+      new BreathButton(ui, this.input);
     }
     this.input.attach();
     // Citizens mirror the anger (GAME_DESIGN 6.1).
@@ -108,6 +111,7 @@ export class Town implements World {
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
+  private readonly touch = isTouchDevice() || new URLSearchParams(location.search).has('touch');
   private oldTree: TreeHandle | null = null;
   private jet: Mesh | null = null;
   private fountainLevel: number = TUNING.story.fountainLow;
@@ -153,7 +157,7 @@ export class Town implements World {
     const my = this.input.moveY;
     this.rotated.moveX = mx * Math.cos(yaw) + my * Math.sin(yaw);
     this.rotated.moveY = -mx * Math.sin(yaw) + my * Math.cos(yaw);
-    this.breath.update(dt, { inhale: this.input.inhaleHeld, exhale: this.input.exhaleHeld, releaseExhales: matchMedia('(pointer: coarse)').matches });
+    this.breath.update(dt, { inhale: this.input.inhaleHeld, exhale: this.input.exhaleHeld, releaseExhales: this.touch });
     this.slowTime = Math.max(0, this.slowTime - dt);
     const slow = this.slowTime > 0 ? this.slowFactor : 1;
     this.controller.speedFactor = (this.breath.state === 'idle' ? 1 : 0.6) * slow;
@@ -193,6 +197,13 @@ export class Town implements World {
 
   teleport(x: number, z: number): void {
     this.controller.teleport(x, z);
+  }
+
+  /** Positions of citizens who are agitated enough to send Thought Waves (WaveField reads this). */
+  waveSpots(minAgitation: number): { x: number; z: number }[] {
+    const out: { x: number; z: number }[] = [];
+    for (const c of this.citizens) if (c.agitation > minAgitation) out.push({ x: c.x, z: c.z });
+    return out;
   }
 
   /** Town anger 0..1. Game calls this every frame (or on change). Citizens mirror it. */

@@ -1,0 +1,27 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug&anger=0.7 --scenario waves --out screenshots/step6/final/waves
+
+anger start: 0.700
+step a: passes=3, done=true
+anger after breathing: 0.550
+screenshot: screenshots\step6\final\waves\a-breathe.png
+draw calls at a-breathe: 55
+pushLevel after 3 pushes: 2
+screenshot: screenshots\step6\final\waves\b-pushed.png
+draw calls at b-pushed: 54
+step c: done=true, pushLevel=0
+screenshot: screenshots\step6\final\waves\c-reset.png
+draw calls at c-reset: 56
+step d: pushLevel 2
+player position after hit: {"x":0.2883477138549847,"y":-0.6175104308678412,"z":-0.9195951125354833}
+player moved 2.477 m while holding W
+screenshot: screenshots\step6\final\waves\d-shove.png
+draw calls at d-shove: 55
+inner: passes=3, anger 1.000 -> 0.850
+screenshot: screenshots\step6\final\waves\inner-waves.png
+draw calls at inner-waves: 36
+waves: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

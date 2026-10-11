@@ -13,6 +13,7 @@ import { EndCard } from '../ui/EndCard';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import type { Anger } from './Anger';
 import type { Lantern } from './Lantern';
+import { SoundCues } from './SoundCues';
 import { StoryState } from './StoryState';
 import type { WorldId } from './World';
 
@@ -60,9 +61,11 @@ export class Story {
   private branchT = -1;
   private endCardT = -1;
   private lastLineKey = '';
+  private readonly sound: SoundCues;
 
   constructor(deps: StoryDeps) {
     this.d = deps;
+    this.sound = new SoundCues(deps.anger);
     this.endCard = new EndCard(deps.ui);
     this.bubble = new SpeechBubble(deps.ui, deps.engine);
     // Before the bump both trees are healthy and the root is not burned (reveal rule).
@@ -261,6 +264,7 @@ export class Story {
     d.inner.reveal();
     d.outer.setOldTreeBranchHealth(0);
     d.inner.setBranchHealth(0);
+    this.sound.impGrowl();
     this.say('bumpAfter', true);
   }
 
@@ -282,6 +286,7 @@ export class Story {
     if (this.state.flags.impCalm) return;
     this.state.set('impCalm');
     d.inner.setImpState('calm');
+    this.sound.calmChime();
     this.say('impCalm', true);
     this.fading = true;
     this.fadeFrom = d.anger.value;
@@ -315,13 +320,17 @@ export class Story {
     const inner = this.d.inner;
     if (this.flareBack > 0) {
       this.flareBack -= dt;
-      if (this.flareBack <= 0 && !this.state.flags.impCalm) inner.setImpState('raging');
+      if (this.flareBack <= 0 && !this.state.flags.impCalm) {
+        inner.setImpState('raging');
+        this.sound.impGrowl();
+      }
     }
     if (this.calmingIdle > 0 && !this.state.flags.impCalm) {
       this.calmingIdle -= dt;
       if (this.calmingIdle <= 0) {
         this.impBreaths = 0;
         inner.setImpState('raging');
+        this.sound.impGrowl();
       }
     }
   }
@@ -396,6 +405,7 @@ export class Story {
     this.d.innerLantern.relightWarm();
     this.state.set('lanternRelit');
     this.state.reach(8);
+    this.sound.lanternRelight();
     this.say('lanternRelit');
   }
 

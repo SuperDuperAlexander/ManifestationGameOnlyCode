@@ -1,0 +1,26 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug --scenario lantern-alt --out screenshots/step6/final/lantern-alt
+
+screenshot: screenshots\step6\final\lantern-alt\b0-wake.png
+draw calls at b0-wake: 53
+screenshot: screenshots\step6\final\lantern-alt\b3-bump.png
+draw calls at b3-bump: 53
+screenshot: screenshots\step6\final\lantern-alt\b4-waves.png
+draw calls at b4-waves: 59
+screenshot: screenshots\step6\final\lantern-alt\b5-tree-weak.png
+draw calls at b5-tree-weak: 52
+screenshot: screenshots\step6\final\lantern-alt\b7-alley.png
+draw calls at b7-alley: 43
+screenshot: screenshots\step6\final\lantern-alt\b2-inner-calm.png
+draw calls at b2-inner-calm: 41
+screenshot: screenshots\step6\final\lantern-alt\b6-imp.png
+draw calls at b6-imp: 39
+screenshot: screenshots\step6\final\lantern-alt\b8-calm.png
+draw calls at b8-calm: 43
+screenshot: screenshots\step6\final\lantern-alt\b9-end.png
+draw calls at b9-end: 53
+lantern-alt: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

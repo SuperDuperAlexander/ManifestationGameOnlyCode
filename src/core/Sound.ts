@@ -1,30 +1,67 @@
+import { TUNING } from '../config/tuning';
+
 /**
- * Sound hooks. For now only soft synthesized tones (no audio files):
- * a chime when the fairy shows something, and a warm chord when a fog is released.
- * Music, breath sounds and real samples can plug in here later.
+ * Sound hooks. Only soft synthesized tones and noise (no audio files).
+ * Game cues live in src/game/SoundCues.ts. Everything fails silently without audio.
  */
 export class Sound {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
+  private noiseBuf: AudioBuffer | null = null;
   muted = false;
+
+  get ready(): boolean {
+    return this.ctx !== null && this.master !== null;
+  }
 
   /** Browsers only allow audio after a key press or tap. */
   unlock(): void {
     if (this.ctx) {
-      void this.ctx.resume();
+      void this.ctx.resume().catch(() => undefined);
       return;
     }
     try {
       this.ctx = new AudioContext();
       this.master = this.ctx.createGain();
-      this.master.gain.value = 0.32;
+      this.master.gain.value = TUNING.sound.master;
       this.master.connect(this.ctx.destination);
     } catch {
       this.ctx = null;
     }
   }
 
-  private tone(freq: number, start: number, length: number, gain: number, type: OscillatorType = 'sine'): void {
+  /** Soft filtered noise that sweeps from one frequency to another (a breath of wind). */
+  sweep(from: number, to: number, start: number, length: number, gain: number): void {
+    const ctx = this.ctx;
+    if (!ctx || !this.master || this.muted) return;
+    try {
+      if (!this.noiseBuf) {
+        const n = Math.floor(ctx.sampleRate * 1.0);
+        this.noiseBuf = ctx.createBuffer(1, n, ctx.sampleRate);
+        const d = this.noiseBuf.getChannelData(0);
+        for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+      }
+      const t = ctx.currentTime + start;
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuf;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.Q.value = 1.2;
+      filter.frequency.setValueAtTime(from, t);
+      filter.frequency.exponentialRampToValueAtTime(to, t + length);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(gain, t + length * 0.3);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + length);
+      src.connect(filter).connect(g).connect(this.master);
+      src.start(t);
+      src.stop(t + length + 0.05);
+    } catch {
+      /* silent */
+    }
+  }
+
+  tone(freq: number, start: number, length: number, gain: number, type: OscillatorType = 'sine'): void {
     const ctx = this.ctx;
     if (!ctx || !this.master || this.muted) return;
     const t = ctx.currentTime + start;

@@ -528,6 +528,27 @@ export const TUNING = {
     fountainHigh: 1,
   },
 
+  /** Soft synth cues (src/core/Sound.ts, src/game/SoundCues.ts). Keep all quiet. */
+  sound: {
+    /** Overall level of every cue (gain). */
+    master: 0.3,
+    /** Push: low soft thud. */
+    pushGain: 0.1,
+    /** A wave passes: soft falling tone. */
+    passGain: 0.05,
+    /** Wave whoosh (noise). */
+    whooshGain: 0.035,
+    /** Imp growl: low, short. Not more often than growlGapS. */
+    growlGain: 0.08,
+    growlGapS: 6,
+    /** Calm chime when the imp is calm. */
+    chimeGain: 0.1,
+    /** Lantern relit: warm soft chord. */
+    relightGain: 0.08,
+    /** Minimum time between two push or pass cues (s). */
+    minGapS: 0.25,
+  },
+
   anger: {
     onBump: 0.7, floorBeforeHelp: 0.35,
     push: 0.08, hit: 0.02, pass: -0.05, afterHelp: -0.15,
@@ -550,6 +571,10 @@ export const TUNING = {
     pushRange: 6,            // metres: E pushes the nearest wave inside this
     passTime: 1.6,           // seconds a passing wave takes to dissolve
     returnSpeedGain: 0.2,    // +20 % speed per pushLevel
+    /** Waves come faster near the source (the alley): x1 far away, up to x(1+boost) within nearDist. */
+    proximity: { nearDist: 8, farDist: 45, boost: 1.2 },
+    /** Share of waves that start at an agitated citizen, and the agitation needed. */
+    citizenShare: 0.4, citizenAbove: 0.45,
     maxAge: 60,              // seconds before a wave fades out on its own
   },
   performance: {
@@ -560,5 +585,8 @@ export const TUNING = {
     lowFps: 38,
     highFps: 56,
     adaptInterval: 2.5,
+    /** Phones: share of grass tufts / flowers in the Inner World (fewer instances = less fill + vertex work). */
+    mobileGrassShare: 0.45,
+    mobileFlowerShare: 0.6,
   },
 } as const;

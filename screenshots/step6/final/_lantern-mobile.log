@@ -1,0 +1,26 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug --scenario lantern --out screenshots/step6/final/lantern-mobile --mobile
+
+screenshot: screenshots\step6\final\lantern-mobile\b0-wake.png
+draw calls at b0-wake: 53
+screenshot: screenshots\step6\final\lantern-mobile\b2-inner-calm.png
+draw calls at b2-inner-calm: 31
+screenshot: screenshots\step6\final\lantern-mobile\b3-bump.png
+draw calls at b3-bump: 53
+screenshot: screenshots\step6\final\lantern-mobile\b4-waves.png
+draw calls at b4-waves: 58
+screenshot: screenshots\step6\final\lantern-mobile\b5-tree-weak.png
+draw calls at b5-tree-weak: 47
+screenshot: screenshots\step6\final\lantern-mobile\b6-imp.png
+draw calls at b6-imp: 41
+screenshot: screenshots\step6\final\lantern-mobile\b7-alley.png
+draw calls at b7-alley: 43
+screenshot: screenshots\step6\final\lantern-mobile\b8-calm.png
+draw calls at b8-calm: 42
+screenshot: screenshots\step6\final\lantern-mobile\b9-end.png
+draw calls at b9-end: 48
+lantern: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

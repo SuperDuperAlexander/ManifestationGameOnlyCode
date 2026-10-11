@@ -58,4 +58,10 @@ Reveal + mirror: imp, burned root and BOTH dry branches appear only after the bu
 Town camera treats roofs as ground, so it never sits inside a wall. Torches keep a calm flame at anger 0 (design 7.7).
 Open: no touch button for interact yet; "waves thicker near the alley" not built (Step 6).
 
-(Add L17, … here.)
+**L17. Step 6.** Touch: hand button (push / interact), tap on glowing objects, `?touch` forces touch UI.
+Sounds: Web Audio synth only (`src/core/Sound.ts`, `src/game/SoundCues.ts`), starts after the first input.
+Waves come more often near their source (alley / imp) and 40 % start at agitated citizens.
+Phones get 45 % of the inner grass. Memory stays flat after 20 world switches (43.5 → 43.3 MB).
+Known flaky test: `lantern-alt --mobile` once timed out on the apples (test reached the alley before it was shown). Not reproduced in 3 runs.
+
+(Add L18, … here.)

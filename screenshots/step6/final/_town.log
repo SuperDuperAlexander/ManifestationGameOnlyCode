@@ -1,0 +1,12 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug --scenario town --out screenshots/step6/final/town
+
+screenshot: screenshots\step6\final\town\square-calm.png
+draw calls at square-calm: 51
+screenshot: screenshots\step6\final\town\square-angry.png
+draw calls at square-angry: 54
+town: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

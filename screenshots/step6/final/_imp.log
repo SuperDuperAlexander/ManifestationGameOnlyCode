@@ -1,0 +1,17 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug --scenario imp --out screenshots/step6/final/imp
+
+node:internal/modules/run_main:122
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 20000ms exceeded.
+    at waitWorld (D:\MyDrive\ALEXANDER\PROJEKTE\ManifestationGameOnlyCode\scripts\scenarios.mjs:6:10)
+    at imp (D:\MyDrive\ALEXANDER\PROJEKTE\ManifestationGameOnlyCode\scripts\scenarios.mjs:473:13)
+    at async file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-browser.mjs:80:3 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v22.13.1

@@ -9,6 +9,9 @@ import { WORLD_UNIFORMS } from '../shaders/paperShader';
 import { LookWithin } from '../transition/LookWithin';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { LookWithinButton } from '../ui/LookWithinButton';
+import { HandButton } from '../ui/HandButton';
+import { TapPicker, type TapTarget } from '../ui/TapPicker';
+import { TUNING } from '../config/tuning';
 import { DialogueSystem } from '../companion/DialogueSystem';
 import { Events } from '../core/Events';
 import { TOWN } from '../outer/townLayout';
@@ -43,6 +46,7 @@ export class Game {
   readonly story: Story;
   private readonly lanterns: Lantern[];
   private lastLine = '';
+  private hand: HandButton | null = null;
 
   constructor(canvas: HTMLCanvasElement, ui: HTMLElement) {
     this.engine = new Engine(canvas, true, { stencil: false, powerPreference: 'high-performance', audioEngine: false });
@@ -87,6 +91,13 @@ export class Game {
     if (touch || new URLSearchParams(location.search).has('touch')) {
       document.body.classList.add('touch');
       new LookWithinButton(ui, () => this.toggle());
+      this.hand = new HandButton(ui, () => this.press());
+      new TapPicker(
+        this.engine,
+        canvas,
+        () => ({ scene: this.current.scene, camera: this.current.camera, targets: this.glowTargets() }),
+        () => this.press(),
+      );
     }
 
     this.debugOn = new URLSearchParams(location.search).has('debug');
@@ -97,7 +108,7 @@ export class Game {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
       if (e.code === 'KeyQ') this.toggle();
-      if (e.code === 'KeyE' && !this.transition.active && !this.story.interact()) this.pushQueued = true;
+      if (e.code === 'KeyE') this.press();
       if (e.code === 'F3') {
         e.preventDefault();
         this.debugOn = !this.debugOn;
@@ -113,6 +124,32 @@ export class Game {
   toggle(): void {
     if (this.transition.active || !this.story.canLookWithin()) return;
     this.transition.start(this.current, this.current === this.outer ? this.inner : this.outer);
+  }
+
+  /** E / hand button / tap: interact with a glowing object, else push a wave. */
+  private press(): void {
+    if (this.transition.active) return;
+    if (!this.story.interact()) this.pushQueued = true;
+  }
+
+  /** Glowing objects the player can reach right now (tap targets). */
+  private glowTargets(): TapTarget[] {
+    const out: TapTarget[] = [];
+    if (this.current !== this.outer || this.transition.active) return out;
+    const f = this.story.state.flags;
+    const p = this.outer.playerPosition();
+    if (f.bumped && !f.helped) {
+      const i = this.outer.alley.nearestPickable(p);
+      if (i !== null) {
+        const a = TOWN.alleyStory.apples[i]!;
+        out.push({ x: a[0], y: 0.3, z: a[1] });
+      }
+    }
+    if (f.bumped && !f.delivered) {
+      const n = this.outer.treeNiche();
+      if (Math.hypot(p.x - n.x, p.z - n.z) < TUNING.story.nicheRadius) out.push({ x: n.x, y: n.y, z: n.z });
+    }
+    return out;
   }
 
   private showOverlay(id: WorldId): void {
@@ -153,6 +190,10 @@ export class Game {
     this.outer.setAnger(this.anger.value);
     this.inner.setAnger(this.anger.value);
     this.hitTint.update(dt);
+    if (this.hand) {
+      const near = shown === this.current && !this.transition.active;
+      this.hand.setMode(near && this.glowTargets().length > 0 ? 'interact' : near && (field?.count ?? 0) > 0 ? 'push' : 'dim');
+    }
     this.story.update(dt, shown.id, this.transition.active);
     shown.scene.render();
     const o = this.overlays.get(shown.id);

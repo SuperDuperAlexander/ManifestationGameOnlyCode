@@ -1,0 +1,16 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5175/?debug --scenario lantern-alt --out screenshots/step6/final/lantern-alt-mobile --mobile
+
+screenshot: screenshots\step6\final\lantern-alt-mobile\b0-wake.png
+draw calls at b0-wake: 53
+screenshot: screenshots\step6\final\lantern-alt-mobile\b3-bump.png
+draw calls at b3-bump: 53
+screenshot: screenshots\step6\final\lantern-alt-mobile\b4-waves.png
+draw calls at b4-waves: 54
+screenshot: screenshots\step6\final\lantern-alt-mobile\b5-tree-weak.png
+draw calls at b5-tree-weak: 44
+FAIL (lantern-alt): timeout (15 s) waiting for: flags().helped (5 apples)
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

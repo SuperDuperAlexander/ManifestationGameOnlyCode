@@ -524,3 +524,69 @@ body.touch .dialogue-line {
   font-size: clamp(16px, 3vw, 22px);
   color: var(--ink);
 }
+
+/* Hand button (push / interact): left of the breath button. */
+.hand-button {
+  position: absolute;
+  right: calc(28px + 112px + 16px + env(safe-area-inset-right));
+  bottom: calc(34px + 8px + env(safe-area-inset-bottom));
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 4;
+  color: #6b6a5a;
+  background: radial-gradient(circle at 45% 40%, rgba(255, 250, 236, 0.55), rgba(244, 238, 223, 0.3) 70%);
+  border: 1.5px solid rgba(244, 238, 223, 0.75);
+  box-shadow: 0 4px 14px rgba(78, 85, 102, 0.18);
+  transition: opacity 0.4s, transform 0.2s, background 0.4s, box-shadow 0.4s;
+}
+.hand-button svg {
+  width: 36px;
+  height: 36px;
+}
+.hand-button.dim {
+  opacity: 0.4;
+}
+.hand-button.push {
+  background: radial-gradient(circle at 45% 40%, rgba(255, 240, 228, 0.9), rgba(232, 167, 124, 0.6) 70%);
+  color: #8a4a2c;
+}
+.hand-button.interact {
+  background: radial-gradient(circle at 45% 40%, rgba(255, 246, 222, 0.95), rgba(235, 197, 122, 0.7) 70%);
+  box-shadow: 0 0 18px rgba(235, 197, 122, 0.9);
+  color: #7a5a1c;
+}
+.hand-button.pressed {
+  transform: scale(0.92);
+}
+
+/* Landscape phones: less height, so smaller buttons and a lower text line. */
+@media (orientation: landscape) and (max-height: 520px) {
+  body.touch .breath-button,
+  body.touch .breath-guide {
+    width: 96px;
+    height: 96px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+  body.touch .bb-core {
+    inset: 32px;
+  }
+  .hand-button {
+    right: calc(28px + 96px + 14px + env(safe-area-inset-right));
+    bottom: calc(14px + 8px + env(safe-area-inset-bottom));
+  }
+  .look-button {
+    right: calc(44px + env(safe-area-inset-right));
+    bottom: calc(118px + env(safe-area-inset-bottom));
+  }
+  body.touch .dialogue-line {
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    max-width: calc(100vw - 2 * (28px + 96px + 14px + 64px + 16px) - 16px);
+    font-size: 15px;
+  }
+}

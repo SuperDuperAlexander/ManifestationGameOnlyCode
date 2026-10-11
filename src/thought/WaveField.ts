@@ -134,7 +134,10 @@ export class WaveField implements WaveHooks {
       this.spawnWave(px, py, pz, true);
       return;
     }
-    this.spawnProgress += dt * TUNING.waves.rateAtFullAnger * this.anger.value;
+    const pr = TUNING.waves.proximity;
+    const sd = Math.hypot(this.source.x - px, this.source.z - pz);
+    const near = 1 - Math.min(1, Math.max(0, (sd - pr.nearDist) / (pr.farDist - pr.nearDist)));
+    this.spawnProgress += dt * TUNING.waves.rateAtFullAnger * this.anger.value * (1 + pr.boost * near);
     if (this.spawnProgress >= 1) {
       this.spawnProgress = this.rng.range(0, 0.35);
       this.spawnWave(px, py, pz, false);
@@ -145,8 +148,11 @@ export class WaveField implements WaveHooks {
     const w = this.waves.find((x) => !x.alive);
     if (!w) return;
     const t = TUNING.waves;
-    let dx = this.source.x - px;
-    let dz = this.source.z - pz;
+    let src = this.source;
+    const spots = (this.world as unknown as { waveSpots?: (a: number) => { x: number; z: number }[] }).waveSpots?.(t.citizenAbove);
+    if (spots && spots.length > 0 && this.rng.next() < t.citizenShare) src = spots[Math.floor(this.rng.next() * spots.length)]!;
+    let dx = src.x - px;
+    let dz = src.z - pz;
     const d = Math.hypot(dx, dz) || 1;
     dx /= d;
     dz /= d;

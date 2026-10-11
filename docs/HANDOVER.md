@@ -33,7 +33,8 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - **Step 2 done**: Thought Waves in both worlds. Breathe = pass, E = push (stronger), nothing = hit (shove, slow, red edge). Scenario `waves` passes. 60 fps, ≤ 30 draw calls.
 - **Steps 3 + 4 done**: 8 citizens with torches and steam mirror the anger (town 47 draw calls, 60 fps). Inner Tree, burned root, Source stream, Anger Imp (raging / calming / calm). Inner 34–39 draw calls.
 - **Step 5 done**: whole PoC playable, beats 0–9, both orders (scenarios `lantern`, `lantern-alt`). Town 42–58 draw calls, inner 31–42, 60 fps.
-- Next: Step 6 (mirror polish, touch, phone performance, sounds).
+- **Step 6 done**: touch controls, synth sounds, wave sources, phone grass cut. Max 59 draw calls (desktop and mobile emulation), 60 fps on this PC.
+- **Next: Step 7 = playtest by Alexander** on desktop and a real phone. Then tune `TUNING.anger`, `TUNING.waves`, `TUNING.citizens` only.
 
 ## 3. Next step — start here
 
