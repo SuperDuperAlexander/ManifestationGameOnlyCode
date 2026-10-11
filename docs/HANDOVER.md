@@ -27,8 +27,9 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 
 - Docs written: `CLAUDE.md`, `AGENTS.md` (same content, for other coding agents), `docs/GAME_DESIGN.md`, `docs/BUILD_PLAN.md`,
   this file, `docs/DECISIONS.md` (restarted), `legacy/valley-v1/README.md`, `legacy/valley-v1/docs/` (old docs).
-- **Not done yet: Step 0 of the build plan** (git tag, frozen build, moving old code). It needs a shell on Alexander's PC.
-- No game code changed yet.
+- **Step 0 done** (2026-10-11): tag `archive/valley-v1` on GitHub, frozen build in `legacy/valley-v1/playable/`, old code in `legacy/valley-v1/src/`.
+  Valley still runs from `index.html`: 60 fps, 35 draw calls, 0 console errors.
+- Next: Step 1 (two worlds + Look Within).
 
 ## 3. Next step — start here
 

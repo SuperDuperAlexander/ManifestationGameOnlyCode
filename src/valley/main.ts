@@ -11,8 +11,9 @@ const loading = document.createElement('div');
 loading.className = 'valley-loading';
 loading.textContent = 'Opening the valley…';
 ui.append(loading);
-const chapter = await loadChapter(new URLSearchParams(location.search).get('chapter') ?? 'ch1');
-const game = new ValleyGame(canvas, ui, chapter);
+// loadChapter fills the valley layout before the game starts.
+await loadChapter(new URLSearchParams(location.search).get('chapter') ?? 'ch1');
+const game = new ValleyGame(canvas, ui);
 loading.remove();
 
 // Read-only hooks for automated browser checks (scripts/check-browser.mjs).

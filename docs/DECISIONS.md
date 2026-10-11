@@ -33,4 +33,9 @@ Colours are visual groups only — never good or bad.
 
 ## Made while building
 
-(Add L11, L12, … here.)
+**L11. Step 0 archive (2026-10-11).** The frozen build in `legacy/valley-v1/playable/` was made with `vite build` only.
+The old code failed `tsc` (wrong argument count in `src/valley/main.ts`). That line is now fixed in the live code.
+`sharp` and the PNG asset scripts are removed. No PNGs remain in `public/`.
+Note: `scripts/check-browser.mjs` still lists diorama scenarios. They will fail. Replace them in Step 1.
+
+(Add L12, … here.)
