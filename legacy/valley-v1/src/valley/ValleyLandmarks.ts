@@ -7,10 +7,10 @@ import type { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import type { Scene } from '@babylonjs/core/scene';
 import { createPaperMaterial, setPaperColor, type PaperMaterial } from '../shaders/paperShader';
 import { procTexture } from '../world/ProceduralTextures';
-import { paintFlat, paintGradient } from './colors';
+import { paintFlat, paintGradient } from '../inner/colors';
 import { LAYOUT } from './valleyLayout';
-import type { ValleyTerrain } from './ValleyTerrain';
-import type { Collider, ShadowSpot } from './ValleyProps';
+import type { ValleyTerrain } from '../inner/ValleyTerrain';
+import type { Collider, ShadowSpot } from '../inner/ValleyProps';
 
 /**
  * The places of the valley, all from simple shapes: the rune monolith, the old well,

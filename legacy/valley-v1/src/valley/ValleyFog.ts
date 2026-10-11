@@ -19,8 +19,8 @@ import { createPaperMaterial, setPaperColor, type PaperMaterial } from '../shade
 import { procTexture } from '../world/ProceduralTextures';
 import { TextCard } from '../world/TextCard';
 import type { FogSpec } from './valleyLayout';
-import type { Collider } from './ValleyProps';
-import { VALLEY_UNIFORMS } from './valleyShader';
+import type { Collider } from '../inner/ValleyProps';
+import { VALLEY_UNIFORMS } from '../inner/valleyShader';
 
 /**
  * A fog blockade for the free 3D camera: a dense, slowly churning cloud of soft puffs

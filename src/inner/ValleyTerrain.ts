@@ -6,7 +6,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import { TUNING } from '../config/tuning';
 import { lerp, smoothstep } from '../core/Random';
 import { fbm, noise2 } from './noise';
-import { LAYOUT } from './valleyLayout';
+import { LAYOUT } from './innerLayout';
 import { mixRgb, rgb, type Rgb } from './colors';
 import { DistanceField, smoothLine } from './DistanceField';
 
@@ -18,8 +18,8 @@ import { DistanceField, smoothLine } from './DistanceField';
  */
 export class ValleyTerrain {
   readonly mesh: Mesh;
-  readonly extentX = 60;
-  readonly extentZ = 100;
+  readonly extentX = Math.ceil(TUNING.inner.floorRadiusX * 1.8);
+  readonly extentZ = Math.ceil(TUNING.inner.floorRadiusZ * 1.6);
   /** The path as a smooth line of points. */
   readonly pathLine: [number, number][];
   readonly riverLine: [number, number][];
@@ -37,7 +37,7 @@ export class ValleyTerrain {
     this.pathField = new DistanceField(this.pathLine, -ex, -ez, ex, ez, 0.5, 8);
     this.riverField = new DistanceField(this.riverLine, -ex, -ez, ex, ez, 0.5, 10);
 
-    const cell = TUNING.valley.terrainCell;
+    const cell = TUNING.inner.terrainCell;
     this.cols = Math.round((ex * 2) / cell);
     this.rows = Math.round((ez * 2) / cell);
     const w = this.cols + 1;
@@ -97,7 +97,7 @@ export class ValleyTerrain {
 
   /** Ground height at a point. */
   height(x: number, z: number): number {
-    const v = TUNING.valley;
+    const v = TUNING.inner;
     const q = this.rimDistance(x, z);
 
     // Floor: soft rolling ground and a few gentle hills.
@@ -153,7 +153,7 @@ export class ValleyTerrain {
 
   /** 0 at the centre, 1 at the foot of the cliffs. A little wobbly, so the rim is not an ellipse. */
   rimDistance(x: number, z: number): number {
-    const v = TUNING.valley;
+    const v = TUNING.inner;
     const q = Math.hypot(x / v.floorRadiusX, z / v.floorRadiusZ);
     return q + fbm(x * 0.045, z * 0.045, 3) * 0.18;
   }

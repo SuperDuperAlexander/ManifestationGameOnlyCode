@@ -435,3 +435,32 @@ body.touch .bg-label {
 body.touch .dialogue-line {
   bottom: calc(172px + env(safe-area-inset-bottom));
 }
+
+/* Look Within: diamond button (touch) above the breath button, and the gold bloom. */
+.look-button {
+  position: absolute;
+  right: calc(56px + env(safe-area-inset-right));
+  bottom: calc(162px + env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 4;
+}
+.look-button::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  transform: rotate(45deg);
+  border: 1.5px solid rgba(244, 238, 223, 0.8);
+  background: radial-gradient(circle at 40% 35%, #fff6de, rgba(235, 197, 122, 0.7));
+  box-shadow: 0 0 16px rgba(235, 197, 122, 0.7);
+  border-radius: 6px;
+}
+.look-bloom {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 50;
+}

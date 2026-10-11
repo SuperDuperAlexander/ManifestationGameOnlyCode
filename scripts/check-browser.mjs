@@ -50,7 +50,7 @@ const hold = async (key, ms) => {
 const game = (fn, arg) => page.evaluate(fn, arg);
 
 await page.goto(url, { waitUntil: 'load' });
-await page.waitForFunction(() => window.__lw?.ready === true, null, { timeout: 30000 });
+await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
 await wait(2500);
 
 const scenarios = {

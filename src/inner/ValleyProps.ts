@@ -10,7 +10,7 @@ import { TUNING } from '../config/tuning';
 import { Random } from '../core/Random';
 import { noise2 } from './noise';
 import { paintFlat, paintGradient, rgb, type Rgb } from './colors';
-import { LAYOUT } from './valleyLayout';
+import { LAYOUT } from './innerLayout';
 import type { ValleyTerrain } from './ValleyTerrain';
 
 export interface Collider {
@@ -57,7 +57,7 @@ export class ValleyProps {
     private readonly terrain: ValleyTerrain,
     materials: { plants: ShaderMaterial; solid: ShaderMaterial; grass: ShaderMaterial },
   ) {
-    const c = TUNING.valley.counts;
+    const c = TUNING.inner.counts;
     this.add(roundTree(scene), this.placeRoundTrees(c.roundTrees), materials.plants);
     this.add(cypress(scene), this.placeCypresses(c.cypresses), materials.plants);
     this.add(bush(scene), this.placeBushes(c.bushes), materials.plants);
@@ -93,7 +93,7 @@ export class ValleyProps {
 
   /** A random point in the valley that passes the test, or null. */
   private find(test: (x: number, z: number) => boolean, tries = 40): [number, number] | null {
-    const v = TUNING.valley;
+    const v = TUNING.inner;
     for (let i = 0; i < tries; i++) {
       const x = this.rnd.range(-v.floorRadiusX * 1.5, v.floorRadiusX * 1.5);
       const z = this.rnd.range(-v.floorRadiusZ * 1.3, v.floorRadiusZ * 1.3);
@@ -128,10 +128,12 @@ export class ValleyProps {
     const out: Placement[] = [];
     // The old oak on the hill: one big tree, a landmark.
     const oak = LAYOUT.oak;
-    out.push({ x: oak.x, y: t.height(oak.x, oak.z) - 0.2, z: oak.z, scale: 1.9, rotY: 0.4, tint: [1.03, 1.0, 0.94] });
-    this.trees.push(oak);
-    this.colliders.push({ x: oak.x, z: oak.z, radius: 0.9 });
-    this.shadows.push({ x: oak.x, z: oak.z, radius: 6, strength: 0.4 });
+    if (oak) {
+      out.push({ x: oak.x, y: t.height(oak.x, oak.z) - 0.2, z: oak.z, scale: 1.9, rotY: 0.4, tint: [1.03, 1.0, 0.94] });
+      this.trees.push(oak);
+      this.colliders.push({ x: oak.x, z: oak.z, radius: 0.9 });
+      this.shadows.push({ x: oak.x, z: oak.z, radius: 6, strength: 0.4 });
+    }
     for (let i = 0; i < count; i++) {
       const p = this.find((x, z) => {
         const q = t.rimDistance(x, z);

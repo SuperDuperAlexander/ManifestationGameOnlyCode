@@ -10,7 +10,7 @@ import { smoothstep } from '../core/Random';
 import type { Sound } from '../core/Sound';
 import { createPaperMaterial, setPaperColor, type PaperMaterial } from '../shaders/paperShader';
 import { procTexture } from '../world/ProceduralTextures';
-import { paintGradient } from './colors';
+import { paintGradient } from '../inner/colors';
 import { LAYOUT } from './valleyLayout';
 
 /**

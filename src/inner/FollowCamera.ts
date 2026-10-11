@@ -4,7 +4,10 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
 import { TUNING } from '../config/tuning';
 import { angleDelta, clamp, damp } from '../core/Random';
-import type { ValleyTerrain } from './ValleyTerrain';
+/** Anything that knows the ground height (valley terrain, town ground). */
+export interface GroundHeight {
+  height(x: number, z: number): number;
+}
 
 /**
  * Third-person camera behind the player, like in Zelda or Messenger.
@@ -18,11 +21,11 @@ export class FollowCamera {
   readonly camera: FreeCamera;
   /** Where the camera looks: 0 = north (+z). */
   yaw = 0;
-  private pitch: number = TUNING.valley.camera.pitch;
-  private distance: number = TUNING.valley.camera.distance;
+  private pitch: number = TUNING.inner.camera.pitch;
+  private distance: number = TUNING.inner.camera.distance;
   private zoom = 1;
   /** Distance actually used: shorter while something is in the way. */
-  private useDist = TUNING.valley.camera.distance as number;
+  private useDist = TUNING.inner.camera.distance as number;
   private idle = 99;
   private readonly target = new Vector3();
   private readonly desired = new Vector3();
@@ -32,12 +35,12 @@ export class FollowCamera {
 
   constructor(
     private readonly scene: Scene,
-    private readonly terrain: ValleyTerrain,
+    private readonly terrain: GroundHeight,
     canvas: HTMLCanvasElement,
     /** Touch screens: only this element (right half) turns the camera. */
     touchZone: HTMLElement | null,
   ) {
-    const c = TUNING.valley.camera;
+    const c = TUNING.inner.camera;
     this.camera = new FreeCamera('valley.camera', new Vector3(0, 5, -10), scene);
     this.camera.inputs.clear();
     this.camera.minZ = 0.3;
@@ -78,14 +81,14 @@ export class FollowCamera {
   }
 
   private turn(dx: number, dy: number): void {
-    const c = TUNING.valley.camera;
+    const c = TUNING.inner.camera;
     this.yaw += dx * c.dragSpeed;
     this.pitch = clamp(this.pitch + dy * c.dragSpeed * 0.6, c.minPitch, c.maxPitch);
     this.idle = 0;
   }
 
   onResize(): void {
-    const c = TUNING.valley.camera;
+    const c = TUNING.inner.camera;
     const engine = this.scene.getEngine();
     const portrait = engine.getRenderWidth() < engine.getRenderHeight();
     this.camera.fov = portrait ? c.fovPortrait : c.fov;
@@ -94,13 +97,13 @@ export class FollowCamera {
 
   snapTo(pos: Vector3, heading: number): void {
     this.yaw = heading;
-    this.target.set(pos.x, pos.y + TUNING.valley.camera.lookHeight, pos.z);
+    this.target.set(pos.x, pos.y + TUNING.inner.camera.lookHeight, pos.z);
     this.place(1);
   }
 
   /** `heading`: where the player faces. `moving`: 0..1 share of walk speed. */
   update(dt: number, pos: Vector3, heading: number, moving: number): void {
-    const c = TUNING.valley.camera;
+    const c = TUNING.inner.camera;
     this.idle += dt;
     // Swing slowly behind the player while walking sideways, unless the player just turned
     // the camera. Walking toward the camera does not spin it around (sin = 0 there).
@@ -115,7 +118,7 @@ export class FollowCamera {
   }
 
   private place(k: number): void {
-    const c = TUNING.valley.camera;
+    const c = TUNING.inner.camera;
     const want = this.distance * this.zoom;
     // Is the ground in the way between the player and the camera? Then come closer.
     let free = want;

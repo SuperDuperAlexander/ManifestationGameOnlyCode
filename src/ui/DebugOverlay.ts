@@ -35,6 +35,11 @@ export class DebugOverlay {
     this.el.hidden = !this.visible;
   }
 
+  setVisible(v: boolean): void {
+    this.visible = v;
+    this.el.hidden = !v;
+  }
+
   toggle(): void {
     this.visible = !this.visible;
     this.el.hidden = !this.visible;

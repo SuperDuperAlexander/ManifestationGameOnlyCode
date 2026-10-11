@@ -36,7 +36,7 @@ export class ValleyWalker {
   }
 
   get speedRatio(): number {
-    return Math.min(1, this.speed / TUNING.valley.walkSpeed);
+    return Math.min(1, this.speed / TUNING.inner.walkSpeed);
   }
 
   place(x: number, z: number, heading: number): void {
@@ -56,7 +56,7 @@ export class ValleyWalker {
     const fz = Math.cos(cameraYaw);
     const dirX = fx * iz + fz * ix;
     const dirZ = fz * iz - fx * ix;
-    const max = TUNING.valley.walkSpeed * this.speedFactor;
+    const max = TUNING.inner.walkSpeed * this.speedFactor;
     const k = damp(wants ? t.acceleration : t.deceleration, dt);
     this.velocity.x += (dirX * max - this.velocity.x) * k;
     this.velocity.z += (dirZ * max - this.velocity.z) * k;
@@ -104,7 +104,7 @@ export class ValleyWalker {
     const rise = g - (this.ground.groundAt(ox, oz) ?? g);
     const run = Math.hypot(x - ox, z - oz);
     // Walking down is always fine. Walking up only where it is not too steep.
-    return rise <= 0 || run === 0 || rise / run <= TUNING.valley.maxSlope;
+    return rise <= 0 || run === 0 || rise / run <= TUNING.inner.maxSlope;
   }
 
   private pushOut(x: number, z: number): [number, number] {

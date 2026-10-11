@@ -9,7 +9,7 @@ import { procTexture } from '../world/ProceduralTextures';
 import type { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import type { Scene } from '@babylonjs/core/scene';
 import { createPaperMaterial } from '../shaders/paperShader';
-import { LAYOUT } from './valleyLayout';
+import { LAYOUT } from './innerLayout';
 import type { ValleyTerrain } from './ValleyTerrain';
 
 /** The river surface: one ribbon along the river line. The shader paints flow and glints. */

@@ -295,6 +295,74 @@ export const TUNING = {
     playerGlowPerRelease: 0.22,
   },
 
+  /** Look Within transition (GAME_DESIGN 4.2): camera dolly to the diamond, gold bloom, world switch. */
+  lookWithin: {
+    transitionTime: 1.6,
+    /** How far the camera moves toward the diamond (0..1). */
+    dolly: 0.8,
+  },
+
+  /** Outer world: the little town (src/outer/). Positions live in townLayout.ts. */
+  outer: {
+    /** Fog-free greybox sky colour is taken from the palette; these are sizes. */
+    houseHeightMin: 3.6,
+    houseHeightMax: 5.6,
+    roofRise: 1.6,
+    roofOverhang: 0.35,
+    treeHeight: 15,
+    treeCrownRadius: 5.2,
+    wallHeight: 0.7,
+    /** Slope at the Town Edge: ground rises this many metres over the slope length. */
+    slopeRise: 0.9,
+    /** Camera height above ground stays as in TUNING.camera. Spawn point is in townLayout.ts. */
+    maxDrawCalls: 60,
+  },
+
+  /** Inner World (GAME_DESIGN 5.2): the small valley inside. Layout positions: src/inner/innerLayout.ts. */
+  inner: {
+    /** Half size of the valley floor, east-west and north-south. */
+    floorRadiusX: 24,
+    floorRadiusZ: 28,
+    rimHeight: 14,
+    terraceStep: 3.6,
+    terrainCell: 1.0,
+    maxSlope: 0.85,
+    walkLimit: 1.1,
+    walkSpeed: 3.6,
+    camera: {
+      distance: 8.5,
+      distancePortrait: 10.5,
+      minDistance: 5,
+      maxDistance: 14,
+      pitch: 0.3,
+      minPitch: 0.08,
+      maxPitch: 0.8,
+      lookHeight: 1.4,
+      fov: 0.9,
+      fovPortrait: 1.1,
+      dragSpeed: 0.0055,
+      recenterDelay: 1.2,
+      recenterSpeed: 1.6,
+      followSharpness: 10,
+      groundClearance: 0.7,
+      maxZ: 600,
+    },
+    counts: {
+      roundTrees: 18,
+      cypresses: 14,
+      bushes: 18,
+      rocks: 30,
+      grassTufts: 1600,
+      flowers: 260,
+    },
+    /** World mood: bright and calm (-1 dark .. +1 golden). */
+    mood: 0.35,
+    /** Entrance light column (gold, soft). */
+    entrance: { radius: 1.1, height: 9, alpha: 0.28, triggerRadius: 1.6 },
+    /** Marker disc where the Inner Tree will grow. */
+    treeMarker: { radius: 2.2, alpha: 0.22 },
+  },
+
   performance: {
     /** Hardware scaling on phones: 1 = native pixels. Higher = fewer pixels. */
     mobileScalingMin: 1.25,

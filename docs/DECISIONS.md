@@ -38,4 +38,10 @@ The old code failed `tsc` (wrong argument count in `src/valley/main.ts`). That l
 `sharp` and the PNG asset scripts are removed. No PNGs remain in `public/`.
 Note: `scripts/check-browser.mjs` still lists diorama scenarios. They will fail. Replace them in Step 1.
 
-(Add L12, … here.)
+**L12. Step 1 structure.** `src/game/World.ts` is the shared contract. `Town` (`src/outer/`) and `InnerValley` (`src/inner/`) each own a Scene, input and camera.
+`Game` renders only the active world. The hidden world is frozen, so position and camera stay. Town now uses the same follow camera as the inner world.
+Fairy, Companion and the old valley code are in `legacy/valley-v1/src/`.
+
+**L13. Test hooks.** `window.__lw` = `world()`, `transitioning()`, `playerPos()`, `toggle()`, `drawCalls()`. Scenario `lookwithin`. Diorama scenarios removed.
+
+(Add L14, … here.)
