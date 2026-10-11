@@ -50,6 +50,9 @@ export class InnerValley implements World, WalkGround {
   private readonly root: HTMLDivElement;
   private active = false;
   private readonly diamond = new Vector3();
+  private shoveLeft = { x: 0, z: 0 };
+  private slowFactor = 1;
+  private slowTime = 0;
 
   constructor(
     engine: Engine,
@@ -203,8 +206,10 @@ export class InnerValley implements World, WalkGround {
     dt = Math.min(0.05, dt);
     this.input.update();
     this.breath.update(dt, { inhale: this.input.inhaleHeld, exhale: this.input.exhaleHeld, releaseExhales: this.touch });
-    this.walker.speedFactor = this.breath.state === 'idle' ? 1 : 0.6;
+    this.slowTime = Math.max(0, this.slowTime - dt);
+    this.walker.speedFactor = (this.breath.state === 'idle' ? 1 : 0.6) * (this.slowTime > 0 ? this.slowFactor : 1);
     this.walker.update(dt, this.cam.yaw);
+    this.applyShove(dt);
     const p = this.walker.position;
     this.visual.root.position.copyFrom(p);
     this.breathVisuals.update(dt, this.breath, p);
@@ -222,6 +227,40 @@ export class InnerValley implements World, WalkGround {
     WORLD_UNIFORMS.time = VALLEY_UNIFORMS.time;
     WORLD_UNIFORMS.pivotZ = 1e6;
     this.input.endFrame();
+  }
+
+  breathState(): string {
+    return this.breath.state;
+  }
+
+  shove(dx: number, dz: number): void {
+    this.shoveLeft.x += dx;
+    this.shoveLeft.z += dz;
+  }
+
+  slow(factor: number, seconds: number): void {
+    this.slowFactor = factor;
+    this.slowTime = seconds;
+  }
+
+  /** Spends the pending shove over about 0.4 s. Never into water or off the walkable ground. */
+  private applyShove(dt: number): void {
+    const s = this.shoveLeft;
+    if (Math.abs(s.x) + Math.abs(s.z) < 1e-4) return;
+    const k = Math.min(1, dt / 0.4);
+    const sx = s.x * k;
+    const sz = s.z * k;
+    const p = this.walker.position;
+    const g = this.groundAt(p.x + sx, p.z + sz);
+    if (g !== null) {
+      p.x += sx;
+      p.z += sz;
+      s.x -= sx;
+      s.z -= sz;
+    } else {
+      s.x = 0;
+      s.z = 0;
+    }
   }
 
   playerPosition(): Vector3 {

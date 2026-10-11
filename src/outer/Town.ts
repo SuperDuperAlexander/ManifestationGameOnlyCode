@@ -11,6 +11,7 @@ import type { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { FollowCamera } from '../inner/FollowCamera';
 import { WORLD_UNIFORMS } from '../shaders/paperShader';
 import { InputManager } from '../core/InputManager';
+import { BreathSystem } from '../player/BreathSystem';
 import { PlayerController } from '../player/PlayerController';
 import { PlayerVisual } from '../player/PlayerVisual';
 import { createToonMaterial, type ToonMaterial } from '../shaders/toonShader';
@@ -42,6 +43,10 @@ export class Town implements World {
   private readonly mats = new Map<string, ToonMaterial>();
   private readonly zones: HTMLElement[] = [];
   private active = true;
+  private readonly breath = new BreathSystem();
+  private shoveLeft = { x: 0, z: 0 };
+  private slowFactor = 1;
+  private slowTime = 0;
 
   constructor(
     engine: Engine,
@@ -93,12 +98,46 @@ export class Town implements World {
     const my = this.input.moveY;
     this.rotated.moveX = mx * Math.cos(yaw) + my * Math.sin(yaw);
     this.rotated.moveY = -mx * Math.sin(yaw) + my * Math.cos(yaw);
+    this.breath.update(dt, { inhale: this.input.inhaleHeld, exhale: this.input.exhaleHeld, releaseExhales: matchMedia('(pointer: coarse)').matches });
+    this.slowTime = Math.max(0, this.slowTime - dt);
+    const slow = this.slowTime > 0 ? this.slowFactor : 1;
+    this.controller.speedFactor = (this.breath.state === 'idle' ? 1 : 0.6) * slow;
     this.controller.update(dt);
+    this.applyShove(dt);
     this.placeVisual(dt);
     this.cam.update(dt, this.visual.root.position, this.controller.heading, this.controller.speedRatio);
     WORLD_UNIFORMS.time += dt;
     WORLD_UNIFORMS.pivotZ = 1e6;
     this.input.endFrame();
+  }
+
+  breathState(): string {
+    return this.breath.state;
+  }
+
+  shove(dx: number, dz: number): void {
+    this.shoveLeft.x += dx;
+    this.shoveLeft.z += dz;
+  }
+
+  slow(factor: number, seconds: number): void {
+    this.slowFactor = factor;
+    this.slowTime = seconds;
+  }
+
+  /** Spends the pending shove over about 0.4 s. The colliders keep the player inside the town. */
+  private applyShove(dt: number): void {
+    const s = this.shoveLeft;
+    if (Math.abs(s.x) + Math.abs(s.z) < 1e-4) return;
+    const k = Math.min(1, dt / 0.4);
+    const sx = s.x * k;
+    const sz = s.z * k;
+    const p = this.controller.position;
+    const [rx, rz] = this.colliders.resolve(p.x, p.z, p.x + sx, p.z + sz, TUNING.player.radius);
+    p.x = rx;
+    p.z = rz;
+    s.x -= sx;
+    s.z -= sz;
   }
 
   playerPosition(): Vector3 {
@@ -136,6 +175,7 @@ export class Town implements World {
       x: +p.x.toFixed(1),
       z: +p.z.toFixed(1),
       meshes: this.scene.meshes.length,
+      breath: this.breath.state,
     };
   }
 
@@ -155,7 +195,7 @@ export class Town implements World {
       speed: c.speed,
       speedRatio: c.speedRatio,
       heading: c.heading,
-      breathLevel: 0,
+      breathLevel: this.breath.breathLevel,
       glow: 0,
       awake: 1,
     });

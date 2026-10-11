@@ -9,6 +9,14 @@ import { WORLD_UNIFORMS } from '../shaders/paperShader';
 import { LookWithin } from '../transition/LookWithin';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { LookWithinButton } from '../ui/LookWithinButton';
+import { DialogueSystem } from '../companion/DialogueSystem';
+import { Events } from '../core/Events';
+import { TOWN } from '../outer/townLayout';
+import { LAYOUT } from '../inner/innerLayout';
+import { WaveField } from '../thought/WaveField';
+import { Anger } from './Anger';
+import { HeatMood } from './HeatMood';
+import { HitTint } from '../ui/HitTint';
 import type { World, WorldId } from './World';
 
 /** One Engine, two worlds (two Scenes). Renders and updates only the active world. */
@@ -21,6 +29,13 @@ export class Game {
   private readonly perf: Performance;
   private readonly overlays = new Map<WorldId, DebugOverlay>();
   private debugOn: boolean;
+  /** The one hidden anger value, shared by both worlds. */
+  readonly anger = new Anger();
+  readonly dialogue: DialogueSystem;
+  private readonly fields = new Map<WorldId, WaveField>();
+  private pushQueued = false;
+  private readonly heat = new HeatMood();
+  private readonly hitTint: HitTint;
 
   constructor(canvas: HTMLCanvasElement, ui: HTMLElement) {
     this.engine = new Engine(canvas, true, { stencil: false, powerPreference: 'high-performance', audioEngine: false });
@@ -29,6 +44,17 @@ export class Game {
     this.outer = new Town(this.engine, canvas, ui);
     this.inner = new InnerValley(this.engine, canvas, ui);
     this.current = this.outer;
+    const a = new URLSearchParams(location.search).get('anger');
+    if (a !== null && Number.isFinite(parseFloat(a))) this.anger.set(parseFloat(a));
+    this.fields.set('outer', new WaveField(this.outer, this.anger, TOWN.waveSource));
+    this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource));
+    this.hitTint = new HitTint(ui);
+    this.anger.on((e) => { if (e === 'hit') this.hitTint.flash(); });
+    this.dialogue = new DialogueSystem(ui, new Events());
+    void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
+      const text = this.dialogue.line('waveText');
+      for (const f of this.fields.values()) f.setText(text);
+    });
     this.applyShared(this.outer);
     this.outer.setActive(true);
 
@@ -55,6 +81,7 @@ export class Game {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
       if (e.code === 'KeyQ') this.toggle();
+      if (e.code === 'KeyE') this.pushQueued = true;
       if (e.code === 'F3') {
         e.preventDefault();
         this.debugOn = !this.debugOn;
@@ -100,10 +127,24 @@ export class Game {
       shown = this.current;
       shown.update(dt);
     }
+    const field = this.fields.get(shown.id);
+    if (field && shown === this.current && !this.transition.active) {
+      if (this.pushQueued) field.push();
+      field.update(dt);
+    }
+    this.pushQueued = false;
+    this.heat.apply(this.anger.value);
+    this.hitTint.update(dt);
     shown.scene.render();
     const o = this.overlays.get(shown.id);
     if (o) {
-      o.extra = { world: shown.id, ...shown.debugInfo() };
+      o.extra = {
+        world: shown.id,
+        anger: +this.anger.value.toFixed(2),
+        pushLevel: this.anger.pushLevel,
+        waves: field?.count ?? 0,
+        ...shown.debugInfo(),
+      };
       o.update(dt);
     }
   }
@@ -118,6 +159,11 @@ export class Game {
         return { x: p.x, y: p.y, z: p.z };
       },
       toggle: () => this.toggle(),
+      anger: () => this.anger.value,
+      pushLevel: () => this.anger.pushLevel,
+      waves: () => this.fields.get(this.current.id)?.count ?? 0,
+      setAnger: (v: number) => this.anger.set(v),
+      breathState: () => this.current.breathState(),
       drawCalls: () => this.overlays.get(this.current.id)?.stats().drawCalls ?? 0,
     };
   }

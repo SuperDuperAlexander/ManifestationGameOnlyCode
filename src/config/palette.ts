@@ -27,6 +27,12 @@ export const SHADES = {
   legs: '#3E2C23',
   /** Light the fairy gives: brighter than gold. */
   fairyLight: '#FFF1C9',
+  /** Anger as heat: the warm orange of the haze and the shimmer. */
+  heatOrange: '#E0793A',
+  /** Anger as heat: the red of the screen edge when a wave hits. */
+  emberRed: '#D2402A',
+  /** Anger as heat: warm, slightly grey ivory for smoke and steam. */
+  smokeIvory: '#EFE6D6',
 } as const;
 
 export function color3(hex: string): Color3 {

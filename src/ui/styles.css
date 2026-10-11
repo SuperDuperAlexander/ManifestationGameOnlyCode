@@ -464,3 +464,12 @@ body.touch .dialogue-line {
   pointer-events: none;
   z-index: 50;
 }
+
+/* Hit tint: a red glow at the screen edge when a thought wave hits. Fades by script. */
+.hit-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, var(--hit-color, rgba(210, 64, 42, 0.55)) 100%);
+}

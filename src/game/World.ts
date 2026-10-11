@@ -20,6 +20,12 @@ export interface World {
   diamondPosition(): Vector3;
   /** Freeze or resume input, player and camera (used during the transition and while hidden). */
   setActive(active: boolean): void;
+  /** Breath state of the player ('idle' | 'inhale' | 'exhale'). Breathing lets Thought Waves pass. */
+  breathState(): string;
+  /** Moves the player by (dx, dz) metres over a short time, never into walls or water. */
+  shove(dx: number, dz: number): void;
+  /** Walk speed times `factor` for `seconds` (a hit by a Thought Wave). */
+  slow(factor: number, seconds: number): void;
   /** Values for the debug overlay. */
   debugInfo(): Record<string, string | number>;
 }

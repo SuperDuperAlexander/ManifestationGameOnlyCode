@@ -44,4 +44,8 @@ Fairy, Companion and the old valley code are in `legacy/valley-v1/src/`.
 
 **L13. Test hooks.** `window.__lw` = `world()`, `transitioning()`, `playerPos()`, `toggle()`, `drawCalls()`. Scenario `lookwithin`. Diorama scenarios removed.
 
-(Add L14, … here.)
+**L14. Step 2 waves.** `src/game/Anger.ts` holds anger, floor, pushLevel, passStreak. `WaveField` per world, only the active world updates.
+Waves face the camera so the text stays readable. E pushes only within `TUNING.waves.pushRange` (6 m).
+Heat tint changes only the haze colour (`HeatMood`). Hit = red screen edge (`HitTint`). Touch push button comes in Step 6.
+
+(Add L15, … here.)

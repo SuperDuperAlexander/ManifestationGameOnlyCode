@@ -37,6 +37,8 @@ export const TOWN = {
   },
   /** Slope at the Town Edge: from slopeStartZ (low) up to slopeEndZ (flat). */
   slope: { startZ: -5, endZ: 8 },
+  /** Thought Waves come from this side: the alley where the stranger ran. */
+  waveSource: { x: -19, z: 42 },
   squareCentre: { x: 0, z: 40 },
   oldTree: { x: 0, z: 47, trunkRadius: 0.9, colliderRadius: 1.3 },
   fountain: { x: 0, z: 37, outerRadius: 2.2, innerRadius: 1.6, height: 0.6 },

@@ -363,6 +363,41 @@ export const TUNING = {
     treeMarker: { radius: 2.2, alpha: 0.22 },
   },
 
+  heat: {
+    /** At anger 1: share of smoke ivory in the valley haze. */
+    smokeMix: 0.25,
+    /** At anger 1: share of heat orange in the valley haze. */
+    heatMix: 0.3,
+    /** Seconds until the red screen-edge tint is gone. */
+    hitFadeS: 2,
+    /** Opacity of the red screen-edge tint right after a hit. */
+    hitPeak: 0.9,
+  },
+
+  anger: {
+    onBump: 0.7, floorBeforeHelp: 0.35,
+    push: 0.08, hit: 0.02, pass: -0.05, afterHelp: -0.15,
+    fadeOutTime: 4,
+  },
+  waves: {
+    rateAtFullAnger: 0.33,   // waves per second at anger 1
+    speed: 2.2,              // m/s, slower than walking
+    width: 6, height: 2.2,   // metres
+    pushRelief: 4,           // seconds without waves after a push
+    pushGrow: 0.25,          // +25 % size per pushLevel
+    maxPushLevel: 4,
+    resetAfterPasses: 3,
+    hitSlowTime: 2, hitSlowFactor: 0.5,
+    bigWaveShove: 2.5,       // metres at max pushLevel
+    hitShoveMin: 0.3,        // metres, shove of a normal wave
+    maxActive: 6,            // pooled waves per world
+    spawnDistance: 20,       // metres from the player toward the wave source
+    reachFactor: 0.3,        // contact distance = width * reachFactor * scale
+    pushRange: 6,            // metres: E pushes the nearest wave inside this
+    passTime: 1.6,           // seconds a passing wave takes to dissolve
+    returnSpeedGain: 0.2,    // +20 % speed per pushLevel
+    maxAge: 60,              // seconds before a wave fades out on its own
+  },
   performance: {
     /** Hardware scaling on phones: 1 = native pixels. Higher = fewer pixels. */
     mobileScalingMin: 1.25,

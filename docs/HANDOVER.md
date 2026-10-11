@@ -30,7 +30,8 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - **Step 0 done** (2026-10-11): tag `archive/valley-v1` on GitHub, frozen build in `legacy/valley-v1/playable/`, old code in `legacy/valley-v1/src/`.
   Valley still runs from `index.html`: 60 fps, 35 draw calls, 0 console errors.
 - **Step 1 done**: greybox town + inner valley, Q / diamond switch (1.6 s gold bloom). Town 27 draw calls, 60 fps. Inner 24 draw calls, 39 fps in the headless test (grass; check in Step 6).
-- Next: Step 2 (Thought Waves, breath, anger).
+- **Step 2 done**: Thought Waves in both worlds. Breathe = pass, E = push (stronger), nothing = hit (shove, slow, red edge). Scenario `waves` passes. 60 fps, ≤ 30 draw calls.
+- Next: Step 3 (citizens).
 
 ## 3. Next step — start here
 

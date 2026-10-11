@@ -9,6 +9,8 @@ export interface InnerLayout {
   entrance: { x: number; z: number };
   /** Centre of the future Inner Tree. Kept clear. */
   tree: { x: number; z: number };
+  /** Thought Waves come from here (the future imp clearing). */
+  waveSource: { x: number; z: number };
   path: [number, number][];
   pathWidth: number;
   /** The Source: a stream from the waterfall that ends in a pond. */
@@ -27,6 +29,7 @@ export const LAYOUT: InnerLayout = {
   start: { x: 0, z: -19, heading: 0 },
   entrance: { x: 0, z: -19 },
   tree: { x: 0, z: 10 },
+  waveSource: { x: -7, z: 12 },
   path: [
     [0, -22],
     [0, -17],
