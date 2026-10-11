@@ -33,6 +33,18 @@ export const SHADES = {
   emberRed: '#D2402A',
   /** Anger as heat: warm, slightly grey ivory for smoke and steam. */
   smokeIvory: '#EFE6D6',
+  /** Anger Imp: body, between sandstone and cloak. */
+  impBody: '#D8683F',
+  /** Anger Imp: cream belly. */
+  impBelly: '#F2D9B0',
+  /** Anger Imp: horns, hands and feet, dark umber. */
+  impHorn: '#5A4136',
+  /** Anger Imp: the warm pale-gold flame. */
+  impFlame: '#FFE3A0',
+  /** Torch flame: the pale, hot core. */
+  flameCore: '#FFE9B8',
+  /** Steam lightning: small gold-orange zig-zag bolts. */
+  boltOrange: '#F2A23A',
 } as const;
 
 export function color3(hex: string): Color3 {

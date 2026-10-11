@@ -23,6 +23,10 @@ export interface InnerLayout {
   mounds: { x: number; z: number; radius: number; height: number }[];
   clearings: { x: number; z: number; radius: number }[];
   oak?: { x: number; z: number };
+  /** Index of the burned root (same index outside). Faces the imp clearing (waveSource). */
+  burnedRoot: number;
+  /** Horizontal direction (unit) toward the alley side of the valley. The imp's clue points there. */
+  alleyDir: { x: number; z: number };
 }
 
 export const LAYOUT: InnerLayout = {
@@ -30,6 +34,8 @@ export const LAYOUT: InnerLayout = {
   entrance: { x: 0, z: -19 },
   tree: { x: 0, z: 10 },
   waveSource: { x: -7, z: 12 },
+  burnedRoot: 2,
+  alleyDir: { x: -1, z: 0 },
   path: [
     [0, -22],
     [0, -17],

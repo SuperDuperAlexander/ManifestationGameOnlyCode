@@ -18,12 +18,31 @@ import { WORLD_UNIFORMS, createPaperMaterial } from '../shaders/paperShader';
 import type { World, WorldId } from '../game/World';
 import { VALLEY_UNIFORMS, createValleyMaterial } from './valleyShader';
 import { ValleyTerrain } from './ValleyTerrain';
-import { ValleyProps } from './ValleyProps';
+import { ValleyProps, type Collider } from './ValleyProps';
 import { ValleySky, buildFarMountains } from './ValleySky';
-import { buildRiver, buildWaterfall } from './ValleyWater';
+import { buildRiver, buildStream, buildWaterfall } from './ValleyWater';
 import { ValleyWalker, type WalkGround } from './ValleyWalker';
 import { FollowCamera } from './FollowCamera';
 import { LAYOUT } from './innerLayout';
+import { buildTree, type TreeHandle } from '../world/TreeBuilder';
+import { AngerImp, type ImpState } from './AngerImp';
+import { OLD_TREE } from '../world/TreeShape';
+import { procTexture } from '../world/ProceduralTextures';
+import { ParticleSystem } from '@babylonjs/core/Particles/particleSystem';
+import '@babylonjs/core/Particles/particleSystemComponent';
+import type { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
+
+/** One piece of a root centre line in world space, used for walking over roots. */
+interface RootSeg {
+  ax: number;
+  az: number;
+  ay: number;
+  ar: number;
+  bx: number;
+  bz: number;
+  by: number;
+  br: number;
+}
 
 const FOG_NORMAL = Color3.FromHexString(PALETTE.ivory);
 const FOG_BRIGHT = Color3.FromHexString(PALETTE.gold);
@@ -53,6 +72,15 @@ export class InnerValley implements World, WalkGround {
   private shoveLeft = { x: 0, z: 0 };
   private slowFactor = 1;
   private slowTime = 0;
+  private tree!: TreeHandle;
+  private rootSegs: RootSeg[] = [];
+  private burnedVisible = false;
+  private rootHealthValue = 0;
+  private stream!: Mesh;
+  private drops!: ParticleSystem;
+  private dropAt = new Vector3();
+  private flow = 0;
+  private imp!: AngerImp;
 
   constructor(
     engine: Engine,
@@ -85,7 +113,7 @@ export class InnerValley implements World, WalkGround {
     const props = new ValleyProps(scene, this.terrain, { plants, solid, grass });
     this.terrain.paintShadows(props.shadows);
     this.buildEntrance();
-    this.buildTreeMarker();
+    this.buildInnerTree(solid, plants, water, props.colliders);
 
     // Own DOM container: hidden while this world is not active.
     this.root = document.createElement('div');
@@ -113,13 +141,21 @@ export class InnerValley implements World, WalkGround {
     this.cam = new FollowCamera(scene, this.terrain, canvas, right);
     this.cam.snapTo(this.walker.position, s.heading);
     this.breathVisuals = new BreathVisuals(scene);
+    // The Anger Imp stands in its clearing, hidden until reveal() (reveal rule: after the bump).
+    const w = LAYOUT.waveSource;
+    const impFacing = Math.atan2(-w.x, 4 - w.z);
+    this.imp = new AngerImp(scene, new Vector3(w.x, this.terrain.height(w.x, w.z), w.z), impFacing, {
+      spitTarget: this.burnedRootTip(),
+      clueDir: new Vector3(LAYOUT.alleyDir.x, 0, LAYOUT.alleyDir.z),
+    });
+    this.imp.setVisible(false);
     window.addEventListener('resize', () => this.cam.onResize());
   }
 
   groundAt(x: number, z: number): number | null {
     const t = this.terrain;
     if (t.isWater(x, z) || t.rimDistance(x, z) > TUNING.inner.walkLimit) return null;
-    return t.height(x, z);
+    return t.height(x, z) + (this.rootSegs.length ? this.rootBump(x, z) : 0);
   }
 
   onDeck(): boolean {
@@ -155,25 +191,168 @@ export class InnerValley implements World, WalkGround {
     }
   }
 
-  /** A soft disc where the Inner Tree will stand. Remove when the tree exists. */
-  private buildTreeMarker(): void {
-    const m = TUNING.inner.treeMarker;
+  /** The giant Inner Tree: same silhouette as the Old Tree, huge roots above ground (GAME_DESIGN 5.2). */
+  private buildInnerTree(solid: ShaderMaterial, plants: ShaderMaterial, water: ShaderMaterial, colliders: Collider[]): void {
+    const T = TUNING.tree;
     const at = LAYOUT.tree;
-    const ivory = Color3.FromHexString(PALETTE.ivory);
-    const mat = createPaperMaterial('inner.treeMarkerMat', this.scene, {
-      color: new Color4(ivory.r, ivory.g, ivory.b, m.alpha),
-      alphaBlend: true,
-      haze: false,
-      curve: false,
-      depthWrite: false,
-      radialEdge: 0.5,
+    const scale = T.innerScale;
+    const base = new Vector3(at.x, this.terrain.height(at.x, at.z) - 0.1, at.z);
+    const burned = LAYOUT.burnedRoot;
+    this.tree = buildTree(this.scene, OLD_TREE, scale, {
+      position: base,
+      woodMaterial: solid,
+      leafMaterial: plants,
+      dynamicBranches: [OLD_TREE.dryBranch],
+      dynamicRoots: [burned],
+      branchHealth: 0,
+      rootHealth: 1,
     });
-    const disc = MeshBuilder.CreateDisc('inner.treeMarker', { radius: m.radius, tessellation: 32 }, this.scene);
-    disc.rotation.x = Math.PI / 2;
-    disc.position.set(at.x, this.terrain.height(at.x, at.z) + 0.06, at.z);
-    disc.material = mat;
-    disc.isPickable = false;
-    disc.freezeWorldMatrix();
+    colliders.push({ x: at.x, z: at.z, radius: T.trunkCollider * scale });
+
+    // Walkable roots: the ground rises over each root.
+    for (let i = 0; i < OLD_TREE.roots.length; i++) {
+      const s = this.tree.rootSamples(i);
+      for (let k = 2; k < s.length - 1; k++) {
+        const a = s[k]!;
+        const b = s[k + 1]!;
+        this.rootSegs.push({
+          ax: base.x + a.x,
+          az: base.z + a.z,
+          ay: a.y,
+          ar: a.r,
+          bx: base.x + b.x,
+          bz: base.z + b.z,
+          by: b.y,
+          br: b.r,
+        });
+      }
+    }
+
+    // Source water: pond end -> tip of the burned root -> along the root toward the trunk.
+    const s = this.tree.rootSamples(burned);
+    const pts: Vector3[] = [];
+    const from = LAYOUT.river.points[LAYOUT.river.points.length - 1]!;
+    const tip = s[s.length - 1]!;
+    const tx = base.x + tip.x;
+    const tz = base.z + tip.z;
+    const n = 22;
+    for (let i = 0; i <= n; i++) {
+      const t = i / n;
+      const e = t * t * (3 - 2 * t);
+      const x = from[0] + (tx - from[0]) * t + Math.sin(t * Math.PI) * 2.2;
+      const z = from[1] + (tz - from[1]) * e;
+      pts.push(new Vector3(x, Math.max(this.terrain.height(x, z), LAYOUT.river.level) + T.water.lift, z));
+    }
+    for (let k = s.length - 2; k >= 4; k--) {
+      const p = s[k]!;
+      pts.push(new Vector3(base.x + p.x, base.y + p.y + p.r * 0.98 + T.water.lift * 0.5, base.z + p.z));
+    }
+    this.stream = buildStream(this.scene, pts, T.water.halfWidth, water);
+    this.stream.setEnabled(false);
+
+    const ps = new ParticleSystem('inner.sourceDrops', T.water.dropCapacity, this.scene);
+    ps.particleTexture = procTexture(this.scene, 'dot');
+    ps.color1 = new Color4(0.75, 0.88, 1, 0.9);
+    ps.color2 = new Color4(0.6, 0.78, 0.95, 0.8);
+    ps.colorDead = new Color4(0.7, 0.85, 1, 0);
+    ps.minSize = 0.12;
+    ps.maxSize = 0.28;
+    ps.minLifeTime = 0.8;
+    ps.maxLifeTime = 1.5;
+    const mid = s[Math.floor(s.length * 0.45)]!;
+    const mx = base.x + mid.x;
+    const mz = base.z + mid.z;
+    const l = Math.hypot(mx - at.x, mz - at.z) || 1;
+    // Drops flow toward the trunk.
+    const ux = -(mx - at.x) / l;
+    const uz = -(mz - at.z) / l;
+    this.dropAt.set(mx, base.y + mid.y + mid.r + 0.25, mz);
+    ps.emitter = this.dropAt;
+    ps.minEmitBox = new Vector3(-0.8, 0, -0.8);
+    ps.maxEmitBox = new Vector3(0.8, 0.2, 0.8);
+    ps.direction1 = new Vector3(ux * 1.2 - 0.2, 0.8, uz * 1.2 - 0.2);
+    ps.direction2 = new Vector3(ux * 2 + 0.2, 1.6, uz * 2 + 0.2);
+    ps.minEmitPower = 0.8;
+    ps.maxEmitPower = 1.6;
+    ps.gravity = new Vector3(0, -3.5, 0);
+    ps.emitRate = 0;
+    ps.start();
+    this.drops = ps;
+    this.setBurnedRootVisible(false);
+  }
+
+  /** Ground bump where a root lies: the player can walk over and along roots. */
+  private rootBump(x: number, z: number): number {
+    const w = TUNING.tree.walk;
+    let best = 0;
+    for (const sg of this.rootSegs) {
+      const dx = sg.bx - sg.ax;
+      const dz = sg.bz - sg.az;
+      const len2 = dx * dx + dz * dz || 1;
+      const t = Math.min(1, Math.max(0, ((x - sg.ax) * dx + (z - sg.az) * dz) / len2));
+      const px = sg.ax + dx * t - x;
+      const pz = sg.az + dz * t - z;
+      const r = sg.ar + (sg.br - sg.ar) * t;
+      const half = r * w.widthK;
+      const d = Math.hypot(px, pz);
+      if (d >= half) continue;
+      const flat = r * w.flatK;
+      const f = d <= flat ? 1 : 0.5 + 0.5 * Math.cos((Math.PI * (d - flat)) / (half - flat));
+      const top = sg.ay + (sg.by - sg.ay) * t + r * w.topK;
+      if (top > 0) best = Math.max(best, top * f);
+    }
+    return best;
+  }
+
+  /** Health of the burned root (0 = burned, 1 = healed). Shown once setBurnedRootVisible(true). */
+  setRootHealth(v: number): void {
+    this.rootHealthValue = Math.min(1, Math.max(0, v));
+    this.applyBurnedRoot();
+  }
+
+  /** Reveal rule: before the bump the root is healthy and there is no fire. */
+  setBurnedRootVisible(visible: boolean): void {
+    this.burnedVisible = visible;
+    this.applyBurnedRoot();
+  }
+
+  /** The dry branch (same index as outside). */
+  setBranchHealth(v: number): void {
+    this.tree.setBranchHealth(OLD_TREE.dryBranch, v);
+  }
+
+  /** Reveal rule: the imp and the burned root appear (after the bump). Root health starts at 0. */
+  reveal(): void {
+    this.imp.setVisible(true);
+    this.setBurnedRootVisible(true);
+    this.setRootHealth(0);
+  }
+
+  setImpState(s: ImpState): void {
+    this.imp.setState(s);
+  }
+
+  /** Anger 0..1 drives the imp's rage. */
+  setAnger(v: number): void {
+    this.imp.setRage(v);
+  }
+
+  /** Puts the player at (x, z) and snaps the camera. */
+  teleport(x: number, z: number): void {
+    this.walker.place(x, z, this.walker.heading);
+    this.cam.snapTo(this.walker.position, this.walker.heading);
+  }
+
+  private applyBurnedRoot(): void {
+    this.tree.setRootHealth(LAYOUT.burnedRoot, this.burnedVisible ? this.rootHealthValue : 1);
+  }
+
+  /** World position of the tip of the burned root (next to the imp clearing). */
+  burnedRootTip(): Vector3 {
+    const s = this.tree.rootSamples(LAYOUT.burnedRoot);
+    const t = s[s.length - 1]!;
+    const p = this.tree.root.position;
+    return new Vector3(p.x + t.x, p.y + t.y, p.z + t.z);
   }
 
   private applyMood(): void {
@@ -222,6 +401,14 @@ export class InnerValley implements World, WalkGround {
       awake: 1,
     });
     this.cam.update(dt, p, this.walker.heading, this.walker.speedRatio);
+    this.tree.update(dt);
+    this.imp.lookAt(p);
+    this.imp.update(dt);
+    const target = this.burnedVisible ? this.rootHealthValue : 0;
+    this.flow += (target - this.flow) * Math.min(1, dt * 2);
+    const on = this.flow > 0.02;
+    if (this.stream.isEnabled() !== on) this.stream.setEnabled(on);
+    this.drops.emitRate = on ? TUNING.tree.water.dropRate * this.flow : 0;
     VALLEY_UNIFORMS.time += dt;
     VALLEY_UNIFORMS.camPos.copyFrom(this.cam.camera.position);
     WORLD_UNIFORMS.time = VALLEY_UNIFORMS.time;

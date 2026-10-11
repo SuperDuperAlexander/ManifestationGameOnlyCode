@@ -18,6 +18,7 @@ import { Anger } from './Anger';
 import { HeatMood } from './HeatMood';
 import { HitTint } from '../ui/HitTint';
 import type { World, WorldId } from './World';
+import type { ImpState } from '../inner/AngerImp';
 
 /** One Engine, two worlds (two Scenes). Renders and updates only the active world. */
 export class Game {
@@ -55,6 +56,7 @@ export class Game {
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
     });
+    if (new URLSearchParams(location.search).has('reveal')) this.inner.reveal();
     this.applyShared(this.outer);
     this.outer.setActive(true);
 
@@ -134,6 +136,8 @@ export class Game {
     }
     this.pushQueued = false;
     this.heat.apply(this.anger.value);
+    this.outer.setAnger(this.anger.value);
+    this.inner.setAnger(this.anger.value);
     this.hitTint.update(dt);
     shown.scene.render();
     const o = this.overlays.get(shown.id);
@@ -163,6 +167,10 @@ export class Game {
       pushLevel: () => this.anger.pushLevel,
       waves: () => this.fields.get(this.current.id)?.count ?? 0,
       setAnger: (v: number) => this.anger.set(v),
+      teleport: (x: number, z: number) => this.current.teleport(x, z),
+      setImpState: (s: ImpState) => this.inner.setImpState(s),
+      setRootHealth: (v: number) => this.inner.setRootHealth(v),
+      reveal: () => this.inner.reveal(),
       breathState: () => this.current.breathState(),
       drawCalls: () => this.overlays.get(this.current.id)?.stats().drawCalls ?? 0,
     };

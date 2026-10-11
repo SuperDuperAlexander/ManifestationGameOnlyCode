@@ -24,6 +24,26 @@ export interface HouseDef {
   face: 'east' | 'west' | 'south';
 }
 
+export type CitizenColors = 'earthy' | 'muted' | 'deep';
+export type CitizenHead = 'hair' | 'cap' | 'bald';
+
+export interface CitizenDef {
+  colors: CitizenColors;
+  head: CitizenHead;
+  beard: boolean;
+  torch: boolean;
+  /** 0..1, how short-tempered this person is by nature. */
+  personalBase: number;
+  /** Index into TOWN.loops. */
+  loop: number;
+  /** Start waypoint in the loop. */
+  start: number;
+  /** Chat partner: index of the other citizen. The lower index leads. */
+  partner?: number;
+  scale: number;
+  seed: number;
+}
+
 export const TOWN = {
   start: { x: 0, z: 0 },
   /** Low stone arch between the meadow and Main Street. */
@@ -48,6 +68,25 @@ export const TOWN = {
   ],
   /** The wall around the meadow strip (low stone). */
   meadowWall: { thickness: 0.5 },
+  /** Waypoint loops for citizens (x, z). Clear of the fountain, stalls and tree. */
+  loops: [
+    [[-4, 35], [-4, 45], [-9, 47], [-9, 35]],
+    [[4, 35], [4, 45], [9, 46], [9, 36]],
+    [[4, 37], [0, 41.5], [-4, 37], [0, 32.5]],
+    [[-1.5, 17], [1.5, 22], [-1.5, 27], [1.5, 20]],
+    [[3, 47], [0, 50.5], [-3, 47], [0, 43.5]],
+  ] as [number, number][][],
+  /** Eight citizens. Pairs (0,1) (2,3) (4,5) chat. Colour sets mixed everywhere; none means good or bad. */
+  citizens: [
+    { colors: 'earthy', head: 'hair', beard: false, torch: false, personalBase: 0.1, loop: 0, start: 0, partner: 1, scale: 1.0, seed: 1 },
+    { colors: 'muted', head: 'cap', beard: true, torch: true, personalBase: 0.2, loop: 0, start: 0, partner: 0, scale: 1.05, seed: 2 },
+    { colors: 'deep', head: 'hair', beard: true, torch: false, personalBase: 0.15, loop: 1, start: 1, partner: 3, scale: 1.08, seed: 3 },
+    { colors: 'earthy', head: 'bald', beard: false, torch: true, personalBase: 0.25, loop: 1, start: 1, partner: 2, scale: 0.97, seed: 4 },
+    { colors: 'muted', head: 'hair', beard: false, torch: false, personalBase: 0.05, loop: 2, start: 0, partner: 5, scale: 0.95, seed: 5 },
+    { colors: 'deep', head: 'cap', beard: false, torch: true, personalBase: 0.2, loop: 2, start: 0, partner: 4, scale: 1.0, seed: 6 },
+    { colors: 'earthy', head: 'cap', beard: true, torch: false, personalBase: 0.12, loop: 3, start: 0, scale: 1.03, seed: 7 },
+    { colors: 'muted', head: 'hair', beard: true, torch: true, personalBase: 0.3, loop: 4, start: 2, scale: 1.0, seed: 8 },
+  ] as CitizenDef[],
   houses: [
     // Main Street, west side
     { x: -7.2, z: 17.5, w: 7, d: 8, h: 4.2, wall: 'sandstone', shutter: 'olive', face: 'east' },

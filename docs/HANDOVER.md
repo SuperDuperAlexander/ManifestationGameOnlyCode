@@ -31,7 +31,8 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
   Valley still runs from `index.html`: 60 fps, 35 draw calls, 0 console errors.
 - **Step 1 done**: greybox town + inner valley, Q / diamond switch (1.6 s gold bloom). Town 27 draw calls, 60 fps. Inner 24 draw calls, 39 fps in the headless test (grass; check in Step 6).
 - **Step 2 done**: Thought Waves in both worlds. Breathe = pass, E = push (stronger), nothing = hit (shove, slow, red edge). Scenario `waves` passes. 60 fps, ≤ 30 draw calls.
-- Next: Step 3 (citizens).
+- **Steps 3 + 4 done**: 8 citizens with torches and steam mirror the anger (town 47 draw calls, 60 fps). Inner Tree, burned root, Source stream, Anger Imp (raging / calming / calm). Inner 34–39 draw calls.
+- Next: Step 5 (story, lantern, bump, alley).
 
 ## 3. Next step — start here
 

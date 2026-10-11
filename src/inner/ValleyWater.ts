@@ -49,6 +49,38 @@ export function buildRiver(scene: Scene, terrain: ValleyTerrain, material: Shade
   return mesh;
 }
 
+/** A narrow ribbon of flowing water along the given points. Used for the Source stream into the burned root. */
+export function buildStream(scene: Scene, points: Vector3[], halfWidth: number, material: ShaderMaterial): Mesh {
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const indices: number[] = [];
+  for (let i = 0; i < points.length; i++) {
+    const p = points[i]!;
+    const a = points[Math.max(0, i - 1)]!;
+    const b = points[Math.min(points.length - 1, i + 1)]!;
+    let dx = b.x - a.x;
+    let dz = b.z - a.z;
+    const l = Math.hypot(dx, dz) || 1;
+    dx /= l;
+    dz /= l;
+    positions.push(p.x - dz * halfWidth, p.y, p.z + dx * halfWidth, p.x + dz * halfWidth, p.y, p.z - dx * halfWidth);
+    normals.push(0, 1, 0, 0, 1, 0);
+    if (i < points.length - 1) {
+      const k = i * 2;
+      indices.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+    }
+  }
+  const mesh = new Mesh('valley.stream', scene);
+  const data = new VertexData();
+  data.positions = positions;
+  data.indices = indices;
+  data.normals = normals;
+  data.applyToMesh(mesh);
+  mesh.material = material;
+  mesh.isPickable = false;
+  return mesh;
+}
+
 /**
  * A cascade: a ribbon of water that runs up the terraced cliff from a start point,
  * following the ground, so it falls over each ledge and runs across it.

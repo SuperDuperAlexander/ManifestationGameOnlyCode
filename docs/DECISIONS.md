@@ -48,4 +48,9 @@ Fairy, Companion and the old valley code are in `legacy/valley-v1/src/`.
 Waves face the camera so the text stays readable. E pushes only within `TUNING.waves.pushRange` (6 m).
 Heat tint changes only the haze colour (`HeatMood`). Hit = red screen edge (`HitTint`). Touch push button comes in Step 6.
 
-(Add L15, … here.)
+**L15. Steps 3 + 4 built in parallel.** Citizens are one CPU-posed mesh each, shadows share one mesh (town 45–47 draw calls).
+`src/world/TreeShape.ts` = one silhouette for Old Tree and Inner Tree. Dry branch = burned root = index 2.
+Imp at the imp clearing, hidden until `reveal()` (reveal rule). `LAYOUT.alleyDir` = west (guess, check in Step 5).
+Test hooks: `teleport`, `setImpState`, `setRootHealth`, `reveal`; URL `?reveal`.
+
+(Add L16, … here.)

@@ -555,7 +555,7 @@ function shapeHood(mesh: Mesh): void {
 }
 
 /** Paints a mesh in one colour (vertex colours). */
-function paint(mesh: Mesh, hex: string): Mesh {
+export function paint(mesh: Mesh, hex: string): Mesh {
   const c = Color3.FromHexString(hex);
   return paintBy(mesh, () => c);
 }
@@ -576,7 +576,7 @@ function paintBy(mesh: Mesh, pick: (p: Vector3) => Color3): Mesh {
 }
 
 /** Bakes the parts' transforms and merges them into one mesh. */
-function merge(name: string, parts: Mesh[]): Mesh {
+export function merge(name: string, parts: Mesh[]): Mesh {
   const merged = Mesh.MergeMeshes(parts, true, true)!;
   merged.name = name;
   return merged;

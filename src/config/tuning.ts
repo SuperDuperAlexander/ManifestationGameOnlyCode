@@ -302,6 +302,36 @@ export const TUNING = {
     dolly: 0.8,
   },
 
+  /** Citizens of the outer town (GAME_DESIGN 6.1). Spawns and waypoints: src/outer/townLayout.ts. */
+  citizens: {
+    count: 8,
+    /** agitation = personalBase + townAnger * agitationWeight */
+    agitationWeight: 0.8,
+    /** Below this agitation: calm walks and chats. Above 'medium': stomping, fists, steam now and then. */
+    mediumAbove: 0.3,
+    /** Above this: steam often, torch flares. */
+    highAbove: 0.6,
+    /** Two agitated citizens bump into each other above this agitation. */
+    bumpAbove: 0.65,
+    bumpDistance: 0.75,
+    bumpCooldown: 9,
+    bumpShove: 2.6,
+    radius: 0.3,
+    walkSpeedLow: 0.9,
+    walkSpeedHigh: 1.9,
+    /** Wait at a waypoint: seconds when calm and when furious. */
+    waitCalm: 4.5,
+    waitAngry: 0.7,
+    steamIntervalMedium: 3.4,
+    steamIntervalHigh: 0.9,
+    /** Citizens further than this from the player drop arms, shadow and detail. */
+    lodDistance: 22,
+    /** Citizens step around the player inside this distance. */
+    playerAvoid: 1.1,
+    visualScale: 1.1,
+    smooth: 1.5,
+  },
+
   /** Outer world: the little town (src/outer/). Positions live in townLayout.ts. */
   outer: {
     /** Fog-free greybox sky colour is taken from the palette; these are sizes. */
@@ -372,6 +402,78 @@ export const TUNING = {
     hitFadeS: 2,
     /** Opacity of the red screen-edge tint right after a hit. */
     hitPeak: 0.9,
+  },
+
+  /** Citizen torch (src/npc/Torch.ts). Intensity 0 = small calm flame, 1 = tall flare. */
+  torch: {
+    stickLength: 0.9,
+    stickTopDiameter: 0.09,
+    stickBottomDiameter: 0.12,
+    flameBaseHeight: 0.22,
+    flameExtraHeight: 0.35,
+    flameBaseWidth: 0.12,
+    flameExtraWidth: 0.08,
+    /** Flicker speed (per second) and strength (share of the flame size). */
+    flickerSpeed: 9,
+    flickerAmount: 0.12,
+    /** How fast the flame follows a new intensity, per second. */
+    intensityEase: 4,
+  },
+  /** Citizen steam puffs with lightning bolts (src/npc/Steam.ts). */
+  steam: {
+    riseHeight: 0.9,
+    lifeS: 2.2,
+    /** Puff radius at start, in metres. Grows by puffGrow over its life. */
+    puffSize: 0.1,
+    puffGrow: 0.12,
+    /** Extra size per unit of strength (0..1). */
+    strengthGrow: 0.5,
+    /** Peak opacity of a puff (0..1). */
+    peakAlpha: 0.38,
+    /** Bolt size in metres, and how often a bolt flickers on and off (per second). */
+    boltSize: 0.09,
+    boltFlickerRate: 7,
+    /** Sideways drift of a puff, metres over its life. */
+    drift: 0.12,
+  },
+  tree: {
+    /** Inner Tree height in metres (Old Tree = outer.treeHeight). */
+    innerScale: 26,
+    /** Walkable bump of a root: half width = radius * widthK, top = centre height + radius * topK. */
+    walk: { widthK: 3.2, topK: 0.55, flatK: 0.5 },
+    /** Trunk blocker radius, in tree units (x scale). */
+    trunkCollider: 0.075,
+    /** Embers on a burned root. size / rise are in tree units (x scale). */
+    ember: { rate: 16, capacity: 40, size: 0.01, rise: 0.012 },
+    /** Source water into the burned root. */
+    water: { halfWidth: 0.32, lift: 0.14, dropRate: 30, dropCapacity: 80 },
+  },
+
+  imp: {
+    /** Good breaths with the imp until it is calm. */
+    breathsToCalm: 3,
+    /** Imp size compared to the player. */
+    scale: 1.5,
+    /** Converts the imp's model units (about 1.7 tall) to player-figure units. */
+    modelUnit: 0.72,
+    /** How fast the states blend (per second). */
+    blendRate: 2.2,
+    /** Stomp speed (radians per second; one stomp per half turn). */
+    stompRate: 7,
+    /** Steam clouds per second at full rage. */
+    steamPerS: 7,
+    /** Lightning bolts per second at full rage. */
+    boltPerS: 2.5,
+    /** Seconds between fire spits: [at rage 0, at rage 1]. */
+    spitEveryS: [3.6, 2],
+    /** Spit speed in model units per second. */
+    spitSpeed: 3,
+    /** Seconds the falling-figure clue stays visible. */
+    clueLifeS: 1.7,
+    /** Sparkles per second in the calm form. */
+    sparklePerS: 6,
+    /** Pool sizes (thin instances, one draw call each). */
+    pool: { steam: 12, bolt: 4, rock: 6, fire: 6, spark: 8 },
   },
 
   anger: {

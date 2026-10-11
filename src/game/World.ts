@@ -26,6 +26,8 @@ export interface World {
   shove(dx: number, dz: number): void;
   /** Walk speed times `factor` for `seconds` (a hit by a Thought Wave). */
   slow(factor: number, seconds: number): void;
+  /** Puts the player at (x, z). */
+  teleport(x: number, z: number): void;
   /** Values for the debug overlay. */
   debugInfo(): Record<string, string | number>;
 }

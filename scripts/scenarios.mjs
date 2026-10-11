@@ -8,6 +8,19 @@ export default function scenarios({ wait, shot, hold, page }) {
       world,
       { timeout: 20000 },
     );
+  /** Fails with a clear message if a test hook is missing on window.__lw. */
+  const requireHooks = async (names, scenario) => {
+    const missing = await page.evaluate(
+      (list) => list.filter((n) => typeof window.__lw?.[n] !== 'function'),
+      names,
+    );
+    if (missing.length) {
+      console.error(`FAIL (${scenario}): missing test hook(s) on window.__lw: ${missing.join(', ')}`);
+      process.exitCode = 3;
+      return false;
+    }
+    return true;
+  };
   return {
     /** Look-within check: outer town -> inner world -> outer town, position and draw calls. */
     async lookwithin() {
@@ -206,6 +219,108 @@ export default function scenarios({ wait, shot, hold, page }) {
         console.error(`waves: FAIL (${failures.length} problem(s))`);
       } else {
         console.log('waves: PASS');
+      }
+    },
+    /** Town square (Step 3): calm anger vs. high anger, draw calls per shot. */
+    async town() {
+      const failures = [];
+      const check = (ok, msg) => {
+        if (!ok) {
+          console.error(`FAIL: ${msg}`);
+          failures.push(msg);
+        }
+      };
+      if (!(await requireHooks(['world', 'toggle', 'drawCalls', 'setAnger', 'teleport'], 'town'))) return;
+      const snap = async (name) => {
+        await shot(name);
+        const dc = await lw(() => window.__lw.drawCalls());
+        console.log(`draw calls at ${name}: ${dc}`);
+        check(dc < 100, `draw calls at ${name} = ${dc} (limit < 100)`);
+      };
+
+      // Dismiss the start screen, if there is one.
+      await page.keyboard.press('Enter');
+      await wait(1000);
+      await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
+      await waitWorld('outer');
+      await wait(500);
+
+      // Calm square.
+      await lw((v) => window.__lw.setAnger(v), 0);
+      await lw(() => window.__lw.teleport(0, 32));
+      await wait(3000);
+      await snap('square-calm');
+
+      // Angry square.
+      await lw((v) => window.__lw.setAnger(v), 0.9);
+      await wait(5000);
+      await snap('square-angry');
+
+      if (failures.length) {
+        process.exitCode = 3;
+        console.error(`town: FAIL (${failures.length} problem(s))`);
+      } else {
+        console.log('town: PASS');
+      }
+    },
+    /** Anger Imp and burned root (Step 4): imp states and root health 0 -> 1. */
+    async imp() {
+      const failures = [];
+      const check = (ok, msg) => {
+        if (!ok) {
+          console.error(`FAIL: ${msg}`);
+          failures.push(msg);
+        }
+      };
+      if (
+        !(await requireHooks(
+          ['world', 'toggle', 'drawCalls', 'reveal', 'teleport', 'setImpState', 'setRootHealth'],
+          'imp',
+        ))
+      )
+        return;
+      const snap = async (name) => {
+        await shot(name);
+        const dc = await lw(() => window.__lw.drawCalls());
+        console.log(`draw calls at ${name}: ${dc}`);
+        check(dc < 100, `draw calls at ${name} = ${dc} (limit < 100)`);
+      };
+
+      // Dismiss the start screen, if there is one.
+      await page.keyboard.press('Enter');
+      await wait(1000);
+      await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
+      await waitWorld('outer');
+      await wait(500);
+
+      // Go to the inner world and stage the imp.
+      await lw(() => window.__lw.toggle());
+      await waitWorld('inner');
+      await lw(() => window.__lw.reveal());
+      await lw(() => window.__lw.teleport(-7, 4));
+      await wait(2000);
+
+      // Imp states.
+      for (const state of ['raging', 'calming', 'calm']) {
+        await lw((s) => window.__lw.setImpState(s), state);
+        await wait(2000);
+        await snap(`imp-${state}`);
+      }
+
+      // Root health 0 -> 1 over 3 s in 100 ms steps.
+      await lw(() => window.__lw.setRootHealth(0));
+      await snap('root-0');
+      for (let i = 1; i <= 30; i++) {
+        await lw((v) => window.__lw.setRootHealth(v), i / 30);
+        await wait(100);
+      }
+      await snap('root-1');
+
+      if (failures.length) {
+        process.exitCode = 3;
+        console.error(`imp: FAIL (${failures.length} problem(s))`);
+      } else {
+        console.log('imp: PASS');
       }
     },
     /** Close-up of the figure at fixed screen clip (walk and breath). */

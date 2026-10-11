@@ -19,6 +19,10 @@ import { Joystick } from '../ui/Joystick';
 import type { World } from '../game/World';
 import { TownColliders } from './Colliders';
 import { TOWN, type HouseDef } from './townLayout';
+import { buildTree, type TreeHandle } from '../world/TreeBuilder';
+import { OLD_TREE } from '../world/TreeShape';
+import { Citizen } from '../npc/Citizen';
+import { SteamPool } from '../npc/Steam';
 
 type Quad = { x0: number; z0: number; y0: number; x1: number; z1: number; y1: number };
 
@@ -47,6 +51,9 @@ export class Town implements World {
   private shoveLeft = { x: 0, z: 0 };
   private slowFactor = 1;
   private slowTime = 0;
+  private readonly citizens: Citizen[] = [];
+  private readonly steam: SteamPool;
+  private townAnger = 0;
 
   constructor(
     engine: Engine,
@@ -83,10 +90,24 @@ export class Town implements World {
       new Joystick(ui, this.input, left);
     }
     this.input.attach();
+    // Citizens mirror the anger (GAME_DESIGN 6.1).
+    this.steam = new SteamPool(this.scene, 24);
+    TOWN.citizens.forEach((def, i) => this.citizens.push(new Citizen(this.scene, def, i, TOWN.loops)));
+    TOWN.citizens.forEach((def, i) => {
+      if (def.partner !== undefined) this.citizens[i]!.partner = this.citizens[def.partner]!;
+    });
+
     this.cam = new FollowCamera(this.scene, { height: (_x, z) => this.groundY(z) }, canvas, right);
     this.cam.snapTo(this.visual.root.position, 0);
     engine.onResizeObservable.add(() => this.cam.onResize());
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  }
+
+  private oldTree: TreeHandle | null = null;
+
+  /** Health of the Old Tree's dry branch (0 dry, 1 healed). */
+  setOldTreeBranchHealth(v: number): void {
+    this.oldTree?.setBranchHealth(OLD_TREE.dryBranch, v);
   }
 
   update(dt: number): void {
@@ -105,10 +126,32 @@ export class Town implements World {
     this.controller.update(dt);
     this.applyShove(dt);
     this.placeVisual(dt);
+    const pp = this.controller.position;
+    for (const c of this.citizens) {
+      c.update(dt, {
+        townAnger: this.townAnger,
+        playerX: pp.x,
+        playerZ: pp.z,
+        colliders: this.colliders,
+        steam: this.steam,
+        others: this.citizens,
+        groundY: (z) => this.groundY(z),
+      });
+    }
+    this.steam.update(dt);
     this.cam.update(dt, this.visual.root.position, this.controller.heading, this.controller.speedRatio);
     WORLD_UNIFORMS.time += dt;
     WORLD_UNIFORMS.pivotZ = 1e6;
     this.input.endFrame();
+  }
+
+  teleport(x: number, z: number): void {
+    this.controller.teleport(x, z);
+  }
+
+  /** Town anger 0..1. Game calls this every frame (or on change). Citizens mirror it. */
+  setAnger(v: number): void {
+    this.townAnger = Math.min(1, Math.max(0, v));
   }
 
   breathState(): string {
@@ -427,32 +470,18 @@ export class Town implements World {
       this.colliders.addBox(s.x, s.z, s.w, s.d);
     }
 
-    // Old Tree: trunk and a crown of four spheres. It is the landmark: tall.
+    // Old Tree: shared silhouette (same as the Inner Tree). Dry branch starts dry.
     const t = TOWN.oldTree;
-    const th = TUNING.outer.treeHeight;
-    const cr = TUNING.outer.treeCrownRadius;
-    const trunkH = th - cr * 0.8;
-    const trunk = MeshBuilder.CreateCylinder('trunk', { diameterTop: t.trunkRadius * 1.3, diameterBottom: t.trunkRadius * 2.2, height: trunkH, tessellation: 12 }, this.scene);
-    trunk.position.set(t.x, trunkH / 2, t.z);
-    const crowns: Mesh[] = [];
-    const puffs: [number, number, number, number][] = [
-      [0, 0, 0, 1],
-      [cr * 0.7, -cr * 0.25, cr * 0.2, 0.7],
-      [-cr * 0.65, -cr * 0.2, -cr * 0.25, 0.72],
-      [cr * 0.1, cr * 0.3, -cr * 0.55, 0.6],
-    ];
-    for (const [dx, dy, dz, k] of puffs) {
-      const sp = MeshBuilder.CreateSphere('crown', { diameter: cr * 2 * k, segments: 10 }, this.scene);
-      sp.position.set(t.x + dx, th - cr * 0.7 + dy, t.z + dz);
-      crowns.push(sp);
-    }
+    this.oldTree = buildTree(this.scene, OLD_TREE, TUNING.outer.treeHeight, {
+      position: new Vector3(t.x, 0, t.z),
+      dynamicBranches: [OLD_TREE.dryBranch],
+      branchHealth: 0,
+    });
     this.colliders.addCircle(t.x, t.z, t.colliderRadius);
 
     this.finish('town.fountain', stone, this.mat(PALETTE.stone));
     this.finish('town.stallWood', wood, this.mat(SHADES.umber));
     this.finish('town.canopyIvory', canopyIvory, this.mat(PALETTE.ivory));
     this.finish('town.canopyOlive', canopyOlive, this.mat(PALETTE.olive));
-    this.finish('town.trunk', [trunk], this.mat(SHADES.umber));
-    this.finish('town.crown', crowns, this.mat(PALETTE.sage));
   }
 }
