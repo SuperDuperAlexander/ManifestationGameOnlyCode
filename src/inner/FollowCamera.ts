@@ -87,6 +87,12 @@ export class FollowCamera {
     this.idle = 0;
   }
 
+  /** Gently turns the view toward a yaw (e.g. the alley story) unless the player is dragging the camera. */
+  easeYaw(target: number, rate: number, dt: number): void {
+    if (this.idle < TUNING.inner.camera.recenterDelay) return;
+    this.yaw += angleDelta(this.yaw, target) * Math.min(1, rate * dt);
+  }
+
   onResize(): void {
     const c = TUNING.inner.camera;
     const engine = this.scene.getEngine();

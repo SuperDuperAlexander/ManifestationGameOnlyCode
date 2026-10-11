@@ -53,4 +53,9 @@ Heat tint changes only the haze colour (`HeatMood`). Hit = red screen edge (`Hit
 Imp at the imp clearing, hidden until `reveal()` (reveal rule). `LAYOUT.alleyDir` = west (guess, check in Step 5).
 Test hooks: `teleport`, `setImpState`, `setRootHealth`, `reveal`; URL `?reveal`.
 
-(Add L16, … here.)
+**L16. Step 5 story.** `Story.ts` directs, `StoryState.ts` holds beats 0–9 + flags + save. Q unlocks after the first breath.
+Reveal + mirror: imp, burned root and BOTH dry branches appear only after the bump. Fountain jet rises when the root heals.
+Town camera treats roofs as ground, so it never sits inside a wall. Torches keep a calm flame at anger 0 (design 7.7).
+Open: no touch button for interact yet; "waves thicker near the alley" not built (Step 6).
+
+(Add L17, … here.)

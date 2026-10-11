@@ -22,6 +22,10 @@ export interface World {
   setActive(active: boolean): void;
   /** Breath state of the player ('idle' | 'inhale' | 'exhale'). Breathing lets Thought Waves pass. */
   breathState(): string;
+  /** Called when the player finishes a whole breath (also for the test hook). */
+  onBreathDone(cb: () => void): void;
+  /** Counts one full good breath without input (test hook). */
+  simulateBreath(): void;
   /** Moves the player by (dx, dz) metres over a short time, never into walls or water. */
   shove(dx: number, dz: number): void;
   /** Walk speed times `factor` for `seconds` (a hit by a Thought Wave). */

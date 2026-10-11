@@ -62,7 +62,7 @@ export class InnerValley implements World, WalkGround {
   get camera(): FreeCamera {
     return this.cam.camera;
   }
-  private readonly visual: PlayerVisual;
+  readonly visual: PlayerVisual;
   private readonly breath = new BreathSystem();
   private readonly breathVisuals: BreathVisuals;
   private readonly touch: boolean;
@@ -80,7 +80,7 @@ export class InnerValley implements World, WalkGround {
   private drops!: ParticleSystem;
   private dropAt = new Vector3();
   private flow = 0;
-  private imp!: AngerImp;
+  imp!: AngerImp;
 
   constructor(
     engine: Engine,
@@ -414,6 +414,14 @@ export class InnerValley implements World, WalkGround {
     WORLD_UNIFORMS.time = VALLEY_UNIFORMS.time;
     WORLD_UNIFORMS.pivotZ = 1e6;
     this.input.endFrame();
+  }
+
+  onBreathDone(cb: () => void): void {
+    this.breath.onBreathDone(() => cb());
+  }
+
+  simulateBreath(): void {
+    this.breath.simulate();
   }
 
   breathState(): string {

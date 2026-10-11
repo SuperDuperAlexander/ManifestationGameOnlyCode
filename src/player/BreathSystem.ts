@@ -114,6 +114,12 @@ export class BreathSystem {
     this.guidePhase = (this.guidePhase + dt / (b.inhaleTarget + b.exhaleTarget)) % 1;
   }
 
+  /** Test hook: counts as one full, good breath (same listeners as a real one). */
+  simulate(): void {
+    this.breaths++;
+    for (const cb of this.listeners) cb({ rhythm: 1, level: 1 });
+  }
+
   private enter(next: BreathState): void {
     if (this.state === 'inhale') this.lastInhale = this.stateTime;
     if (this.state === 'exhale' && !this.exhaleCounted && this.stateTime >= TUNING.breath.minScoredPhase) {

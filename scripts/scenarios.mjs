@@ -21,7 +21,154 @@ export default function scenarios({ wait, shot, hold, page }) {
     }
     return true;
   };
+  // ---- The Lantern (PoC): full playthrough of beats 0-9 (docs/GAME_DESIGN.md section 9). ----
+  const LANTERN_HOOKS = [
+    'world', 'toggle', 'transitioning', 'teleport', 'anger', 'beat', 'flags', 'lanternLight',
+    'debugBreath', 'interact', 'alleyApplePositions', 'bumpTrigger', 'oldTreeNiche', 'impPos',
+    'endCardVisible', 'line', 'clearSave', 'drawCalls',
+  ];
+  const STEP_MS = 15000;
+  const waitFor = async (label, fn, arg = null, timeout = STEP_MS) => {
+    try {
+      await page.waitForFunction(fn, arg, { timeout, polling: 200 });
+    } catch {
+      throw new Error(`timeout (${timeout / 1000} s) waiting for: ${label}`);
+    }
+  };
+  const expect = (ok, msg) => {
+    if (!ok) throw new Error(`check failed: ${msg}`);
+  };
+  const waitWorldStable = (w) =>
+    waitFor(`world "${w}"`, (x) => window.__lw.world() === x && !window.__lw.transitioning(), w);
+  const toggleTo = async (w) => {
+    await lw(() => window.__lw.toggle());
+    await waitWorldStable(w);
+    await wait(500);
+  };
+  const teleportTo = async (p) => {
+    await lw((q) => window.__lw.teleport(q.x, q.z), p);
+    await wait(300);
+  };
+  const interactAt = async (p) => {
+    await teleportTo(p);
+    await lw(() => window.__lw.interact());
+    await wait(300);
+  };
+  const snapChecked = async (name) => {
+    await shot(name);
+    const dc = await lw(() => window.__lw.drawCalls());
+    console.log(`draw calls at ${name}: ${dc}`);
+    expect(dc < 100, `draw calls at ${name} = ${dc} (limit < 100)`);
+  };
+  const breathGood = async (n) => {
+    for (let i = 0; i < n; i++) {
+      await lw(() => window.__lw.debugBreath());
+      await wait(300);
+    }
+  };
+  const flagsNow = () => lw(() => window.__lw.flags());
+  const bootFresh = async () => {
+    await lw(() => window.__lw.clearSave());
+    await page.reload({ waitUntil: 'load' });
+    await page.keyboard.press('Enter'); // dismiss the start screen, if there is one
+    await wait(1000);
+    await waitFor('game hooks after reload', () => !!window.__lw, null, 30000);
+    await waitWorldStable('outer');
+    await wait(500);
+  };
+  const bumpStep = async () => {
+    await teleportTo(await lw(() => window.__lw.bumpTrigger()));
+    await waitFor('bump (flags().bumped and lanternLight() < 0.3)', () =>
+      window.__lw.flags().bumped && window.__lw.lanternLight() < 0.3);
+    await snapChecked('b3-bump');
+    await wait(3000);
+    await snapChecked('b4-waves');
+  };
+  const treeWeakStep = async () => {
+    await interactAt(await lw(() => window.__lw.oldTreeNiche()));
+    expect(!(await flagsNow()).delivered, 'lantern delivered while still weak at the Old Tree');
+    await snapChecked('b5-tree-weak');
+  };
+  const impSeeStep = async () => {
+    const p = await lw(() => window.__lw.impPos());
+    await teleportTo({ x: p.x + 1.5, z: p.z });
+    await wait(2000);
+    expect((await flagsNow()).sawImp, 'imp not seen on Look Within near the imp');
+    await snapChecked('b6-imp');
+  };
+  const alleyStep = async () => {
+    const apples = await lw(() => window.__lw.alleyApplePositions());
+    for (const a of apples) await interactAt(a);
+    await waitFor('flags().helped (5 apples)', () => window.__lw.flags().helped);
+    await snapChecked('b7-alley');
+  };
+  const transformStep = async () => {
+    const p = await lw(() => window.__lw.impPos());
+    await teleportTo({ x: p.x + 1.5, z: p.z });
+    await breathGood(3);
+    await waitFor('flags().lanternRelit (10 s)', () => window.__lw.flags().lanternRelit, null, 10000);
+    await snapChecked('b8-calm');
+  };
+  const deliverStep = async () => {
+    await interactAt(await lw(() => window.__lw.oldTreeNiche()));
+    await waitFor('end card (endCardVisible)', () => window.__lw.endCardVisible());
+    expect((await flagsNow()).delivered, 'flags().delivered is false after placing the lantern');
+    await snapChecked('b9-end');
+  };
+  const playLantern = async (alt) => {
+    const tag = alt ? 'lantern-alt' : 'lantern';
+    if (!(await requireHooks(LANTERN_HOOKS, tag))) return;
+    try {
+      await bootFresh();
+      await waitFor('beat >= 0 (wake)', () => window.__lw.beat() >= 0);
+      await snapChecked('b0-wake');
+      await breathGood(1);
+      await waitFor('beat >= 1 (first breath)', () => window.__lw.beat() >= 1);
+      if (!alt) {
+        await toggleTo('inner');
+        await snapChecked('b2-inner-calm');
+        await toggleTo('outer');
+        await waitFor('beat >= 2 (first Look Within)', () => window.__lw.beat() >= 2);
+        await bumpStep();
+        await treeWeakStep();
+        await toggleTo('inner');
+        await impSeeStep();
+        await breathGood(3);
+        expect(!(await flagsNow()).impCalm, 'imp calmed before the alley was helped');
+        await toggleTo('outer');
+        await alleyStep();
+        await toggleTo('inner');
+        await transformStep();
+        await toggleTo('outer');
+      } else {
+        await bumpStep();
+        await treeWeakStep();
+        await alleyStep();
+        await toggleTo('inner');
+        await snapChecked('b2-inner-calm');
+        await toggleTo('outer');
+        await waitFor('beat >= 2 (first Look Within)', () => window.__lw.beat() >= 2);
+        await toggleTo('inner');
+        await impSeeStep();
+        await transformStep();
+        await toggleTo('outer');
+      }
+      await deliverStep();
+      console.log(`${tag}: PASS`);
+    } catch (e) {
+      console.error(`FAIL (${tag}): ${e.message}`);
+      process.exitCode = 3;
+    }
+  };
   return {
+    /** Full PoC playthrough, beats 0-9 in the normal order. Screenshots: b0..b9. */
+    async lantern() {
+      await playLantern(false);
+    },
+    /** Same playthrough, but the alley (apples) comes before the first Look Within. */
+    async 'lantern-alt'() {
+      await playLantern(true);
+    },
     /** Look-within check: outer town -> inner world -> outer town, position and draw calls. */
     async lookwithin() {
       let failed = false;
@@ -37,6 +184,9 @@ export default function scenarios({ wait, shot, hold, page }) {
       const dc1 = await lw(() => window.__lw.drawCalls());
       console.log('draw calls outer:', dc1);
 
+      // Q is locked until the first breath (GAME_DESIGN 9, beat 2): breathe once first.
+      await lw(() => window.__lw.debugBreath());
+      await wait(300);
       await page.keyboard.press('KeyQ');
       await waitWorld('inner');
       await wait(500);

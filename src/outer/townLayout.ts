@@ -59,6 +59,21 @@ export const TOWN = {
   slope: { startZ: -5, endZ: 8 },
   /** Thought Waves come from this side: the alley where the stranger ran. */
   waveSource: { x: -19, z: 42 },
+  /** Bump on Main Street: crossing triggerZ starts it. The stranger runs from `spawn` to the player, then along `path`. */
+  bump: {
+    triggerZ: 21,
+    spawn: { x: 2, z: 36.5 },
+    path: [[0, 31], [-3, 35.5], [-8, 38.5], [-10.5, 41.8], [-14, 42]] as [number, number][],
+  },
+  /** Alley story spots. */
+  alleyStory: {
+    child: { x: -22, z: 41.8, heading: Math.PI / 2 },
+    stranger: { x: -20.5, z: 42.5, heading: -Math.PI / 2 },
+    basket: { x: -17.5, z: 41.3 },
+    apples: [[-15, 41.0], [-16.4, 43.1], [-18.9, 40.8], [-19.6, 43.2], [-13.6, 42.6]] as [number, number][],
+  },
+  /** Lantern niche in the Old Tree trunk (south side, faces the fountain). */
+  niche: { y: 1.2, trunkFaceDz: 0.88, w: 0.5, h: 0.7, d: 0.3 },
   squareCentre: { x: 0, z: 40 },
   oldTree: { x: 0, z: 47, trunkRadius: 0.9, colliderRadius: 1.3 },
   fountain: { x: 0, z: 37, outerRadius: 2.2, innerRadius: 1.6, height: 0.6 },

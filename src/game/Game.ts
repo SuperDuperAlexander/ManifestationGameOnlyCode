@@ -17,6 +17,9 @@ import { WaveField } from '../thought/WaveField';
 import { Anger } from './Anger';
 import { HeatMood } from './HeatMood';
 import { HitTint } from '../ui/HitTint';
+import { Lantern } from './Lantern';
+import { Story } from './Story';
+import { StoryState } from './StoryState';
 import type { World, WorldId } from './World';
 import type { ImpState } from '../inner/AngerImp';
 
@@ -37,6 +40,9 @@ export class Game {
   private pushQueued = false;
   private readonly heat = new HeatMood();
   private readonly hitTint: HitTint;
+  readonly story: Story;
+  private readonly lanterns: Lantern[];
+  private lastLine = '';
 
   constructor(canvas: HTMLCanvasElement, ui: HTMLElement) {
     this.engine = new Engine(canvas, true, { stencil: false, powerPreference: 'high-performance', audioEngine: false });
@@ -51,10 +57,17 @@ export class Game {
     this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource));
     this.hitTint = new HitTint(ui);
     this.anger.on((e) => { if (e === 'hit') this.hitTint.flash(); });
-    this.dialogue = new DialogueSystem(ui, new Events());
+    const events = new Events();
+    events.on('lineShown', (e) => { this.lastLine = e.text; });
+    this.dialogue = new DialogueSystem(ui, events);
+    const outerLantern = new Lantern(this.outer.scene, this.outer.visual);
+    const innerLantern = new Lantern(this.inner.scene, this.inner.visual);
+    this.lanterns = [outerLantern, innerLantern];
+    this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
+      this.story.begin();
     });
     if (new URLSearchParams(location.search).has('reveal')) this.inner.reveal();
     this.applyShared(this.outer);
@@ -67,6 +80,7 @@ export class Game {
         this.current = to;
         this.applyShared(to);
         this.showOverlay(to.id);
+        this.story.onWorldShown(to.id);
       },
       (w) => this.syncCamera(w),
     );
@@ -83,7 +97,7 @@ export class Game {
     window.addEventListener('keydown', (e) => {
       if (e.repeat) return;
       if (e.code === 'KeyQ') this.toggle();
-      if (e.code === 'KeyE') this.pushQueued = true;
+      if (e.code === 'KeyE' && !this.transition.active && !this.story.interact()) this.pushQueued = true;
       if (e.code === 'F3') {
         e.preventDefault();
         this.debugOn = !this.debugOn;
@@ -97,7 +111,7 @@ export class Game {
   }
 
   toggle(): void {
-    if (this.transition.active) return;
+    if (this.transition.active || !this.story.canLookWithin()) return;
     this.transition.start(this.current, this.current === this.outer ? this.inner : this.outer);
   }
 
@@ -139,6 +153,7 @@ export class Game {
     this.outer.setAnger(this.anger.value);
     this.inner.setAnger(this.anger.value);
     this.hitTint.update(dt);
+    this.story.update(dt, shown.id, this.transition.active);
     shown.scene.render();
     const o = this.overlays.get(shown.id);
     if (o) {
@@ -172,6 +187,18 @@ export class Game {
       setRootHealth: (v: number) => this.inner.setRootHealth(v),
       reveal: () => this.inner.reveal(),
       breathState: () => this.current.breathState(),
+      beat: () => this.story.beat,
+      flags: () => ({ ...this.story.state.flags }),
+      lanternLight: () => this.lanterns[0]!.light,
+      debugBreath: () => this.current.simulateBreath(),
+      interact: () => this.story.interact(),
+      alleyApplePositions: () => this.story.alleyApplePositions(),
+      bumpTrigger: () => this.story.bumpTrigger(),
+      oldTreeNiche: () => this.story.oldTreeNiche(),
+      impPos: () => this.story.impPos(),
+      endCardVisible: () => this.story.endCard.visible,
+      line: () => this.lastLine,
+      clearSave: () => StoryState.clear(),
       drawCalls: () => this.overlays.get(this.current.id)?.stats().drawCalls ?? 0,
     };
   }

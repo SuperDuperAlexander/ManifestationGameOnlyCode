@@ -43,6 +43,12 @@ export const SHADES = {
   impFlame: '#FFE3A0',
   /** Torch flame: the pale, hot core. */
   flameCore: '#FFE9B8',
+  /** Lantern: full light, white-gold. */
+  lanternWhite: '#FFF6DC',
+  /** Lantern: weak ember. */
+  lanternEmber: '#C9663A',
+  /** Lantern: relit, warm gold-orange. */
+  lanternWarm: '#F2A24A',
   /** Steam lightning: small gold-orange zig-zag bolts. */
   boltOrange: '#F2A23A',
 } as const;

@@ -12,6 +12,8 @@ export class Anger {
   passStreak = 0;
   /** Removed by the outer step (helped). Until then anger never drops below it. */
   floor: number = TUNING.anger.floorBeforeHelp;
+  /** Set when the imp is calm: anger stays at 0 for good. */
+  done = false;
   private listeners: ((e: AngerEvent) => void)[] = [];
 
   get active(): boolean {
@@ -53,6 +55,7 @@ export class Anger {
   }
 
   private add(d: number): void {
+    if (this.done) return;
     this.value = Math.min(1, Math.max(this.floor, this.value + d));
   }
 

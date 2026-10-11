@@ -409,9 +409,9 @@ export const TUNING = {
     stickLength: 0.9,
     stickTopDiameter: 0.09,
     stickBottomDiameter: 0.12,
-    flameBaseHeight: 0.22,
+    flameBaseHeight: 0.4,
     flameExtraHeight: 0.35,
-    flameBaseWidth: 0.12,
+    flameBaseWidth: 0.2,
     flameExtraWidth: 0.08,
     /** Flicker speed (per second) and strength (share of the flame size). */
     flickerSpeed: 9,
@@ -474,6 +474,58 @@ export const TUNING = {
     sparklePerS: 6,
     /** Pool sizes (thin instances, one draw call each). */
     pool: { steam: 12, bolt: 4, rock: 6, fire: 6, spark: 8 },
+  },
+
+  lantern: {
+    /** Position in the figure's local space (right hand, in front). */
+    offset: { x: 0.34, y: 0.42, z: 0.2 },
+    coreSize: 0.1, cageHeight: 0.24, cageRadius: 0.08,
+    /** Light units per second when fading. */
+    fadeSpeed: 1.2,
+    haloSize: 0.7, warmHaloScale: 1.35,
+    /** Flicker strength at low light (0..1). */
+    flicker: 0.5,
+  },
+
+  story: {
+    /** Stranger run speed (m/s) and the pause after the bump (s). */
+    strangerRunSpeed: 8,
+    strangerStaggerS: 0.25,
+    /** Distance to the player that counts as the hit (m). */
+    bumpImpactDist: 0.7,
+    /** Shove on the player at the hit (m). Small, no harm. */
+    bumpShove: 1.2,
+    /** Walk-close distance to pick an apple (m). */
+    applePickRadius: 1.6,
+    /** Distance at which apples start to glow (m). */
+    appleGlowRadius: 3.2,
+    /** Child sobbing: bob period (s), tear fall time (s). */
+    sobPeriodS: 1.6,
+    tearFallS: 0.9,
+    /** Child scale in the alley. */
+    childScale: 0.6,
+    /** Lantern light below this is too weak to light the Old Tree. */
+    treeNeedsLight: 0.6,
+    /** Walk-close distance to the lantern niche (m, from the niche). */
+    nicheRadius: 3.2,
+    /** Distance to the imp that counts as meeting it, and for breathing with it (m). */
+    impSeeRadius: 9,
+    impBreathRadius: 6,
+    /** Calming without help falls back to raging after this long (s). */
+    impFlareBackS: 3,
+    /** A started calming (with help) is forgotten after this long without a breath (s). */
+    impCalmingIdleS: 14,
+    /** Seconds the root takes to heal, the flame to fly, the branch to heal. */
+    rootHealS: 4,
+    flameFlyS: 2,
+    branchHealS: 3,
+    /** Pause before the end card (s). */
+    endCardDelayS: 2.5,
+    /** Seconds a speech bubble stays. */
+    bubbleS: 5,
+    /** Fountain jet level before and after the root heals. */
+    fountainLow: 0.3,
+    fountainHigh: 1,
   },
 
   anger: {

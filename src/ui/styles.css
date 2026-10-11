@@ -473,3 +473,54 @@ body.touch .dialogue-line {
   opacity: 0;
   background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 55%, var(--hit-color, rgba(210, 64, 42, 0.55)) 100%);
 }
+
+/* Speech bubble above the stranger's head (projected by script). */
+.speech-bubble {
+  position: absolute;
+  left: 0;
+  top: 0;
+  max-width: min(260px, calc(100vw - 32px));
+  padding: 8px 14px;
+  border-radius: 16px;
+  background: rgba(244, 238, 223, 0.92);
+  box-shadow: 0 4px 18px rgba(78, 85, 102, 0.18);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.3;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.speech-bubble.show {
+  opacity: 1;
+}
+
+/* End card: calm, short, fades in slowly. The player can keep walking. */
+.end-card {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(ellipse at center, rgba(244, 238, 223, 0.55) 0%, rgba(244, 238, 223, 0) 70%);
+  transition: opacity 1.8s ease;
+}
+.end-card.show {
+  opacity: 1;
+}
+.ec-title {
+  font-size: clamp(28px, 6vw, 52px);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 0 18px rgba(235, 197, 122, 0.9);
+}
+.ec-line {
+  font-size: clamp(16px, 3vw, 22px);
+  color: var(--ink);
+}

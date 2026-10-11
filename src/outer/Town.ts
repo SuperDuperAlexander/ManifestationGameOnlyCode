@@ -23,6 +23,8 @@ import { buildTree, type TreeHandle } from '../world/TreeBuilder';
 import { OLD_TREE } from '../world/TreeShape';
 import { Citizen } from '../npc/Citizen';
 import { SteamPool } from '../npc/Steam';
+import { BumpSequence } from './BumpSequence';
+import { Alley } from './Alley';
 
 type Quad = { x0: number; z0: number; y0: number; x1: number; z1: number; y1: number };
 
@@ -37,7 +39,7 @@ export class Town implements World {
   private readonly input = new InputManager();
   private readonly colliders = new TownColliders();
   private readonly controller: PlayerController;
-  private readonly visual: PlayerVisual;
+  readonly visual: PlayerVisual;
   private readonly cam: FollowCamera;
   /** Input rotated by the camera yaw, so "up" is always away from the camera. */
   private readonly rotated = { moveX: 0, moveY: 0 };
@@ -97,22 +99,54 @@ export class Town implements World {
       if (def.partner !== undefined) this.citizens[i]!.partner = this.citizens[def.partner]!;
     });
 
-    this.cam = new FollowCamera(this.scene, { height: (_x, z) => this.groundY(z) }, canvas, right);
+    this.bump = new BumpSequence(this.scene, () => this.controller.position);
+    this.alley = new Alley(this.scene, this.bump.stranger);
+
+    this.cam = new FollowCamera(this.scene, { height: (x, z) => this.camGround(x, z) }, canvas, right);
     this.cam.snapTo(this.visual.root.position, 0);
     engine.onResizeObservable.add(() => this.cam.onResize());
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 
   private oldTree: TreeHandle | null = null;
+  private jet: Mesh | null = null;
+  private fountainLevel: number = TUNING.story.fountainLow;
+  private fountainTarget: number = TUNING.story.fountainLow;
+  private time = 0;
+  readonly bump: BumpSequence;
+  readonly alley: Alley;
+
+  /** Starts the bump; the player is shoved a little at the hit (no harm). */
+  startBump(onImpact: () => void, onDone: () => void): void {
+    this.bump.start(() => {
+      const d = this.bump.impactDir;
+      this.shove(d.x * TUNING.story.bumpShove, d.z * TUNING.story.bumpShove);
+      onImpact();
+    }, onDone);
+  }
+
+  /** World position of the lantern niche in the Old Tree trunk. */
+  treeNiche(): Vector3 {
+    const t = TOWN.oldTree;
+    return new Vector3(t.x, TOWN.niche.y, t.z - TOWN.niche.trunkFaceDz);
+  }
 
   /** Health of the Old Tree's dry branch (0 dry, 1 healed). */
   setOldTreeBranchHealth(v: number): void {
     this.oldTree?.setBranchHealth(OLD_TREE.dryBranch, v);
   }
 
+  /** Mirror: the fountain runs clearer and higher when the inner root heals (0 weak .. 1 full). */
+  setFountain(v: number): void {
+    const S = TUNING.story;
+    this.fountainTarget = S.fountainLow + (S.fountainHigh - S.fountainLow) * Math.min(1, Math.max(0, v));
+  }
+
   update(dt: number): void {
     if (!this.active) return;
     dt = Math.min(0.05, dt);
+    this.time += dt;
+    this.updateJet(dt);
     this.input.update();
     const yaw = this.cam.yaw;
     const mx = this.input.moveX;
@@ -139,10 +173,22 @@ export class Town implements World {
       });
     }
     this.steam.update(dt);
+    this.bump.update(dt);
+    this.alley.update(dt, pp.x, pp.z);
+    const al = TOWN.areas.alley;
+    if (pp.x > al.minX && pp.x < al.maxX && pp.z > al.minZ && pp.z < al.maxZ) this.cam.easeYaw(-Math.PI / 2, 3, dt);
     this.cam.update(dt, this.visual.root.position, this.controller.heading, this.controller.speedRatio);
     WORLD_UNIFORMS.time += dt;
     WORLD_UNIFORMS.pivotZ = 1e6;
     this.input.endFrame();
+  }
+
+  private updateJet(dt: number): void {
+    if (!this.jet) return;
+    this.fountainLevel += (this.fountainTarget - this.fountainLevel) * Math.min(1, dt * 1.5);
+    const h = 1.5 * this.fountainLevel * (1 + 0.05 * Math.sin(this.time * 5));
+    this.jet.scaling.y = Math.max(0.05, h);
+    this.jet.position.y = TOWN.fountain.height * 0.6 + h / 2;
   }
 
   teleport(x: number, z: number): void {
@@ -152,6 +198,14 @@ export class Town implements World {
   /** Town anger 0..1. Game calls this every frame (or on change). Citizens mirror it. */
   setAnger(v: number): void {
     this.townAnger = Math.min(1, Math.max(0, v));
+  }
+
+  onBreathDone(cb: () => void): void {
+    this.breath.onBreathDone(() => cb());
+  }
+
+  simulateBreath(): void {
+    this.breath.simulate();
   }
 
   breathState(): string {
@@ -223,6 +277,15 @@ export class Town implements World {
   }
 
   // --- Ground height ---
+
+  /** Ground for the camera: house roofs count, so the camera never sits inside a house. */
+  private camGround(x: number, z: number): number {
+    let y = this.groundY(z);
+    for (const h of TOWN.houses) {
+      if (Math.abs(x - h.x) < h.w / 2 + 0.3 && Math.abs(z - h.z) < h.d / 2 + 0.3) y = Math.max(y, h.h + TUNING.outer.roofRise);
+    }
+    return y;
+  }
 
   private groundY(z: number): number {
     const s = TOWN.slope;
@@ -460,6 +523,13 @@ export class Town implements World {
     water.isPickable = false;
     water.freezeWorldMatrix();
 
+    // Fountain jet: one thin cone of water, one extra draw call. Height mirrors the inner root.
+    const jet = MeshBuilder.CreateCylinder('town.jet', { diameterTop: 0.1, diameterBottom: 0.3, height: 1, tessellation: 8 }, this.scene);
+    jet.position.set(f.x, f.height * 0.6 + 0.5, f.z);
+    jet.material = this.mat(Town.mix(PALETTE.powder, PALETTE.ivory, 0.6));
+    jet.isPickable = false;
+    this.jet = jet;
+
     // Stalls.
     for (const s of TOWN.stalls) {
       wood.push(this.box(s.w, 0.9, s.d, s.x, 0.45, s.z));
@@ -478,6 +548,10 @@ export class Town implements World {
       branchHealth: 0,
     });
     this.colliders.addCircle(t.x, t.z, t.colliderRadius);
+    // Lantern niche: a dark recess in the trunk, south side.
+    const n = TOWN.niche;
+    const niche = this.box(n.w, n.h, n.d, t.x, n.y, t.z - n.trunkFaceDz + n.d / 2 - 0.05);
+    this.finish('town.niche', [niche], this.mat(SHADES.legs));
 
     this.finish('town.fountain', stone, this.mat(PALETTE.stone));
     this.finish('town.stallWood', wood, this.mat(SHADES.umber));
