@@ -1,0 +1,91 @@
+# Light Within
+
+A calm spiritual browser game in Babylon.js. Walk through a valley, meet the fairy,
+dissolve fog blockades by breathing, build the light bridge and walk through the arch.
+
+`CLAUDE.md` is the source of truth. `docs/DECISIONS.md` lists every design decision made while building.
+
+## Which page is which
+
+The repo has two games. The valley is the main game.
+
+| Address | What it is | Code |
+| --- | --- | --- |
+| `/` (`index.html`) | **Main game: the valley.** Made only in code, no image files. | `src/valley/` |
+| `/valley.html` | The same valley. Kept so old links and test commands still work. | `src/valley/` |
+| `/diorama.html` | The older paper-diorama game (chapter JSON + images). | `src/main.ts` |
+
+Locally: `http://localhost:5173/` is the valley. `http://localhost:5173/diorama.html` is the old game.
+
+To change which game is the start page: change the `<script>` line in `index.html`.
+`/src/valley/main.ts` = valley, `/src/main.ts` = diorama.
+
+## Run it
+
+```
+npm install
+npm run dev       # http://localhost:5173
+npm run build     # production build into dist/ (PNG originals are removed, only WebP ships)
+npm run preview   # serve dist/ at http://localhost:4173
+```
+
+`npm run dev` and `npm run build` convert the PNG art to WebP first (`npm run assets`).
+
+## Put it online with Vercel
+
+1. Push the repo to GitHub: `git push`.
+2. Open https://vercel.com and log in with GitHub.
+3. Click **Add New… → Project**.
+4. Pick the repo `SuperDuperAlexander/ManifestationGameOnlyCode` and click **Import**.
+5. Vercel finds Vite by itself. Do not change the settings:
+   - Framework Preset: `Vite`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+6. Click **Deploy**. Wait about 1–2 minutes.
+7. Vercel shows a link like `https://<name>.vercel.app`. That link opens the valley.
+   The old game is at `https://<name>.vercel.app/diorama.html`.
+
+After that, every `git push` to `main` updates the online game by itself.
+
+If the build fails on Vercel: open the project → **Deployments** → the red entry → **Build Logs**.
+Copy the red lines and give them to Claude.
+
+## Controls (valley)
+
+|                   | Keyboard          | Touch                          |
+| ----------------- | ----------------- | ------------------------------ |
+| Walk              | WASD or arrows    | Drag on the left half          |
+| Look around       | Drag with mouse   | Drag on the right half         |
+| Zoom              | Mouse wheel       | —                              |
+| Breathe in        | Hold Space        | Hold the round button          |
+| Breathe out       | Hold Shift        | Let go of the button           |
+| Push (no use!)    | E                 | Hand button                    |
+| Debug overlay     | F3                | add `?debug` to the address    |
+
+## Address switches (for testing)
+
+- `?debug` shows the debug overlay from the start.
+- `?autostart` skips the start screen.
+- `?touch` forces the touch controls on a desktop.
+- Diorama only: `?skipintro` skips start screen, wake-up and intro.
+
+## Automatic browser checks
+
+With the dev server running: `npm run check:browser -- <address> --scenario <name>`.
+
+- Valley: `npm run check:browser -- "http://localhost:5173/?autostart&debug" --scenario valley`
+  (whole level). `--scenario valleyviews` = look check with fps per view.
+- Diorama: `npm run check:browser -- "http://localhost:5173/diorama.html?debug&skipintro" --scenario <name>`.
+  Scenarios: `walk`, `breath`, `fog`, `intro` (use `?autostart`), `closeup`, `tour` (all zones, draw calls),
+  `meshes`, `partial` (4 vs 5 planks), `finale`, `play` (full run), `mobile` (with `--mobile`).
+
+Screenshots go to `--out <folder>`.
+
+## Content
+
+- `src/valley/valleyLayout.ts` — the valley: path, river, bridge, pass, chasm, fog blockades.
+- `public/data/dialogue/en.json` — every fairy line (valley keys start with `valley`).
+- `src/config/tuning.ts` — every speed, radius and timing (valley: `TUNING.valley`).
+- `public/data/chapters/ch1.json` — diorama chapter: zones, props, fog blockades, hints, bridge, gate.
+- `public/assets/ch1/` — diorama art (PNG originals + generated WebP).
+- `legacy/` — the older full-3D version, kept for reference only.
