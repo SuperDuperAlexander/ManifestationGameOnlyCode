@@ -1,6 +1,7 @@
 import { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
 import { Effect } from '@babylonjs/core/Materials/effect';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
 
 /**
@@ -10,16 +11,17 @@ import type { Scene } from '@babylonjs/core/scene';
 const VERTEX = /* glsl */ `
 precision highp float;
 attribute vec3 position;
-attribute vec3 normal;
 uniform mat4 world;
 uniform mat4 viewProjection;
+uniform vec3 uShape;
 varying vec3 vN;
 varying vec3 vW;
 varying vec3 vL;
 void main(void) {
   vec4 wp = world * vec4(position, 1.0);
   vW = wp.xyz;
-  vN = normalize(mat3(world) * normal);
+  // Smooth blob normal from the position: inner lobes give no edge rings.
+  vN = normalize(mat3(world) * (position * uShape));
   vL = position;
   gl_Position = viewProjection * wp;
 }`;
@@ -55,14 +57,16 @@ export interface GlassOpts {
   edgeAlpha: number;
   power: number;
   streak: number;
+  /** Per-axis scale that turns a local position into a blob normal. */
+  shape: Vector3;
 }
 
 export function createGlassMaterial(name: string, scene: Scene, o: GlassOpts): ShaderMaterial {
   Effect.ShadersStore['glassVertexShader'] = VERTEX;
   Effect.ShadersStore['glassFragmentShader'] = FRAGMENT;
   const m = new ShaderMaterial(name, scene, 'glass', {
-    attributes: ['position', 'normal'],
-    uniforms: ['world', 'viewProjection', 'uCamPos', 'uColor', 'uEdgeColor', 'uCfg', 'uStreak'],
+    attributes: ['position'],
+    uniforms: ['world', 'viewProjection', 'uCamPos', 'uColor', 'uEdgeColor', 'uCfg', 'uStreak', 'uShape'],
     needAlphaBlending: true,
   });
   m.backFaceCulling = true;
@@ -70,6 +74,7 @@ export function createGlassMaterial(name: string, scene: Scene, o: GlassOpts): S
   m.setColor3('uColor', o.color);
   m.setColor3('uEdgeColor', o.edgeColor);
   m.setFloat('uStreak', o.streak);
+  m.setVector3('uShape', o.shape);
   m.setVector4('uCfg', { x: o.centerAlpha, y: o.edgeAlpha, z: o.power, w: 1 } as never);
   m.onBindObservable.add(() => {
     const cam = scene.activeCamera;

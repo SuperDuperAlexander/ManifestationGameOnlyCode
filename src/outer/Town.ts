@@ -249,6 +249,13 @@ export class Town implements World {
     return true;
   }
 
+  /** Mean citizen agitation 0..1 (test hook). */
+  meanAgitation(): number {
+    let s = 0;
+    for (const c of this.citizens) s += c.agitation;
+    return s / Math.max(1, this.citizens.length);
+  }
+
   /** Number of citizen bumps so far (test hook). */
   bumps = 0;
   private wobble = 0;

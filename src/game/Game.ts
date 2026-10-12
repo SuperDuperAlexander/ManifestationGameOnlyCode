@@ -230,9 +230,11 @@ export class Game {
       field.update(dt);
     }
     this.pushQueued = false;
-    this.heat.apply(this.anger.value);
-    this.outer.setAnger(this.anger.value);
-    this.inner.setAnger(this.anger.value);
+    // The town and the imp show the anger ramped in after the bump (thought first, then the town heats up).
+    const shownAnger = this.anger.value * (this.storyReady ? this.story.townGate : 1);
+    this.heat.apply(shownAnger);
+    this.outer.setAnger(shownAnger);
+    this.inner.setAnger(shownAnger);
     this.hitTint.update(dt);
     if (this.hand) {
       const near = shown === this.current && !this.transition.active;
@@ -285,6 +287,8 @@ export class Game {
         return f instanceof BubbleField ? f.pushable : (f?.count ?? 0) > 0;
       },
       bumps: () => this.outer.bumps,
+      townAgitation: () => this.outer.meanAgitation(),
+      townAnger: () => this.anger.value * (this.storyReady ? this.story.townGate : 1),
       setAnger: (v: number) => {
         this.debugBubbles = true;
         this.anger.set(v);

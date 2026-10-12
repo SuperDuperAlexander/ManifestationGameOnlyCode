@@ -121,11 +121,11 @@ export const TUNING = {
 
   breath: {
     /** Target rhythm: seconds in, seconds out. */
-    inhaleTarget: 4,
-    exhaleTarget: 4,
+    inhaleTarget: 2,
+    exhaleTarget: 2,
     /** Breath level change per second while inhaling / exhaling (1 = full in 1 s). */
-    inhaleRate: 1 / 4,
-    exhaleRate: 1 / 4,
+    inhaleRate: 1 / 2,
+    exhaleRate: 1 / 2,
     /** Breath level falls back to 0 this fast when idle. */
     idleDecay: 0.35,
     /** A phase shorter than this is ignored for scoring. */
@@ -631,6 +631,8 @@ export const TUNING = {
     onBump: 0.7, floorBeforeHelp: 0.35,
     push: 0.08, hit: 0.02, pass: -0.05, afterHelp: -0.15,
     fadeOutTime: 4,
+    /** After the bump the town stays calm for townDelayS, then its shown anger ramps up over townRampS. */
+    townDelayS: 4, townRampS: 20,
   },
   waves: {
     rateAtFullAnger: 0.33,   // waves per second at anger 1
@@ -673,7 +675,7 @@ export const TUNING = {
     /** Metres: bubble width at pushLevel 0 (grows by waves.pushGrow per pushLevel). */
     width: 1.55,
     /** Glass: opacity in the middle and at the edge (fresnel power), highlight streak 0..1, and of the thin warm rim (text stays at 1). */
-    alpha: 0.14, edgeAlpha: 0.5, edgePower: 2.2, streak: 1, rimAlpha: 0.4, rimPower: 3,
+    alpha: 0.38, edgeAlpha: 0.7, edgePower: 2.2, streak: 1, rimAlpha: 0.4, rimPower: 3,
     /** Share of the pushLevel growth (waves.pushGrow) that the bubble size follows. */
     growShare: 0.6,
     /** Head height above the feet where the small spheres start. */
@@ -683,8 +685,8 @@ export const TUNING = {
     /** Seconds: spheres rise, then the bubble puffs out. */
     formTime: 1.8,
     /** Sphere diameters (m) and their place on the way from head to bubble (0..1). */
-    sphereSize: [0.1, 0.16, 0.24, 0.34],
-    spherePath: [0.12, 0.32, 0.54, 0.76],
+    sphereSize: [0.12, 0.2, 0.3],
+    spherePath: [0.15, 0.42, 0.72],
     /** The bubble can be pushed once this share of forming is done. */
     pushableAfter: 0.55,
     /** Seconds of breathing before the bubble starts to dissolve, and how long it takes. */

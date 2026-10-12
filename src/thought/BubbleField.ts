@@ -33,6 +33,7 @@ export class BubbleField implements ThoughtField, BubbleHooks {
   private lastText = '';
   private gap: number = TUNING.bubbles.firstGap;
   private relief = 0;
+  private wasUnlocked = false;
   /** Test hook: how many pushes shoved a bubble. */
   pushes = 0;
   /** Story gate: bubbles only come once this returns true (the bump has happened). */
@@ -98,8 +99,15 @@ export class BubbleField implements ThoughtField, BubbleHooks {
     }
 
     if (!this.anger.active || !this.unlocked()) {
+      this.wasUnlocked = false;
       for (const b of this.bubbles) b.dissolve(true);
       return;
+    }
+    if (!this.wasUnlocked) {
+      // Just unlocked (the bump): the first thought forms right away.
+      this.wasUnlocked = true;
+      this.gap = 0;
+      this.relief = 0;
     }
     if (this.relief > 0) this.relief -= dt;
     if (this.bubbles.some((b) => b.holding)) return;

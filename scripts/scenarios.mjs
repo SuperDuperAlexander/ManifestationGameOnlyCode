@@ -273,6 +273,37 @@ export default function scenarios({ wait, shot, hold, page }) {
       console.log('max bubbles in 30 s:', maxB, 'anger:', await lw(() => window.__lw.anger()));
       if (maxB > 0) { console.error('FAIL: bubbles before bump'); process.exitCode = 3; } else console.log('freshbubbles: PASS');
     },
+    /** After the bump: thought at once, town calm ~4 s, then slow ramp to the target (~24 s). */
+    async bumpramp() {
+      if (!(await requireHooks([...LANTERN_HOOKS, 'townAgitation', 'townAnger', 'bubbles'], 'bumpramp'))) return;
+      try {
+        await bootFresh();
+        await squareStep();
+        await waitFor('flags().bumped', () => window.__lw.flags().bumped);
+        const t0 = Date.now();
+        const at = async (sec, name) => {
+          const d = sec * 1000 - (Date.now() - t0);
+          if (d > 0) await wait(d);
+          const r = await lw(() => ({ b: window.__lw.bubbles(), ag: window.__lw.townAgitation(), ta: window.__lw.townAnger(), a: window.__lw.anger() }));
+          console.log(`t=${sec}s bubbles=${r.b} agitation=${r.ag.toFixed(3)} townAnger=${r.ta.toFixed(2)} anger=${r.a.toFixed(2)}`);
+          if (name) await shot(name);
+          return r;
+        };
+        const r1 = await at(1, 't01');
+        const r4 = await at(4);
+        const r12 = await at(12, 't12');
+        const r26 = await at(26, 't26');
+        expect(r1.b >= 1, 'no bubble at t=1 s');
+        expect(r1.ag < 0.15, 'town already agitated at t=1 s');
+        expect(r4.ag < 0.2, 'town agitated too early at t=4 s');
+        expect(r12.ag > r4.ag + 0.1, 'agitation not clearly rising at t=12 s');
+        expect(r26.ag > r12.ag && r26.ta > 0.6, 'agitation not near target at t=26 s');
+        console.log('bumpramp: PASS');
+      } catch (e) {
+        console.error(`FAIL (bumpramp): ${e.message}`);
+        process.exitCode = 3;
+      }
+    },
     /** Thought Bubble look: form above the head, then a push and the citizen bump. */
     async bubble() {
       await page.keyboard.press('Enter');

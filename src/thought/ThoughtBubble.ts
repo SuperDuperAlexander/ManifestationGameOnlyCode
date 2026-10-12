@@ -6,7 +6,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import type { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
-import { Vector4 } from '@babylonjs/core/Maths/math.vector';
+import { Vector3, Vector4 } from '@babylonjs/core/Maths/math.vector';
 import { createGlassMaterial } from '../shaders/glassShader';
 import type { Scene } from '@babylonjs/core/scene';
 import { PALETTE, SHADES, color3 } from '../config/palette';
@@ -26,7 +26,7 @@ export interface BubbleHooks {
 const TEX_W = 1024;
 const TEX_H = 512;
 /** Text plane size inside the cloud (share of the bubble width). */
-const TEXT_W = 0.72;
+const TEXT_W = 0.83;
 
 /** Shared geometry and materials of one scene's bubbles. */
 export interface BubbleKit {
@@ -41,13 +41,13 @@ function cloudGeometry(scene: Scene, name: string, grow: number): Mesh {
   const main = MeshBuilder.CreateSphere(`${name}.core`, { diameter: 1, segments: 8 }, scene);
   main.scaling.set(0.8 * grow, 0.54 * grow, 0.34 * grow);
   parts.push(main);
-  const n = 11;
+  const n = 6;
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2 + 0.2;
-    const d = (0.26 + 0.07 * Math.sin(i * 2.3 + 1)) * grow;
+    const d = (0.4 + 0.06 * Math.sin(i * 2.3 + 1)) * grow;
     const p = MeshBuilder.CreateSphere(`${name}.bump${i}`, { diameter: d, segments: 6 }, scene);
-    p.position.set(Math.cos(a) * 0.36 * grow, Math.sin(a) * 0.215 * grow, 0);
-    p.scaling.z = 0.8;
+    p.position.set(Math.cos(a) * 0.33 * grow, Math.sin(a) * 0.19 * grow, 0);
+    p.scaling.z = 0.6;
     parts.push(p);
   }
   const merged = Mesh.MergeMeshes(parts, true, true);
@@ -89,6 +89,8 @@ export class ThoughtBubble {
   private readonly spheres: Mesh[] = [];
   private readonly fill: ShaderMaterial;
   private readonly rimMat: ShaderMaterial;
+  private readonly sphereMat: ShaderMaterial;
+  private readonly prepass: Mesh;
   private readonly textMat: StandardMaterial;
   private readonly tex: DynamicTexture;
   private readonly ivory = color3(PALETTE.ivory);
@@ -104,6 +106,16 @@ export class ThoughtBubble {
       edgeAlpha: TUNING.bubbles.edgeAlpha,
       power: TUNING.bubbles.edgePower,
       streak: TUNING.bubbles.streak,
+      shape: new Vector3(2, 3.2, 6),
+    });
+    this.sphereMat = createGlassMaterial(`bubble.sphereMat.${id}`, scene, {
+      color: this.ivory,
+      edgeColor: color3('#FFFFFF'),
+      centerAlpha: TUNING.bubbles.alpha,
+      edgeAlpha: TUNING.bubbles.edgeAlpha,
+      power: TUNING.bubbles.edgePower,
+      streak: TUNING.bubbles.streak,
+      shape: new Vector3(2, 2, 2),
     });
     this.rimMat = createGlassMaterial(`bubble.rimMat.${id}`, scene, {
       color: this.hot,
@@ -112,6 +124,7 @@ export class ThoughtBubble {
       edgeAlpha: TUNING.bubbles.rimAlpha,
       power: TUNING.bubbles.rimPower,
       streak: 0,
+      shape: new Vector3(2, 3.2, 6),
     });
     this.tex = new DynamicTexture(`bubble.text.${id}`, { width: TEX_W, height: TEX_H }, scene, true, Texture.TRILINEAR_SAMPLINGMODE);
     this.tex.hasAlpha = true;
@@ -127,6 +140,14 @@ export class ThoughtBubble {
     this.cloud = kit.cloud.clone(`bubble.cloud.${id}`);
     this.cloud.material = this.fill;
     this.cloud.parent = this.root;
+    // Depth-only copy: only the front-most surface of the blob is drawn by the glass, so no inner lobe rings.
+    this.prepass = this.cloud.clone(`bubble.prepass.${id}`);
+    const pm = new StandardMaterial(`bubble.prepassMat.${id}`, scene);
+    pm.disableColorWrite = true;
+    pm.disableLighting = true;
+    pm.backFaceCulling = true;
+    this.prepass.material = pm;
+    this.prepass.parent = this.root;
     this.cloud.alphaIndex = 11;
     this.rim = kit.rim.clone(`bubble.rimMesh.${id}`);
     this.rim.material = this.rimMat;
@@ -138,10 +159,10 @@ export class ThoughtBubble {
     this.textPlane.parent = this.root;
     this.textPlane.position.z = -0.2;
     this.textPlane.alphaIndex = 12;
-    const meshes = [this.cloud, this.rim, this.textPlane];
+    const meshes = [this.cloud, this.rim, this.textPlane, this.prepass];
     for (let i = 0; i < TUNING.bubbles.sphereSize.length; i++) {
       const s = kit.sphere.clone(`bubble.sphere.${id}.${i}`);
-      s.material = this.fill;
+      s.material = this.sphereMat;
       s.alphaIndex = 9;
       meshes.push(s);
       this.spheres.push(s);
@@ -298,7 +319,7 @@ export class ThoughtBubble {
   }
 
   private all(): Mesh[] {
-    return [this.cloud, this.rim, this.textPlane, ...this.spheres];
+    return [this.cloud, this.rim, this.textPlane, this.prepass, ...this.spheres];
   }
 
   /** Faces the camera: set by the field each frame. */
@@ -312,12 +333,15 @@ export class ThoughtBubble {
     this.root.position.set(this.x, this.y, this.z);
     this.root.scaling.set(s, s, s);
     this.fill.setVector4('uCfg', new Vector4(B.alpha, B.edgeAlpha, B.edgePower, vis));
+    this.sphereMat.setVector4('uCfg', new Vector4(B.alpha, B.edgeAlpha, B.edgePower, vis));
     this.cloud.visibility = 1;
     this.rimMat.setVector4('uCfg', new Vector4(0, B.rimAlpha, B.rimPower, vis));
     this.textMat.alpha = textVis;
     this.textPlane.visibility = vis;
     this.textPlane.setEnabled(textVis > 0.01 && this.state !== 'gone');
-    this.fill.setColor3('uColor', this.tint.copyFrom(this.ivory).scaleInPlace(1 - this.flash * 0.6).addInPlace(this.hot.scale(this.flash * 0.6)));
+    this.tint.copyFrom(this.ivory).scaleInPlace(1 - this.flash * 0.6).addInPlace(this.hot.scale(this.flash * 0.6));
+    this.sphereMat.setColor3('uColor', this.tint);
+    this.fill.setColor3('uColor', this.tint);
 
     // The tail: small spheres from the head toward the bubble, appearing one after another.
     const n = this.spheres.length;

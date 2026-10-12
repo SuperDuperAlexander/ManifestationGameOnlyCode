@@ -50,6 +50,8 @@ export class Story {
   private angryT = 0;
   private readonly beacon: Beacon;
   private hintT = 0;
+  /** Seconds since the bump hit (Infinity = no ramp running). */
+  private sinceBump = Infinity;
 
   // Imp
   private impBreaths = 0;
@@ -90,6 +92,13 @@ export class Story {
 
   get beat(): number {
     return this.state.beat;
+  }
+
+  /** 0..1 factor on the anger the town and the imp show: 0 right after the bump, 1 after the ramp. */
+  get townGate(): number {
+    const A = TUNING.anger;
+    const k = Math.min(1, Math.max(0, (this.sinceBump - A.townDelayS) / A.townRampS));
+    return k * k * (3 - 2 * k);
   }
 
   /** Q (Look Within) is locked until the beat-2 invitation. */
@@ -218,6 +227,7 @@ export class Story {
       if (dist2(p.x, p.z, TOWN.waveSource.x, TOWN.waveSource.z) < 12 && !d.dialogue.hasSaid('alleyArrive')) this.say('alleyArrive');
     }
 
+    if (this.sinceBump < Infinity) this.sinceBump += dt;
     this.updateImp(dt);
     this.updateTransform(dt);
 
@@ -311,6 +321,7 @@ export class Story {
     const d = this.d;
     this.state.set('bumped');
     this.state.reach(3);
+    this.sinceBump = 0;
     d.anger.set(TUNING.anger.onBump);
     d.outerLantern.setLight(0.15);
     d.innerLantern.setLight(0.15);
