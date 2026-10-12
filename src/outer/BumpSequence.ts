@@ -46,7 +46,7 @@ export class BumpSequence {
 
   /** True once the player has crossed the trigger line on Main Street (and the bump has not started). */
   bumpTriggerReached(playerPos: { x: number; z: number }): boolean {
-    return this.phase === 'idle' && playerPos.z >= TOWN.bump.triggerZ && Math.abs(playerPos.x) < TOWN.bump.halfX;
+    return this.phase === 'idle' && playerPos.z >= TOWN.bump.triggerZ && Math.abs(playerPos.x) < TOWN.bump.halfX && playerPos.z < TOWN.areas.square.maxZ;
   }
 
   start(onImpact: () => void, onDone: () => void): void {

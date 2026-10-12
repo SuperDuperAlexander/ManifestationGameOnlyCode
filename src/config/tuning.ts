@@ -306,7 +306,11 @@ export const TUNING = {
   citizens: {
     count: 8,
     /** agitation = personalBase + townAnger * agitationWeight */
-    agitationWeight: 0.8,
+    agitationWeight: 1.0,
+    /** Scales each citizen's personalBase so a calm town stays calm (max ~0.12). */
+    personalBaseScale: 0.4,
+    /** Torch is only carried/lit above this agitation (none before the bump). */
+    torchShowAbove: 0.3,
     /** Below this agitation: calm walks and chats. Above 'medium': stomping, fists, steam now and then. */
     mediumAbove: 0.3,
     /** Above this: steam often, torch flares. */
@@ -329,7 +333,7 @@ export const TUNING = {
     /** Citizens step around the player inside this distance. */
     playerAvoid: 1.1,
     visualScale: 1.1,
-    smooth: 1.5,
+    smooth: 2.2,
   },
 
   /** Outer world: the little town (src/outer/). Positions live in townLayout.ts. */

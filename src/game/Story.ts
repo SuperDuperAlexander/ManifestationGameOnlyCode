@@ -45,6 +45,9 @@ export class Story {
   private lookWithinOpen = false;
   private innerVisited = false;
   private begun = false;
+  private breathed = false;
+  private angryInnerVisited = false;
+  private angryT = 0;
   private readonly beacon: Beacon;
   private hintT = 0;
 
@@ -76,6 +79,9 @@ export class Story {
     deps.outer.setOldTreeBranchHealth(1);
     deps.inner.setBranchHealth(1);
     this.lookWithinOpen = this.state.beat >= 1;
+    this.innerVisited = this.state.beat >= 2;
+    this.breathed = this.state.beat >= 1;
+    this.angryInnerVisited = this.state.flags.sawImp || this.state.flags.helped;
     if (this.state.restored) this.restore();
     deps.outer.onBreathDone(() => this.onBreath('outer'));
     deps.inner.onBreathDone(() => this.onBreath('inner'));
@@ -93,7 +99,7 @@ export class Story {
 
   /** True until the first full breath is done (the breath guide stays on). */
   needsBreathHelp(): boolean {
-    return this.begun && !this.lookWithinOpen;
+    return this.begun && !this.breathed && !this.lookWithinOpen;
   }
 
   /** Call once the dialogue table is loaded. Starts beat 0. */
@@ -118,15 +124,25 @@ export class Story {
         this.innerVisited = true;
         if (!this.state.flags.bumped) this.say('innerFirst', true);
       }
-    } else if (this.innerVisited && this.state.beat === 1) {
-      this.state.reach(2);
+      if (this.state.flags.bumped) {
+        this.angryInnerVisited = true;
+        // The imp is revealed the moment the player looks within after the bump.
+        if (!this.state.flags.sawImp) {
+          this.state.set('sawImp');
+          this.state.reach(6);
+          this.say('impFirst', true);
+        }
+      }
+    } else {
+      if (this.innerVisited && this.state.beat < 2) this.state.reach(2);
+      if (this.state.flags.bumped && this.angryInnerVisited && !this.d.dialogue.hasSaid('outerAngry')) this.say('outerAngry', true);
     }
   }
 
   // --- Hooks for the test scenarios ---
 
   bumpTrigger(): { x: number; z: number } {
-    return { x: 0, z: TOWN.bump.triggerZ + 1 };
+    return { x: 0, z: TOWN.squareCentre.z };
   }
 
   alleyApplePositions(): { x: number; z: number }[] {
@@ -151,14 +167,29 @@ export class Story {
     const d = this.d;
     const f = this.state.flags;
 
-    // Gold guide light on Main Street: dim before beat 2, warm from beat 2 on, gone after the bump.
-    this.beacon.setLit(this.state.beat >= 2);
-    if (f.bumped) this.beacon.hide();
+    // Gold guide light at the mouth of the Square: warm from the start, gone once the player is there.
+    this.beacon.setLit(true);
+    if (this.lookWithinOpen || f.bumped) this.beacon.hide();
+    // The Square invites the first Look Within (no breath needed).
+    if (shown === 'outer' && !busy && !this.lookWithinOpen && d.outer.playerPosition().z >= TOWN.bump.triggerZ) {
+      this.lookWithinOpen = true;
+      this.state.reach(1);
+      this.hint('hintLookWithin');
+      this.hintT = 0;
+    }
     this.beacon.update(dt);
 
     // Gentle repeat of the current hint until the step is done.
     const needBreath = this.needsBreathHelp();
     const needLook = this.lookWithinOpen && !this.innerVisited && !f.bumped && this.state.beat <= 1;
+    const needAngry = f.bumped && !this.angryInnerVisited;
+    if (shown === 'outer' && !busy && needAngry) {
+      this.angryT += dt;
+      if (this.angryT >= TUNING.story.hintRepeatS * 0.5 && !d.dialogue.busy) {
+        this.angryT = 0;
+        this.say('angryLookWithin');
+      }
+    } else this.angryT = 0;
     if (shown === 'outer' && !busy && (needBreath || needLook)) {
       this.hintT += dt;
       if (this.hintT >= TUNING.story.hintRepeatS && !d.dialogue.busy) {
@@ -168,7 +199,7 @@ export class Story {
     } else this.hintT = 0;
 
     // Beat 3: the bump, once the player crosses the line on Main Street.
-    if (shown === 'outer' && !busy && this.lookWithinOpen && !f.bumped && d.outer.bump.bumpTriggerReached(d.outer.playerPosition())) {
+    if (shown === 'outer' && !busy && this.lookWithinOpen && this.innerVisited && this.state.beat >= 2 && !f.bumped && d.outer.bump.bumpTriggerReached(d.outer.playerPosition())) {
       this.startBump();
     }
     // Beat 6: meeting the imp.
@@ -232,11 +263,9 @@ export class Story {
 
   private onBreath(id: WorldId): void {
     const f = this.state.flags;
-    if (id === 'outer' && !this.lookWithinOpen) {
-      this.lookWithinOpen = true;
-      this.state.reach(1);
-      this.say('firstBreath', true);
-      this.hint('hintLookWithin');
+    if (id === 'outer' && !this.breathed) {
+      this.breathed = true;
+      if (!this.lookWithinOpen) this.say('firstBreath', true);
       return;
     }
     if (id !== 'inner' || !f.bumped || f.impCalm) return;
@@ -291,6 +320,8 @@ export class Story {
     d.inner.setBranchHealth(0);
     this.sound.impGrowl();
     this.say('bumpAfter', true);
+    this.say('angryLookWithin');
+    this.angryT = 0;
   }
 
   /** All 5 apples are back: the outer step is done. */

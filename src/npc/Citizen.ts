@@ -68,7 +68,7 @@ export class Citizen {
   update(dt: number, ctx: CitizenContext): void {
     const T = TUNING.citizens;
     this.time += dt;
-    const want = clamp(this.def.personalBase + ctx.townAnger * T.agitationWeight, 0, 1);
+    const want = clamp(this.def.personalBase * T.personalBaseScale + ctx.townAnger * T.agitationWeight, 0, 1);
     this.agitation += (want - this.agitation) * Math.min(1, dt * T.smooth);
     const a = this.agitation;
     this.bumpCooldown = Math.max(0, this.bumpCooldown - dt);
@@ -179,7 +179,7 @@ export class Citizen {
     const y = ctx.groundY(this.x, this.z);
     this.visual.root.position.set(this.x, y, this.z);
     const shownSpeed = Math.min(this.speed, Math.hypot(vx, vz));
-    this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && a > T.mediumAbove * 0.6 });
+    this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && a > T.torchShowAbove });
 
     // Steam: now and then at medium, often at high.
     if (a > T.mediumAbove) {
@@ -194,8 +194,10 @@ export class Citizen {
     }
 
     if (this.torch) {
+      const lit = a > T.torchShowAbove - 0.03;
+      this.torch.setVisible(lit);
       this.torch.setIntensity(a);
-      if (!far) this.torch.update(dt);
+      if (lit && !far) this.torch.update(dt);
     }
   }
 

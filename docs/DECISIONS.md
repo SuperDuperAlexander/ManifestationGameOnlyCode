@@ -69,4 +69,8 @@ Town sits in a basin with sandstone cliffs, curving uphill Main Street, raised r
 All town surfaces use the valley shader, sky, haze and mood. Houses come from `src/outer/HouseBuilder.ts` (18 houses, 3 draw calls). Props from `TownProps.ts`.
 Breath ring (`BreathGuide`) and start screen are back. Option B: story order stays; breath and Look Within hints repeat every 12 s until done; a gold beacon on Main Street shows where to go.
 
-(Add L19, … here.)
+**L19. Calm start, bump on the square (Alexander, 2026-10-12).** Opening order: wake at the Town Edge → breathe once → walk to the square → First Look Within (all calm) → the bump on the square → the imp appears inside → back outside the town is angry too.
+Why: the player first feels the calm town and the calm inner world. Then the bump makes everything angry, inside and outside. The contrast carries the story. The bump moves from Main Street to the square.
+Change: section 3 (core loop), 5.1 (town table) and 9 (beats 1–3, 6) of `GAME_DESIGN.md`.
+
+(L20 not needed: the valley-like town layout is already in L18.)

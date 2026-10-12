@@ -76,8 +76,18 @@ export default function scenarios({ wait, shot, hold, page }) {
     await waitWorldStable('outer');
     await wait(500);
   };
-  const bumpStep = async () => {
+  // New opening: walk to the Square, Look Within (calm), come back, then the bump happens on the Square.
+  const squareStep = async () => {
     await teleportTo(await lw(() => window.__lw.bumpTrigger()));
+    await waitFor('beat >= 1 (Square reached, Look Within invited)', () => window.__lw.beat() >= 1);
+    await wait(1500);
+    await snapChecked('b1-square-calm');
+    await toggleTo('inner');
+    await snapChecked('b2-inner-calm');
+    await toggleTo('outer');
+    await waitFor('beat >= 2 (first Look Within)', () => window.__lw.beat() >= 2);
+  };
+  const bumpStep = async () => {
     await waitFor('bump (flags().bumped and lanternLight() < 0.3)', () =>
       window.__lw.flags().bumped && window.__lw.lanternLight() < 0.3);
     await snapChecked('b3-bump');
@@ -122,37 +132,29 @@ export default function scenarios({ wait, shot, hold, page }) {
       await bootFresh();
       await waitFor('beat >= 0 (wake)', () => window.__lw.beat() >= 0);
       await snapChecked('b0-wake');
-      await breathGood(1);
-      await waitFor('beat >= 1 (first breath)', () => window.__lw.beat() >= 1);
       if (!alt) {
-        await toggleTo('inner');
-        await snapChecked('b2-inner-calm');
-        await toggleTo('outer');
-        await waitFor('beat >= 2 (first Look Within)', () => window.__lw.beat() >= 2);
-        await bumpStep();
-        await treeWeakStep();
-        await toggleTo('inner');
-        await impSeeStep();
+        await breathGood(1);
+        await wait(500);
+      }
+      await squareStep();
+      await bumpStep();
+      await treeWeakStep();
+      await toggleTo('inner');
+      await impSeeStep();
+      if (!alt) {
         await breathGood(3);
         expect(!(await flagsNow()).impCalm, 'imp calmed before the alley was helped');
         await toggleTo('outer');
+        await shot('b6-outer-angry');
         await alleyStep();
         await toggleTo('inner');
-        await transformStep();
-        await toggleTo('outer');
       } else {
-        await bumpStep();
-        await treeWeakStep();
+        await toggleTo('outer');
         await alleyStep();
         await toggleTo('inner');
-        await snapChecked('b2-inner-calm');
-        await toggleTo('outer');
-        await waitFor('beat >= 2 (first Look Within)', () => window.__lw.beat() >= 2);
-        await toggleTo('inner');
-        await impSeeStep();
-        await transformStep();
-        await toggleTo('outer');
       }
+      await transformStep();
+      await toggleTo('outer');
       await deliverStep();
       console.log(`${tag}: PASS`);
     } catch (e) {
@@ -165,7 +167,7 @@ export default function scenarios({ wait, shot, hold, page }) {
     async lantern() {
       await playLantern(false);
     },
-    /** Same playthrough, but the alley (apples) comes before the first Look Within. */
+    /** Same playthrough, but without the first breath (the Square must not be blocked) and alley after the imp. */
     async 'lantern-alt'() {
       await playLantern(true);
     },
@@ -178,15 +180,14 @@ export default function scenarios({ wait, shot, hold, page }) {
       await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
       await shot('outer-start');
       await hold('KeyW', 1500);
-      await wait(500);
+      // Q is locked until the player reaches the Square (invitation): walk there.
+      await lw((q) => window.__lw.teleport(q.x, q.z), await lw(() => window.__lw.bumpTrigger()));
+      await wait(1000);
       const P = await lw(() => window.__lw.playerPos());
       console.log('outer player position P:', JSON.stringify(P));
       const dc1 = await lw(() => window.__lw.drawCalls());
       console.log('draw calls outer:', dc1);
 
-      // Q is locked until the first breath (GAME_DESIGN 9, beat 2): breathe once first.
-      await lw(() => window.__lw.debugBreath());
-      await wait(300);
       await page.keyboard.press('KeyQ');
       await waitWorld('inner');
       await wait(500);

@@ -101,6 +101,10 @@ export class Torch {
     this.target = Math.min(1, Math.max(0, v));
   }
 
+  setVisible(v: boolean): void {
+    for (const m of this.meshes) if (m.isEnabled() !== v) m.setEnabled(v);
+  }
+
   update(dt: number): void {
     const cfg = TUNING.torch;
     this.time += dt;

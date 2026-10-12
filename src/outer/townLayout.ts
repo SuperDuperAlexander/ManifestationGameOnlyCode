@@ -95,10 +95,11 @@ export const TOWN = {
   waveSource: { x: -19, z: 42 },
   /** Bump on Main Street: crossing triggerZ starts it. The stranger runs from `spawn` to the player, then along `path`. */
   bump: {
-    triggerZ: 21,
-    halfX: 4,
-    spawn: { x: 2, z: 36.5 },
-    path: [[0, 31], [-3, 35.5], [-7.5, 39.5], [-10.5, 42], [-14, 41.6]] as [number, number][],
+    triggerZ: 35,
+    halfX: 8,
+    /** The stranger enters the square from the east lane (between the two east houses). */
+    spawn: { x: 17, z: 49.7 },
+    path: [[-5, 42.6], [-9, 42.2], [-14, 41.6]] as [number, number][],
   },
   /** Alley story spots (all on the alley floor). */
   alleyStory: {
@@ -160,6 +161,6 @@ export const TOWN = {
     { x: -27, z: 48, w: 5, d: 5, h: 4.0, floors: 1, style: 'plaster', roof: 'hip', wall: 'sandstone', shutter: 'olive', colour: SAND, seed: 17 },
     { x: -34.5, z: 42, w: 5, d: 8, h: 4.8, floors: 2, style: 'timber', roof: 'gable', wall: 'sandstone', shutter: 'olive', colour: SAND, seed: 18 },
   ] as HouseDef[],
-  /** Soft gold guide light on Main Street (where the bump happens). */
-  beacon: { x: 0, z: 22 },
+  /** Soft gold guide light at the mouth of the Square. */
+  beacon: { x: 0, z: 34.5 },
 } as const;
