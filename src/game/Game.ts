@@ -21,6 +21,7 @@ import { BubbleField, type ThoughtField, type ThoughtLine } from '../thought/Bub
 import { Anger } from './Anger';
 import { HeatMood } from './HeatMood';
 import { BreathGuide } from '../ui/BreathGuide';
+import { ControlsHint } from '../ui/ControlsHint';
 import { StartScreen } from '../ui/StartScreen';
 import { HitTint } from '../ui/HitTint';
 import { Lantern } from './Lantern';
@@ -51,7 +52,12 @@ export class Game {
   private lastLine = '';
   private hand: HandButton | null = null;
   private readonly guide: BreathGuide;
+  private controls: ControlsHint | null = null;
+  private controlsState = '';
   private readonly touch: boolean;
+
+  /** Debug only: bubbles appear without the bump. */
+  private debugBubbles = false;
 
   constructor(canvas: HTMLCanvasElement, ui: HTMLElement) {
     this.engine = new Engine(canvas, true, { stencil: false, powerPreference: 'high-performance', audioEngine: false });
@@ -62,8 +68,14 @@ export class Game {
     this.inner = new InnerValley(this.engine, canvas, ui);
     this.current = this.outer;
     const a = new URLSearchParams(location.search).get('anger');
-    if (a !== null && Number.isFinite(parseFloat(a))) this.anger.set(parseFloat(a));
-    this.fields.set('outer', new BubbleField(this.outer, this.anger));
+    if (a !== null && Number.isFinite(parseFloat(a))) {
+      this.anger.set(parseFloat(a));
+      this.debugBubbles = true;
+    }
+    const bubbleField = new BubbleField(this.outer, this.anger);
+    // Thought Bubbles unlock with the bump (beat 3). Debug anger (URL or test hook) forces them on.
+    bubbleField.unlocked = () => this.debugBubbles || this.story.state.flags.bumped;
+    this.fields.set('outer', bubbleField);
     this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource));
     this.guide = new BreathGuide(ui);
     const start = new StartScreen(ui);
@@ -78,6 +90,7 @@ export class Game {
     this.lanterns = [outerLantern, innerLantern];
     this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
+      this.controls = new ControlsHint(ui, (key) => this.dialogue.line(key));
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
       const raw = this.dialogue.data('thoughts');
@@ -220,6 +233,15 @@ export class Game {
     this.story.update(dt, shown.id, this.transition.active);
     this.guide.wanted = this.story.needsBreathHelp();
     this.guide.update(dt, shown.breathSystem());
+    const push = this.story.state.flags.bumped || this.debugBubbles;
+    const look = this.story.canLookWithin();
+    const state = `${push}|${look}`;
+    if (this.controls && state !== this.controlsState) {
+      if (!this.controlsState) this.controls.show();
+      this.controlsState = state;
+      this.controls.setPushVisible(push);
+      this.controls.setLookWithinVisible(look);
+    }
     shown.scene.render();
     const o = this.overlays.get(shown.id);
     if (o) {
@@ -253,7 +275,10 @@ export class Game {
         return f instanceof BubbleField ? f.pushable : (f?.count ?? 0) > 0;
       },
       bumps: () => this.outer.bumps,
-      setAnger: (v: number) => this.anger.set(v),
+      setAnger: (v: number) => {
+        this.debugBubbles = true;
+        this.anger.set(v);
+      },
       teleport: (x: number, z: number) => this.current.teleport(x, z),
       setImpState: (s: ImpState) => this.inner.setImpState(s),
       setRootHealth: (v: number) => this.inner.setRootHealth(v),

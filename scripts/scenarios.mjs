@@ -257,12 +257,29 @@ export default function scenarios({ wait, shot, hold, page }) {
       await shot('b4-after');
       await hold('KeyW', 600);
     },
+    /** Fresh start: no Thought Bubbles for 30 s of walking (they unlock with the bump). */
+    async freshbubbles() {
+      await lw(() => window.__lw.clearSave?.()).catch(() => {});
+      await page.keyboard.press('Enter');
+      await wait(1000);
+      await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
+      await waitWorld('outer');
+      let maxB = 0;
+      for (let i = 0; i < 15; i++) {
+        await hold(i % 2 ? 'KeyA' : 'KeyD', 1000);
+        await wait(1000);
+        maxB = Math.max(maxB, await lw(() => window.__lw.bubbles()));
+      }
+      console.log('max bubbles in 30 s:', maxB, 'anger:', await lw(() => window.__lw.anger()));
+      if (maxB > 0) { console.error('FAIL: bubbles before bump'); process.exitCode = 3; } else console.log('freshbubbles: PASS');
+    },
     /** Thought Bubble look: form above the head, then a push and the citizen bump. */
     async bubble() {
       await page.keyboard.press('Enter');
       await wait(1000);
       await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
       await waitWorld('outer');
+      await lw(() => window.__lw.setAnger(0.5));
       await page.waitForFunction(() => window.__lw.bubbles() > 0, null, { timeout: 30000 });
       await wait(700);
       await shot('bubble-forming');

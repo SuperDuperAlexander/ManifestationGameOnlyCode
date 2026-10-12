@@ -35,6 +35,8 @@ export class BubbleField implements ThoughtField, BubbleHooks {
   private relief = 0;
   /** Test hook: how many pushes shoved a bubble. */
   pushes = 0;
+  /** Story gate: bubbles only come once this returns true (the bump has happened). */
+  unlocked: () => boolean = () => true;
 
   constructor(
     private readonly world: World,
@@ -95,7 +97,7 @@ export class BubbleField implements ThoughtField, BubbleHooks {
       if (b.alive) b.faceCamera(cam.x, cam.z);
     }
 
-    if (!this.anger.active) {
+    if (!this.anger.active || !this.unlocked()) {
       for (const b of this.bubbles) b.dissolve(true);
       return;
     }

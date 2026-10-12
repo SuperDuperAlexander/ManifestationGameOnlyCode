@@ -566,6 +566,50 @@ body.touch .dialogue-line {
   transform: scale(0.92);
 }
 
+/* Controls hint: bottom right, small, soft. Desktop only (hidden by script on touch). */
+.controls-hint {
+  position: absolute;
+  right: calc(18px + env(safe-area-inset-right));
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  background: rgba(244, 238, 223, 0.6);
+  box-shadow: 0 2px 12px rgba(78, 85, 102, 0.12);
+  color: var(--ink);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+.controls-hint.visible {
+  opacity: 1;
+}
+.ch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ch-row.off {
+  display: none;
+}
+.ch-key {
+  min-width: 26px;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1px solid rgba(78, 85, 102, 0.35);
+  background: rgba(251, 247, 236, 0.9);
+  box-shadow: 0 1px 0 rgba(78, 85, 102, 0.25);
+  text-align: center;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.ch-label {
+  white-space: nowrap;
+}
+
 /* Landscape phones: less height, so smaller buttons and a lower text line. */
 @media (orientation: landscape) and (max-height: 520px) {
   body.touch .breath-button,

@@ -642,6 +642,8 @@ export const TUNING = {
   bubbles: {
     /** Metres: bubble width at pushLevel 0 (grows by waves.pushGrow per pushLevel). */
     width: 1.8,
+    /** Opacity of cloud body and small spheres, and of the orange rim (text stays at 1). */
+    alpha: 0.7, rimAlpha: 0.85,
     /** Share of the pushLevel growth (waves.pushGrow) that the bubble size follows. */
     growShare: 0.6,
     /** Head height above the feet where the small spheres start. */

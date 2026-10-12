@@ -67,6 +67,8 @@ function cloudGeometry(scene: Scene, name: string, grow: number): Mesh {
 }
 
 export function createBubbleKit(scene: Scene): BubbleKit {
+  // Group 1 renders after the world; keep its depth so bubbles still hide behind buildings.
+  scene.setRenderingAutoClearDepthStencil(1, false);
   const rimMat = unlit('bubble.rim', scene, SHADES.heatOrange);
   const sphere = MeshBuilder.CreateSphere('bubble.sphereT', { diameter: 1, segments: 8 }, scene);
   sphere.isPickable = false;
@@ -129,13 +131,17 @@ export class ThoughtBubble {
     this.textPlane.position.z = -0.2;
     this.textPlane.alphaIndex = 12;
     const meshes = [this.cloud, this.rim, this.textPlane];
+    this.fill.disableDepthWrite = true;
+    kit.rimMat.disableDepthWrite = true;
     for (let i = 0; i < TUNING.bubbles.sphereSize.length; i++) {
       const s = kit.sphere.clone(`bubble.sphere.${id}.${i}`);
       s.material = this.fill;
+      s.alphaIndex = 9;
       meshes.push(s);
       this.spheres.push(s);
     }
     for (const m of meshes) {
+      m.renderingGroupId = 1;
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;
       m.setEnabled(false);
@@ -300,8 +306,8 @@ export class ThoughtBubble {
     const s = Math.max(0.001, this.size * scaleK);
     this.root.position.set(this.x, this.y, this.z);
     this.root.scaling.set(s, s, s);
-    this.cloud.visibility = vis;
-    this.rim.visibility = vis;
+    this.cloud.visibility = vis * B.alpha;
+    this.rim.visibility = vis * B.rimAlpha;
     this.textMat.alpha = textVis;
     this.textPlane.visibility = vis;
     this.textPlane.setEnabled(textVis > 0.01 && this.state !== 'gone');
@@ -325,7 +331,7 @@ export class ThoughtBubble {
       m.position.set(head.x + (this.x - head.x) * k, baseY + (endY - baseY) * k + bob, head.z + (this.z - head.z) * k);
       const d = B.sphereSize[i]! * (0.75 + 0.25 * wide) * grow * sphereK;
       m.scaling.setAll(Math.max(0.001, d));
-      m.visibility = vis;
+      m.visibility = vis * B.alpha;
       m.setEnabled(d > 0.004);
     }
   }
