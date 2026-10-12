@@ -42,6 +42,8 @@ export class Citizen {
   private impulseX = 0;
   private impulseZ = 0;
   private time = 0;
+  private torchLit = false;
+  private errand: { phase: 'toPlayer' | 'past'; t: number; speed: number; tx: number; tz: number; cb: (dx: number, dz: number) => void } | null = null;
   private readonly lead: boolean;
   private readonly tmp = new Vector3();
 
@@ -78,8 +80,37 @@ export class Citizen {
     let tz = this.z;
     let moving = false;
     const partner = this.partner;
-    const following = partner !== null && !this.lead;
-    if (following) {
+    const following = partner !== null && !this.lead && !this.errand;
+    const er = this.errand;
+    if (er) {
+      // Errand (Thought Bubble bump): walk into the player softly, then walk on.
+      er.t += dt;
+      if (er.phase === 'toPlayer') {
+        tx = ctx.playerX;
+        tz = ctx.playerZ;
+        const ed = Math.hypot(tx - this.x, tz - this.z);
+        if (ed < TUNING.bubbles.bumpReach) {
+          const k = 1 / Math.max(ed, 1e-3);
+          const dx0 = (tx - this.x) * k;
+          const dz0 = (tz - this.z) * k;
+          er.cb(dx0, dz0);
+          er.phase = 'past';
+          er.t = 0;
+          er.tx = ctx.playerX + dx0 * 5;
+          er.tz = ctx.playerZ + dz0 * 5;
+        } else if (er.t > TUNING.bubbles.bumpGiveUp) {
+          this.errand = null;
+        }
+      } else {
+        tx = er.tx;
+        tz = er.tz;
+        if (er.t > TUNING.bubbles.bumpWalkOn) {
+          this.errand = null;
+          this.wait = 0.8;
+        }
+      }
+      moving = true;
+    } else if (following) {
       const dx = partner.x - this.x;
       const dz = partner.z - this.z;
       const d = Math.hypot(dx, dz);
@@ -112,7 +143,7 @@ export class Citizen {
     }
 
     // Speed and heading.
-    const topSpeed = lerp(T.walkSpeedLow, T.walkSpeedHigh, a);
+    const topSpeed = this.errand ? this.errand.speed * (this.errand.phase === 'past' ? 0.5 : 1) : lerp(T.walkSpeedLow, T.walkSpeedHigh, a);
     let wantSpeed = 0;
     if (moving) {
       const dx = tx - this.x;
@@ -136,7 +167,7 @@ export class Citizen {
     let dx = this.x - ctx.playerX;
     let dz = this.z - ctx.playerZ;
     let d = Math.hypot(dx, dz);
-    if (d < avoidP && d > 0.001) {
+    if (d < avoidP && d > 0.001 && !(this.errand && this.errand.phase === 'toPlayer')) {
       const k = (1 - d / avoidP) * 2.2;
       vx += (dx / d) * k;
       vz += (dz / d) * k;
@@ -179,7 +210,7 @@ export class Citizen {
     const y = ctx.groundY(this.x, this.z);
     this.visual.root.position.set(this.x, y, this.z);
     const shownSpeed = Math.min(this.speed, Math.hypot(vx, vz));
-    this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && a > T.torchShowAbove });
+    this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && (this.torchLit || a > T.torchShowAbove) });
 
     // Steam: now and then at medium, often at high.
     if (a > T.mediumAbove) {
@@ -194,11 +225,22 @@ export class Citizen {
     }
 
     if (this.torch) {
-      const lit = a > T.torchShowAbove - 0.03;
+      // Once lit, a torch never goes out: calming only makes the flame smaller and softer.
+      if (a > T.torchShowAbove - 0.03) this.torchLit = true;
+      const lit = this.torchLit;
       this.torch.setVisible(lit);
       this.torch.setIntensity(a);
       if (lit && !far) this.torch.update(dt);
     }
+  }
+
+  get onErrand(): boolean {
+    return this.errand !== null;
+  }
+
+  /** Walks into the player at `speed`; `cb` gets the unit direction citizen -> player at the contact. */
+  startErrand(speed: number, cb: (dx: number, dz: number) => void): void {
+    this.errand = { phase: 'toPlayer', t: 0, speed, tx: 0, tz: 0, cb };
   }
 
   private turnTo(angle: number, dt: number, rate: number): void {

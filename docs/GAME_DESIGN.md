@@ -207,7 +207,7 @@ Reuse the existing valley (`src/valley/`): terrain with sandstone cliffs, pond, 
 
 | Player does | What happens | Effect |
 |---|---|---|
-| **Breathes** (in or out while touched) | Bubble dissolves slowly | anger − small · town calms (fewer steam clouds, fewer torches, less fire, less tumult) · `passStreak + 1` |
+| **Breathes** (in or out while touched) | Bubble dissolves slowly | anger − small · town calms (fewer steam clouds, smaller and softer torch flames, less fire, less tumult) · `passStreak + 1` |
 | **Pushes** (E / hand) | Bubble is shoved away with a hot flash. Short relief (a few seconds without bubbles). Then it **returns bigger, faster, text larger**. Shortly after the push a **citizen walks into the player**: soft bump, figure wobbles, no damage | anger + · town agitation flares · `pushLevel + 1` · citizen bump |
 | **Nothing** | Bubble hits: figure staggers, walks slower for ~2 s, warm red tint at the screen edge | anger + tiny · no lasting harm |
 
@@ -328,4 +328,3 @@ Key names keep the old `wave…` prefix from the Thought Wave version. The keys 
 
 1. Approve or change the texts in section 10.
 2. Should citizens show their own short reasons when you walk close (6.1, optional)?
-3. Section 7.4/7.7 say torches keep burning, section 7.3 says the town gets "fewer torches" when breathing calms it. Which one is right?

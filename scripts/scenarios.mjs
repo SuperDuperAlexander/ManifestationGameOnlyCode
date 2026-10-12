@@ -257,6 +257,25 @@ export default function scenarios({ wait, shot, hold, page }) {
       await shot('b4-after');
       await hold('KeyW', 600);
     },
+    /** Thought Bubble look: form above the head, then a push and the citizen bump. */
+    async bubble() {
+      await page.keyboard.press('Enter');
+      await wait(1000);
+      await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
+      await waitWorld('outer');
+      await page.waitForFunction(() => window.__lw.bubbles() > 0, null, { timeout: 30000 });
+      await wait(700);
+      await shot('bubble-forming');
+      await wait(1800);
+      await shot('bubble-formed');
+      await page.keyboard.press('KeyE');
+      await wait(350);
+      await shot('bubble-pushed');
+      await page.waitForFunction(() => window.__lw.bumps() > 0, null, { timeout: 12000 }).catch(() => {});
+      console.log('bump arrived:', await lw(() => window.__lw.bumps()) > 0);
+      console.log('bumps:', await lw(() => window.__lw.bumps()), 'pushLevel:', await lw(() => window.__lw.pushLevel()));
+      await shot('bubble-bump');
+    },
     /** Thought waves: breathe to lower anger, push to grow waves, reset, and get shoved. */
     async waves() {
       const failures = [];
@@ -324,10 +343,10 @@ export default function scenarios({ wait, shot, hold, page }) {
       await snap('a-breathe');
 
       // (b) Three pushes (KeyE every 2 s) when a wave is near.
-      await page.waitForFunction(() => window.__lw.waves() > 0, null, { timeout: 40000 }).catch(() => {});
       for (let i = 0; i < 3; i++) {
+        await page.waitForFunction(() => window.__lw.pushable(), null, { timeout: 20000 }).catch(() => {});
         await page.keyboard.press('KeyE');
-        if (i < 2) await wait(2000);
+        if (i < 2) await wait(500);
       }
       await wait(300);
       const push = await getPush();
@@ -344,13 +363,14 @@ export default function scenarios({ wait, shot, hold, page }) {
 
       // (d) Large wave shoves the player; the player can still walk.
       await lw((v) => window.__lw.setAnger(v), 1);
+      await wait(1500);
+      const base = await getPos();
       for (let i = 0; i < 4; i++) {
+        await page.waitForFunction(() => window.__lw.pushable(), null, { timeout: 20000 }).catch(() => {});
         await page.keyboard.press('KeyE');
-        if (i < 3) await wait(2500);
+        if (i < 3) await wait(500);
       }
       console.log('step d: pushLevel', await getPush());
-      await page.waitForFunction(() => window.__lw.waves() > 0, null, { timeout: 40000 }).catch(() => {});
-      const base = await getPos();
       // Wait for the wave to hit (player displaced by > 0.2 m without input).
       const hitStart = Date.now();
       let hit = false;

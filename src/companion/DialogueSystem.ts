@@ -55,6 +55,11 @@ export class DialogueSystem {
     return Array.isArray(v) ? v : [v];
   }
 
+  /** Raw data of a key (for structured entries such as `thoughts`). Undefined if missing. */
+  data(key: string): unknown {
+    return (this.table as Record<string, unknown>)[key];
+  }
+
   /** One line of a key, picked by index (wraps around). */
   line(key: string, index = 0): string {
     const all = this.lines(key);

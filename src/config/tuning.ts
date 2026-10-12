@@ -625,6 +625,41 @@ export const TUNING = {
     citizenShare: 0.4, citizenAbove: 0.45,
     maxAge: 60,              // seconds before a wave fades out on its own
   },
+  /** Comic Thought Bubbles of the outer town (GAME_DESIGN 7.3). pushLevel / anger rules stay in `waves` and `anger`. */
+  bubbles: {
+    /** Metres: bubble width at pushLevel 0 (grows by waves.pushGrow per pushLevel). */
+    width: 1.8,
+    /** Share of the pushLevel growth (waves.pushGrow) that the bubble size follows. */
+    growShare: 0.6,
+    /** Head height above the feet where the small spheres start. */
+    headY: 1.75,
+    /** The bubble floats this far above the head (m, centre) and sideways (share of its width). */
+    lift: 0.45, side: 0.3,
+    /** Seconds: spheres rise, then the bubble puffs out. */
+    formTime: 1.8,
+    /** Sphere diameters (m) and their place on the way from head to bubble (0..1). */
+    sphereSize: [0.1, 0.16, 0.24, 0.34],
+    spherePath: [0.12, 0.32, 0.54, 0.76],
+    /** The bubble can be pushed once this share of forming is done. */
+    pushableAfter: 0.55,
+    /** Seconds of breathing before the bubble starts to dissolve, and how long it takes. */
+    breathHold: 0.6, dissolveTime: 2.2,
+    /** Pushed bubble: seconds of flight, metres per second at the start. */
+    pushedTime: 0.9, pushedSpeed: 7,
+    /** Seconds without a new bubble after a push. */
+    pushRelief: 1.2,
+    /** Seconds between bubbles: calm (anger 0) and furious (anger 1). */
+    gapCalm: 3.2, gapAngry: 1.2, firstGap: 2,
+    /** Nothing done: after this many seconds the bubble sinks onto the head and bursts. */
+    holdTime: 14, burstTime: 0.9, hitShoveMin: 0.3, bigShove: 2.5, hitSlowTime: 2, hitSlowFactor: 0.5,
+    /** Anger level of the text: score = anger + pushLevel * pushScore. */
+    level1Above: 0.5, level2Above: 0.9, pushScore: 0.2,
+    /** Citizen bump after a push: arrival in about this many seconds, speed limits (m/s), shove (m), slow, wobble. */
+    bumpArrive: 1.5, bumpSpeedMin: 1.4, bumpSpeedMax: 4.2, bumpReach: 0.95, bumpShove: 0.9,
+    bumpSlowFactor: 0.45, bumpSlowTime: 0.9, wobbleTime: 1.1, wobbleAmount: 0.2,
+    /** Seconds the citizen keeps walking on after the bump. */
+    bumpWalkOn: 1.8, bumpGiveUp: 9,
+  },
   performance: {
     /** Hardware scaling on phones: 1 = native pixels. Higher = fewer pixels. */
     mobileScalingMin: 1.25,

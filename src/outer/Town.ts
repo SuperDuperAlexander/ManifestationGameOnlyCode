@@ -174,6 +174,12 @@ export class Town implements World {
     this.controller.update(dt);
     this.applyShove(dt);
     this.placeVisual(dt);
+    if (this.wobble > 0) {
+      this.wobble = Math.max(0, this.wobble - dt / TUNING.bubbles.wobbleTime);
+      this.visual.root.rotation.z = Math.sin(this.time * 16) * TUNING.bubbles.wobbleAmount * this.wobble;
+    } else if (this.visual.root.rotation.z !== 0) {
+      this.visual.root.rotation.z = 0;
+    }
     const pp = this.controller.position;
     for (const c of this.citizens) {
       c.update(dt, {
@@ -217,6 +223,35 @@ export class Town implements World {
     for (const c of this.citizens) if (c.agitation > minAgitation) out.push({ x: c.x, z: c.z });
     return out;
   }
+
+  /** After a pushed Thought Bubble: the nearest citizen walks into the player (soft bump, wobble, no harm). */
+  citizenBump(): boolean {
+    const B = TUNING.bubbles;
+    const p = this.controller.position;
+    let best: Citizen | null = null;
+    let bd = Infinity;
+    for (const c of this.citizens) {
+      if (c.onErrand) continue;
+      const d = Math.hypot(c.x - p.x, c.z - p.z);
+      if (d > 2.5 && d < bd) {
+        bd = d;
+        best = c;
+      }
+    }
+    if (!best) return false;
+    const speed = Math.min(B.bumpSpeedMax, Math.max(B.bumpSpeedMin, bd / B.bumpArrive));
+    best.startErrand(speed, (dx, dz) => {
+      this.shove(dx * B.bumpShove, dz * B.bumpShove);
+      this.slow(B.bumpSlowFactor, B.bumpSlowTime);
+      this.wobble = 1;
+      this.bumps++;
+    });
+    return true;
+  }
+
+  /** Number of citizen bumps so far (test hook). */
+  bumps = 0;
+  private wobble = 0;
 
   /** Town anger 0..1. Game calls this every frame (or on change). Citizens mirror it. */
   setAnger(v: number): void {

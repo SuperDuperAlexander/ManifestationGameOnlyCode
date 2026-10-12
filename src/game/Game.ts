@@ -17,6 +17,7 @@ import { Events } from '../core/Events';
 import { TOWN } from '../outer/townLayout';
 import { LAYOUT } from '../inner/innerLayout';
 import { WaveField } from '../thought/WaveField';
+import { BubbleField, type ThoughtField, type ThoughtLine } from '../thought/BubbleField';
 import { Anger } from './Anger';
 import { HeatMood } from './HeatMood';
 import { BreathGuide } from '../ui/BreathGuide';
@@ -41,7 +42,7 @@ export class Game {
   /** The one hidden anger value, shared by both worlds. */
   readonly anger = new Anger();
   readonly dialogue: DialogueSystem;
-  private readonly fields = new Map<WorldId, WaveField>();
+  private readonly fields = new Map<WorldId, ThoughtField>();
   private pushQueued = false;
   private readonly heat = new HeatMood();
   private readonly hitTint: HitTint;
@@ -62,7 +63,7 @@ export class Game {
     this.current = this.outer;
     const a = new URLSearchParams(location.search).get('anger');
     if (a !== null && Number.isFinite(parseFloat(a))) this.anger.set(parseFloat(a));
-    this.fields.set('outer', new WaveField(this.outer, this.anger, TOWN.waveSource));
+    this.fields.set('outer', new BubbleField(this.outer, this.anger));
     this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource));
     this.guide = new BreathGuide(ui);
     const start = new StartScreen(ui);
@@ -79,6 +80,11 @@ export class Game {
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
+      const raw = this.dialogue.data('thoughts');
+      const outerField = this.fields.get('outer');
+      if (Array.isArray(raw) && outerField instanceof BubbleField) {
+        outerField.setThoughts((raw as ThoughtLine[]).filter((l) => typeof l?.text === 'string'));
+      }
       const dl = this.dialogue;
       const t = this.touch;
       this.guide.labels = {
@@ -221,7 +227,7 @@ export class Game {
         world: shown.id,
         anger: +this.anger.value.toFixed(2),
         pushLevel: this.anger.pushLevel,
-        waves: field?.count ?? 0,
+        bubbles: field?.count ?? 0,
         ...shown.debugInfo(),
       };
       o.update(dt);
@@ -241,6 +247,12 @@ export class Game {
       anger: () => this.anger.value,
       pushLevel: () => this.anger.pushLevel,
       waves: () => this.fields.get(this.current.id)?.count ?? 0,
+      bubbles: () => this.fields.get(this.current.id)?.count ?? 0,
+      pushable: () => {
+        const f = this.fields.get(this.current.id);
+        return f instanceof BubbleField ? f.pushable : (f?.count ?? 0) > 0;
+      },
+      bumps: () => this.outer.bumps,
       setAnger: (v: number) => this.anger.set(v),
       teleport: (x: number, z: number) => this.current.teleport(x, z),
       setImpState: (s: ImpState) => this.inner.setImpState(s),

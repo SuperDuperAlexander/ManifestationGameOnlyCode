@@ -74,3 +74,6 @@ Why: the player first feels the calm town and the calm inner world. Then the bum
 Change: section 3 (core loop), 5.1 (town table) and 9 (beats 1–3, 6) of `GAME_DESIGN.md`.
 
 (L20 not needed: the valley-like town layout is already in L18.)
+
+**L21. Thought Bubbles (Alexander, 2026-10-12).** Thought Waves become comic Thought Bubbles. Push → bigger next bubble + a citizen bumps into the player. Breathing calms the town. Imp 5x size, mirrors outer anger. Thought texts are drafts by Claude.
+Change: `GAME_DESIGN.md` (sections 1–13), `public/data/dialogue/en.json` (new keys `thoughts`, `thoughtPushed`, `thoughtPassed`; old `wave…` keys kept).
