@@ -395,7 +395,9 @@ export default function scenarios({ wait, shot, hold, page }) {
       check(moved > 1, `player moved only ${moved.toFixed(3)} m (limit > 1)`);
       await snap('d-shove');
 
-      // Inner world: one run of (a).
+      // Inner world: one run of (a). Look Within opens on the Square (story.canLookWithin).
+      await lw(() => window.__lw.teleport(5, 36));
+      await wait(800);
       await lw(() => window.__lw.toggle());
       await waitWorld('inner');
       await wait(500);
@@ -492,11 +494,23 @@ export default function scenarios({ wait, shot, hold, page }) {
       // Go to the inner world and stage the imp. Q is locked until the first breath.
       await lw(() => window.__lw.debugBreath());
       await wait(300);
+      // Look Within opens on the Square (story.canLookWithin).
+      await lw(() => window.__lw.teleport(5, 36));
+      await wait(800);
       await lw(() => window.__lw.toggle());
       await waitWorld('inner');
       await lw(() => window.__lw.reveal());
-      await lw(() => window.__lw.teleport(-7, 4));
-      await wait(2000);
+      await lw(() => window.__lw.teleport(-12, 0));
+      await wait(2500);
+
+      // Imp size follows anger (big at 0.7, smaller at 0.2).
+      for (const a of [0.7, 0.2]) {
+        await lw((v) => window.__lw.setAnger(v), a);
+        await wait(2500);
+        await snap(`imp-anger-${a}`);
+      }
+      await lw((v) => window.__lw.setAnger(v), 0.7);
+      await wait(1500);
 
       // Imp states.
       for (const state of ['raging', 'calming', 'calm']) {

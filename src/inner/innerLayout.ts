@@ -11,6 +11,8 @@ export interface InnerLayout {
   tree: { x: number; z: number };
   /** Thought Waves come from here (the future imp clearing). */
   waveSource: { x: number; z: number };
+  /** Where the (huge) Anger Imp stands: west of the wave source so the Inner Tree and path stay free. */
+  impSpot: { x: number; z: number };
   path: [number, number][];
   pathWidth: number;
   /** The Source: a stream from the waterfall that ends in a pond. */
@@ -34,6 +36,7 @@ export const LAYOUT: InnerLayout = {
   entrance: { x: 0, z: -19 },
   tree: { x: 0, z: 10 },
   waveSource: { x: -7, z: 12 },
+  impSpot: { x: -15, z: 14 },
   burnedRoot: 2,
   alleyDir: { x: -1, z: 0 },
   path: [
@@ -71,5 +74,6 @@ export const LAYOUT: InnerLayout = {
     { x: 0, z: -19, radius: 4.5 },
     { x: 0, z: 10, radius: 8 },
     { x: -7, z: 12, radius: 4 },
+    { x: -15, z: 14, radius: 9 },
   ],
 };

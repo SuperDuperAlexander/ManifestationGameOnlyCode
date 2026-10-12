@@ -379,7 +379,9 @@ export class AngerImp {
   private readonly clue: Pool;
   private readonly pools: Pool[];
   private readonly camQ = new Quaternion();
-  private readonly S: number;
+  private S: number;
+  private readonly baseS: number;
+  private sizeK = 1;
 
   private current: ImpState = 'raging';
   private calm = 0;
@@ -406,7 +408,9 @@ export class AngerImp {
     this.scene = scene;
     this.spitTarget = opts.spitTarget ? opts.spitTarget.clone() : null;
     this.clueDir = opts.clueDir ? opts.clueDir.clone() : null;
-    this.S = T.scale * T.modelUnit * TUNING.player.visualScale;
+    this.baseS = T.scale * T.modelUnit * TUNING.player.visualScale;
+    this.sizeK = lerp(T.sizeAtCalm, T.sizeAtRage, 1);
+    this.S = this.baseS * this.sizeK;
 
     this.root = new TransformNode('imp', scene);
     this.root.position.copyFrom(pos);
@@ -514,7 +518,7 @@ export class AngerImp {
     this.knot = new TransformNode('imp.knot', scene);
     this.knot.parent = this.upper;
     this.knot.position.copyFrom(KNOT_LOCAL);
-    this.scarf = new ScarfTail(scene, 'imp.scarf', this.toon, 0.8, 0.22, 8, SHADES.scarf, this.S);
+    this.scarf = new ScarfTail(scene, 'imp.scarf', this.toon, 0.8, 0.22, 8, SHADES.scarf, this.baseS * T.sizeAtCalm);
     this.scarf.mesh.isVisible = false;
     this.scarfBody = {
       world: new Matrix(),
@@ -617,6 +621,16 @@ export class AngerImp {
     this.rage = clamp(v, 0, 1);
   }
 
+  /** Current world height of the imp (feet to horn tips). */
+  height(): number {
+    return TUNING.imp.modelHeight * this.S;
+  }
+
+  /** Radius around the root that the player cannot enter. */
+  bodyRadius(): number {
+    return TUNING.imp.bodyRadius * this.S;
+  }
+
   setVisible(b: boolean): void {
     this.visible = b;
     this.root.setEnabled(b);
@@ -676,6 +690,10 @@ export class AngerImp {
     if (!this.visible) return;
     const T = TUNING.imp;
     this.time += dt;
+    // Size follows the outer anger, smoothly (calm = smaller, never gone).
+    this.sizeK += (lerp(T.sizeAtCalm, T.sizeAtRage, this.rage) - this.sizeK) * damp(T.sizeRate, dt);
+    this.S = this.baseS * this.sizeK;
+    this.root.scaling.setAll(this.S);
     const target = this.current === 'raging' ? 0 : this.current === 'calming' ? 0.5 : 1;
     this.calm += (target - this.calm) * damp(T.blendRate, dt);
     const v = this.calm;
@@ -781,11 +799,13 @@ export class AngerImp {
     const o = this.root.position;
     // Steam: puffs rise around the body.
     this.steamAcc += dt * T.steamPerS * e * e * 1.4;
+    // Puffs are small next to the imp (size ~ sqrt of its scale) and rise above and beside the horns, never in front of the face.
+    const puff = Math.sqrt(S);
     while (this.steamAcc >= 1) {
       this.steamAcc -= 1;
       const a = Math.random() * Math.PI * 2;
-      const r = (0.3 + Math.random() * 0.45) * S;
-      this.steam.spawn(o.x + Math.cos(a) * r, o.y + (0.3 + Math.random() * 1.1) * S, o.z + Math.sin(a) * r, Math.cos(a) * 0.15 * S, (0.45 + Math.random() * 0.2) * S, Math.sin(a) * 0.15 * S, 1.7 + Math.random() * 0.8, (0.3 + Math.random() * 0.25) * S, 0, 0.6);
+      const r = (0.35 + Math.random() * 0.35) * S;
+      this.steam.spawn(o.x + Math.cos(a) * r, o.y + (2.0 + Math.random() * 0.5) * S, o.z + Math.sin(a) * r, Math.cos(a) * 0.1 * S, (0.2 + Math.random() * 0.1) * S, Math.sin(a) * 0.1 * S, 1.7 + Math.random() * 0.8, (0.3 + Math.random() * 0.25) * puff * 1.2, 0, 0.6);
     }
     // Lightning bolts around the head.
     if (e > 0.3) {

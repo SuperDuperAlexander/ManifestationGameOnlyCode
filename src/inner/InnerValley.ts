@@ -7,6 +7,7 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { PALETTE } from '../config/palette';
 import { TUNING } from '../config/tuning';
+import { smoothstep } from '../core/Random';
 import { InputManager } from '../core/InputManager';
 import { isTouchDevice } from '../core/Performance';
 import { PlayerVisual } from '../player/PlayerVisual';
@@ -81,6 +82,7 @@ export class InnerValley implements World, WalkGround {
   private dropAt = new Vector3();
   private flow = 0;
   imp!: AngerImp;
+  private impBlock!: Collider;
 
   constructor(
     engine: Engine,
@@ -142,13 +144,15 @@ export class InnerValley implements World, WalkGround {
     this.cam.snapTo(this.walker.position, s.heading);
     this.breathVisuals = new BreathVisuals(scene);
     // The Anger Imp stands in its clearing, hidden until reveal() (reveal rule: after the bump).
-    const w = LAYOUT.waveSource;
-    const impFacing = Math.atan2(-w.x, 4 - w.z);
+    const w = LAYOUT.impSpot;
+    const impFacing = Math.atan2(LAYOUT.start.x + 2 - w.x, 2 - w.z);
     this.imp = new AngerImp(scene, new Vector3(w.x, this.terrain.height(w.x, w.z), w.z), impFacing, {
       spitTarget: this.burnedRootTip(),
       clueDir: new Vector3(LAYOUT.alleyDir.x, 0, LAYOUT.alleyDir.z),
     });
     this.imp.setVisible(false);
+    this.impBlock = { x: w.x, z: w.z, radius: this.imp.bodyRadius(), active: false };
+    props.colliders.push(this.impBlock);
     window.addEventListener('resize', () => this.cam.onResize());
   }
 
@@ -324,6 +328,7 @@ export class InnerValley implements World, WalkGround {
   /** Reveal rule: the imp and the burned root appear (after the bump). Root health starts at 0. */
   reveal(): void {
     this.imp.setVisible(true);
+    this.impBlock.active = true;
     this.setBurnedRootVisible(true);
     this.setRootHealth(0);
   }
@@ -341,6 +346,21 @@ export class InnerValley implements World, WalkGround {
   teleport(x: number, z: number): void {
     this.walker.place(x, z, this.walker.heading);
     this.cam.snapTo(this.walker.position, this.walker.heading);
+  }
+
+  /** Near the imp the camera lifts its target and pulls back so the whole imp is in frame. */
+  private updateImpFocus(_dt: number, p: Vector3): void {
+    const C = TUNING.inner.camera;
+    if (!this.imp.root.isEnabled()) {
+      this.cam.setFocus(null, 0, 0, 0);
+      return;
+    }
+    const ip = this.imp.root.position;
+    const d = Math.hypot(p.x - ip.x, p.z - ip.z);
+    const h = this.imp.height();
+    const near = TUNING.story.impSeeRadius;
+    const w = 1 - smoothstep(near * 0.8, near * 1.5, d);
+    this.cam.setFocus(new Vector3(ip.x, ip.y + h * C.impFocusHeight, ip.z), w, h * C.impPullBack, C.impTargetBlend);
   }
 
   private applyBurnedRoot(): void {
@@ -400,10 +420,12 @@ export class InnerValley implements World, WalkGround {
       glow: this.breathVisuals.glow,
       awake: 1,
     });
-    this.cam.update(dt, p, this.walker.heading, this.walker.speedRatio);
-    this.tree.update(dt);
     this.imp.lookAt(p);
     this.imp.update(dt);
+    this.impBlock.radius = this.imp.bodyRadius();
+    this.updateImpFocus(dt, p);
+    this.cam.update(dt, p, this.walker.heading, this.walker.speedRatio);
+    this.tree.update(dt);
     const target = this.burnedVisible ? this.rootHealthValue : 0;
     this.flow += (target - this.flow) * Math.min(1, dt * 2);
     const on = this.flow > 0.02;

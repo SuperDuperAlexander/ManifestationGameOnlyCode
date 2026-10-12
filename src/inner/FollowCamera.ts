@@ -27,7 +27,13 @@ export class FollowCamera {
   /** Distance actually used: shorter while something is in the way. */
   private useDist = TUNING.inner.camera.distance as number;
   private idle = 99;
+  private readonly focus = new Vector3();
+  private focusW = 0;
+  private focusWant = 0;
+  private focusExtra = 0;
+  private focusBlend = 0;
   private readonly target = new Vector3();
+  private readonly look = new Vector3();
   private readonly desired = new Vector3();
   private dragId: number | null = null;
   private lastX = 0;
@@ -80,6 +86,14 @@ export class FollowCamera {
     );
   }
 
+  /** Lifts the look target toward `point` and pulls back, by `weight` 0..1 (e.g. near the big Anger Imp). */
+  setFocus(point: Vector3 | null, weight: number, extraDist: number, blend: number): void {
+    if (point) this.focus.copyFrom(point);
+    this.focusWant = point ? weight : 0;
+    this.focusExtra = extraDist;
+    this.focusBlend = blend;
+  }
+
   private turn(dx: number, dy: number): void {
     const c = TUNING.inner.camera;
     this.yaw += dx * c.dragSpeed;
@@ -125,16 +139,26 @@ export class FollowCamera {
 
   private place(k: number): void {
     const c = TUNING.inner.camera;
-    const want = this.distance * this.zoom;
+    this.focusW += (this.focusWant - this.focusW) * Math.min(1, k * 0.35);
+    const fw = this.focusW;
+    const want = this.distance * this.zoom + this.focusExtra * fw;
+    const look = this.look;
+    look.copyFrom(this.target);
+    if (fw > 0.001) {
+      const b = fw * this.focusBlend;
+      look.x += (this.focus.x - look.x) * b;
+      look.y += (this.focus.y - look.y) * b;
+      look.z += (this.focus.z - look.z) * b;
+    }
     // Is the ground in the way between the player and the camera? Then come closer.
     let free = want;
     const cosP = Math.cos(this.pitch);
     const sinP = Math.sin(this.pitch);
     for (let s = 0.15; s <= 1.001; s += 0.085) {
       const d = want * s;
-      const x = this.target.x - Math.sin(this.yaw) * cosP * d;
-      const z = this.target.z - Math.cos(this.yaw) * cosP * d;
-      const y = this.target.y + sinP * d;
+      const x = look.x - Math.sin(this.yaw) * cosP * d;
+      const z = look.z - Math.cos(this.yaw) * cosP * d;
+      const y = look.y + sinP * d;
       if (this.terrain.height(x, z) + c.groundClearance > y) {
         free = Math.max(c.minDistance * 0.6, d - want * 0.1);
         break;
@@ -145,9 +169,9 @@ export class FollowCamera {
     const dist = this.useDist;
     const flat = cosP * dist;
     this.desired.set(
-      this.target.x - Math.sin(this.yaw) * flat,
-      this.target.y + sinP * dist,
-      this.target.z - Math.cos(this.yaw) * flat,
+      look.x - Math.sin(this.yaw) * flat,
+      look.y + sinP * dist,
+      look.z - Math.cos(this.yaw) * flat,
     );
     const ground = this.terrain.height(this.desired.x, this.desired.z) + c.groundClearance;
     if (this.desired.y < ground) this.desired.y = ground;
@@ -155,6 +179,6 @@ export class FollowCamera {
     p.x += (this.desired.x - p.x) * k;
     p.y += (this.desired.y - p.y) * k;
     p.z += (this.desired.z - p.z) * k;
-    this.camera.setTarget(this.target);
+    this.camera.setTarget(look);
   }
 }

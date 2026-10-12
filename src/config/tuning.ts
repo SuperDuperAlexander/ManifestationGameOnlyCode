@@ -387,6 +387,10 @@ export const TUNING = {
       followSharpness: 10,
       groundClearance: 0.7,
       maxZ: 600,
+      /** Near the Anger Imp: look at this share of the imp's height, blend this much toward it, pull back this many imp-heights. */
+      impFocusHeight: 0.58,
+      impTargetBlend: 0.85,
+      impPullBack: 0.9,
     },
     counts: {
       roundTrees: 18,
@@ -463,8 +467,17 @@ export const TUNING = {
   imp: {
     /** Good breaths with the imp until it is calm. */
     breathsToCalm: 3,
-    /** Imp size compared to the player. */
-    scale: 1.5,
+    /** Imp base size compared to the player (5x the old 1.5). Mid anger is about this size. */
+    scale: 7.5,
+    /** Live size factor around the base: at anger 0 and at anger 1. Never zero (a warm presence). */
+    sizeAtCalm: 0.7,
+    sizeAtRage: 1.3,
+    /** How fast the size follows anger (per second). */
+    sizeRate: 2.5,
+    /** Imp height in model units (feet to horn tips), for camera and collider. */
+    modelHeight: 1.95,
+    /** Radius the player cannot enter, in model units (x imp scale). */
+    bodyRadius: 0.62,
     /** Converts the imp's model units (about 1.7 tall) to player-figure units. */
     modelUnit: 0.72,
     /** How fast the states blend (per second). */
@@ -472,7 +485,7 @@ export const TUNING = {
     /** Stomp speed (radians per second; one stomp per half turn). */
     stompRate: 7,
     /** Steam clouds per second at full rage. */
-    steamPerS: 7,
+    steamPerS: 3,
     /** Lightning bolts per second at full rage. */
     boltPerS: 2.5,
     /** Seconds between fire spits: [at rage 0, at rage 1]. */
@@ -526,8 +539,8 @@ export const TUNING = {
     /** Walk-close distance to the lantern niche (m, from the niche). */
     nicheRadius: 3.2,
     /** Distance to the imp that counts as meeting it, and for breathing with it (m). */
-    impSeeRadius: 9,
-    impBreathRadius: 6,
+    impSeeRadius: 22,
+    impBreathRadius: 15,
     /** Calming without help falls back to raging after this long (s). */
     impFlareBackS: 3,
     /** A started calming (with help) is forgotten after this long without a breath (s). */
