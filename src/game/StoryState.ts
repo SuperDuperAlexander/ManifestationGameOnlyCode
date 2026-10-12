@@ -53,6 +53,18 @@ export class StoryState {
     }
   }
 
+  /** Beat stored in the checkpoint (0 when there is none). Does not touch the live state. */
+  static savedBeat(): number {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return 0;
+      const d = JSON.parse(raw) as { beat?: number };
+      return typeof d.beat === 'number' ? Math.min(9, Math.max(0, d.beat)) : 0;
+    } catch {
+      return 0;
+    }
+  }
+
   static clear(): void {
     try {
       localStorage.removeItem(KEY);

@@ -5,6 +5,9 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Texture } from '@babylonjs/core/Materials/Textures/texture';
+import type { ShaderMaterial } from '@babylonjs/core/Materials/shaderMaterial';
+import { Vector4 } from '@babylonjs/core/Maths/math.vector';
+import { createGlassMaterial } from '../shaders/glassShader';
 import type { Scene } from '@babylonjs/core/scene';
 import { PALETTE, SHADES, color3 } from '../config/palette';
 import { TUNING } from '../config/tuning';
@@ -30,17 +33,6 @@ export interface BubbleKit {
   cloud: Mesh;
   rim: Mesh;
   sphere: Mesh;
-  rimMat: StandardMaterial;
-}
-
-function unlit(name: string, scene: Scene, hex: string): StandardMaterial {
-  const m = new StandardMaterial(name, scene);
-  m.disableLighting = true;
-  m.diffuseColor = Color3.Black();
-  m.emissiveColor = color3(hex);
-  m.specularColor = Color3.Black();
-  m.backFaceCulling = false;
-  return m;
 }
 
 /** Puffy cloud in a 1 m wide box (a flattened ellipse of merged spheres). Made in code. */
@@ -69,11 +61,10 @@ function cloudGeometry(scene: Scene, name: string, grow: number): Mesh {
 export function createBubbleKit(scene: Scene): BubbleKit {
   // Group 1 renders after the world; keep its depth so bubbles still hide behind buildings.
   scene.setRenderingAutoClearDepthStencil(1, false);
-  const rimMat = unlit('bubble.rim', scene, SHADES.heatOrange);
   const sphere = MeshBuilder.CreateSphere('bubble.sphereT', { diameter: 1, segments: 8 }, scene);
   sphere.isPickable = false;
   sphere.setEnabled(false);
-  return { cloud: cloudGeometry(scene, 'bubble.cloudT', 1), rim: cloudGeometry(scene, 'bubble.rimT', 1.07), sphere, rimMat };
+  return { cloud: cloudGeometry(scene, 'bubble.cloudT', 1), rim: cloudGeometry(scene, 'bubble.rimT', 1.035), sphere };
 }
 
 /** One comic Thought Bubble (GAME_DESIGN 7.3): spheres rise from the head, then a puffy cloud with text forms. */
@@ -96,15 +87,32 @@ export class ThoughtBubble {
   private readonly rim: Mesh;
   private readonly textPlane: Mesh;
   private readonly spheres: Mesh[] = [];
-  private readonly fill: StandardMaterial;
+  private readonly fill: ShaderMaterial;
+  private readonly rimMat: ShaderMaterial;
   private readonly textMat: StandardMaterial;
   private readonly tex: DynamicTexture;
   private readonly ivory = color3(PALETTE.ivory);
   private readonly hot = color3(SHADES.heatOrange);
+  private readonly tint = new Color3();
 
   constructor(scene: Scene, kit: BubbleKit, id: number) {
     this.root = new TransformNode(`bubble.${id}`, scene);
-    this.fill = unlit(`bubble.fill.${id}`, scene, PALETTE.ivory);
+    this.fill = createGlassMaterial(`bubble.fill.${id}`, scene, {
+      color: this.ivory,
+      edgeColor: color3('#FFFFFF'),
+      centerAlpha: TUNING.bubbles.alpha,
+      edgeAlpha: TUNING.bubbles.edgeAlpha,
+      power: TUNING.bubbles.edgePower,
+      streak: TUNING.bubbles.streak,
+    });
+    this.rimMat = createGlassMaterial(`bubble.rimMat.${id}`, scene, {
+      color: this.hot,
+      edgeColor: this.hot,
+      centerAlpha: 0,
+      edgeAlpha: TUNING.bubbles.rimAlpha,
+      power: TUNING.bubbles.rimPower,
+      streak: 0,
+    });
     this.tex = new DynamicTexture(`bubble.text.${id}`, { width: TEX_W, height: TEX_H }, scene, true, Texture.TRILINEAR_SAMPLINGMODE);
     this.tex.hasAlpha = true;
     this.textMat = new StandardMaterial(`bubble.textMat.${id}`, scene);
@@ -121,7 +129,7 @@ export class ThoughtBubble {
     this.cloud.parent = this.root;
     this.cloud.alphaIndex = 11;
     this.rim = kit.rim.clone(`bubble.rimMesh.${id}`);
-    this.rim.material = kit.rimMat;
+    this.rim.material = this.rimMat;
     this.rim.parent = this.root;
     this.rim.position.z = 0.05;
     this.rim.alphaIndex = 10;
@@ -131,8 +139,6 @@ export class ThoughtBubble {
     this.textPlane.position.z = -0.2;
     this.textPlane.alphaIndex = 12;
     const meshes = [this.cloud, this.rim, this.textPlane];
-    this.fill.disableDepthWrite = true;
-    kit.rimMat.disableDepthWrite = true;
     for (let i = 0; i < TUNING.bubbles.sphereSize.length; i++) {
       const s = kit.sphere.clone(`bubble.sphere.${id}.${i}`);
       s.material = this.fill;
@@ -173,7 +179,6 @@ export class ThoughtBubble {
     this.flash = 0;
     this.state = 'forming';
     this.drawText(text);
-    this.fill.emissiveColor.copyFrom(this.ivory);
     this.apply(0, 1, 0, { x: cx, y: cy, z: cz }, 0);
     for (const m of this.all()) m.setEnabled(true);
   }
@@ -306,17 +311,13 @@ export class ThoughtBubble {
     const s = Math.max(0.001, this.size * scaleK);
     this.root.position.set(this.x, this.y, this.z);
     this.root.scaling.set(s, s, s);
-    this.cloud.visibility = vis * B.alpha;
-    this.rim.visibility = vis * B.rimAlpha;
+    this.fill.setVector4('uCfg', new Vector4(B.alpha, B.edgeAlpha, B.edgePower, vis));
+    this.cloud.visibility = 1;
+    this.rimMat.setVector4('uCfg', new Vector4(0, B.rimAlpha, B.rimPower, vis));
     this.textMat.alpha = textVis;
     this.textPlane.visibility = vis;
     this.textPlane.setEnabled(textVis > 0.01 && this.state !== 'gone');
-    const f = this.flash * 0.6;
-    this.fill.emissiveColor.set(
-      this.ivory.r + (this.hot.r - this.ivory.r) * f,
-      this.ivory.g + (this.hot.g - this.ivory.g) * f,
-      this.ivory.b + (this.hot.b - this.ivory.b) * f,
-    );
+    this.fill.setColor3('uColor', this.tint.copyFrom(this.ivory).scaleInPlace(1 - this.flash * 0.6).addInPlace(this.hot.scale(this.flash * 0.6)));
 
     // The tail: small spheres from the head toward the bubble, appearing one after another.
     const n = this.spheres.length;
@@ -331,7 +332,6 @@ export class ThoughtBubble {
       m.position.set(head.x + (this.x - head.x) * k, baseY + (endY - baseY) * k + bob, head.z + (this.z - head.z) * k);
       const d = B.sphereSize[i]! * (0.75 + 0.25 * wide) * grow * sphereK;
       m.scaling.setAll(Math.max(0.001, d));
-      m.visibility = vis * B.alpha;
       m.setEnabled(d > 0.004);
     }
   }
@@ -352,11 +352,44 @@ export class ThoughtBubble {
       lines = wrap(ctx, text, maxW);
       if (lines.length <= 3 && lines.length * size * 1.15 < TEX_H * 0.8) break;
     }
+    // Soft frosted pad behind the text so it reads over any background.
+    const pad = ctx.createRadialGradient(TEX_W / 2, TEX_H / 2, 0, TEX_W / 2, TEX_H / 2, TEX_W * 0.46);
+    pad.addColorStop(0, 'rgba(244,238,223,0.62)');
+    pad.addColorStop(0.7, 'rgba(244,238,223,0.4)');
+    pad.addColorStop(1, 'rgba(244,238,223,0)');
+    ctx.save();
+    ctx.translate(TEX_W / 2, TEX_H / 2);
+    ctx.scale(1, 0.62);
+    ctx.translate(-TEX_W / 2, -TEX_H / 2);
+    ctx.fillStyle = pad;
+    ctx.fillRect(0, 0, TEX_W, TEX_H);
+    ctx.restore();
+    // Soft diagonal highlight streaks (fake glass reflection).
+    ctx.save();
+    ctx.translate(TEX_W / 2, TEX_H / 2);
+    ctx.rotate(-0.5);
+    for (const [ox, w, a] of [[-0.3, 0.07, 0.16], [-0.18, 0.025, 0.12]] as const) {
+      const g = ctx.createLinearGradient((ox - w) * TEX_W, 0, (ox + w) * TEX_W, 0);
+      g.addColorStop(0, 'rgba(255,255,255,0)');
+      g.addColorStop(0.5, `rgba(255,255,255,${a})`);
+      g.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect((ox - w) * TEX_W, -TEX_H, 2 * w * TEX_W, TEX_H * 2);
+    }
+    ctx.restore();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = SHADES.ink;
     const lh = size * 1.15;
     const y0 = TEX_H / 2 - ((lines.length - 1) * lh) / 2;
+    // Light halo, then opaque ink.
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = size * 0.16;
+    ctx.strokeStyle = 'rgba(244,238,223,0.75)';
+    ctx.shadowColor = 'rgba(244,238,223,0.9)';
+    ctx.shadowBlur = size * 0.2;
+    lines.forEach((l, i) => ctx.strokeText(l, TEX_W / 2, y0 + i * lh));
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = SHADES.ink;
     lines.forEach((l, i) => ctx.fillText(l, TEX_W / 2, y0 + i * lh));
     this.tex.update();
   }

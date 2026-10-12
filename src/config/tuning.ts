@@ -671,9 +671,9 @@ export const TUNING = {
   /** Comic Thought Bubbles of the outer town (GAME_DESIGN 7.3). pushLevel / anger rules stay in `waves` and `anger`. */
   bubbles: {
     /** Metres: bubble width at pushLevel 0 (grows by waves.pushGrow per pushLevel). */
-    width: 1.8,
-    /** Opacity of cloud body and small spheres, and of the orange rim (text stays at 1). */
-    alpha: 0.7, rimAlpha: 0.85,
+    width: 1.55,
+    /** Glass: opacity in the middle and at the edge (fresnel power), highlight streak 0..1, and of the thin warm rim (text stays at 1). */
+    alpha: 0.14, edgeAlpha: 0.5, edgePower: 2.2, streak: 1, rimAlpha: 0.4, rimPower: 3,
     /** Share of the pushLevel growth (waves.pushGrow) that the bubble size follows. */
     growShare: 0.6,
     /** Head height above the feet where the small spheres start. */

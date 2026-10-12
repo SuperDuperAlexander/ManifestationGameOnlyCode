@@ -47,7 +47,9 @@ export class Game {
   private pushQueued = false;
   private readonly heat = new HeatMood();
   private readonly hitTint: HitTint;
-  readonly story: Story;
+  /** Created after the start choice, so it reads the checkpoint only when the player continues. */
+  private story!: Story;
+  private storyReady = false;
   private readonly lanterns: Lantern[];
   private lastLine = '';
   private hand: HandButton | null = null;
@@ -74,7 +76,7 @@ export class Game {
     }
     const bubbleField = new BubbleField(this.outer, this.anger);
     // Thought Bubbles unlock with the bump (beat 3). Debug anger (URL or test hook) forces them on.
-    bubbleField.unlocked = () => this.debugBubbles || this.story.state.flags.bumped;
+    bubbleField.unlocked = () => this.debugBubbles || (this.storyReady && this.story.state.flags.bumped);
     this.fields.set('outer', bubbleField);
     this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource, this.inner.waveEmitter));
     this.guide = new BreathGuide(ui);
@@ -88,7 +90,6 @@ export class Game {
     const outerLantern = new Lantern(this.outer.scene, this.outer.visual);
     const innerLantern = new Lantern(this.inner.scene, this.inner.visual);
     this.lanterns = [outerLantern, innerLantern];
-    this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
       this.controls = new ControlsHint(ui, (key) => this.dialogue.line(key));
       const text = this.dialogue.line('waveText');
@@ -106,8 +107,15 @@ export class Game {
         breatheIn: dl.line('guideIn'),
         breatheOut: dl.line('guideOut'),
       };
-      start.setTexts(dl.line('startTitle'), dl.line('startSubtitle'), dl.line('startPrompt'));
-      void started.then(() => this.story.begin());
+      const hasSave = StoryState.savedBeat() > 0;
+      start.setTexts(dl.line('startTitle'), dl.line('startSubtitle'), dl.line('startPrompt'), dl.line('startBegin'), hasSave ? dl.line('startContinue') : null);
+      void started.then((choice) => {
+        // "Begin" clears the checkpoint BEFORE the story reads it. "Continue" keeps it.
+        if (choice === 'begin') StoryState.clear();
+        this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
+        this.storyReady = true;
+        this.story.begin();
+      });
     });
     if (new URLSearchParams(location.search).has('reveal')) this.inner.reveal();
     this.applyShared(this.outer);
@@ -158,20 +166,20 @@ export class Game {
   }
 
   toggle(): void {
-    if (this.transition.active || !this.story.canLookWithin()) return;
+    if (this.transition.active || !this.storyReady || !this.story.canLookWithin()) return;
     this.transition.start(this.current, this.current === this.outer ? this.inner : this.outer);
   }
 
   /** E / hand button / tap: interact with a glowing object, else push a wave. */
   private press(): void {
     if (this.transition.active) return;
-    if (!this.story.interact()) this.pushQueued = true;
+    if (!this.storyReady || !this.story.interact()) this.pushQueued = true;
   }
 
   /** Glowing objects the player can reach right now (tap targets). */
   private glowTargets(): TapTarget[] {
     const out: TapTarget[] = [];
-    if (this.current !== this.outer || this.transition.active) return out;
+    if (!this.storyReady || this.current !== this.outer || this.transition.active) return out;
     const f = this.story.state.flags;
     const p = this.outer.playerPosition();
     if (f.bumped && !f.helped) {
@@ -230,11 +238,13 @@ export class Game {
       const near = shown === this.current && !this.transition.active;
       this.hand.setMode(near && this.glowTargets().length > 0 ? 'interact' : near && (field?.count ?? 0) > 0 ? 'push' : 'dim');
     }
-    this.story.update(dt, shown.id, this.transition.active);
-    this.guide.wanted = this.story.needsBreathHelp();
+    if (this.storyReady) {
+      this.story.update(dt, shown.id, this.transition.active);
+      this.guide.wanted = this.story.needsBreathHelp();
+    }
     this.guide.update(dt, shown.breathSystem());
-    const push = this.story.state.flags.bumped || this.debugBubbles;
-    const look = this.story.canLookWithin();
+    const push = (this.storyReady && this.story.state.flags.bumped) || this.debugBubbles;
+    const look = this.storyReady && this.story.canLookWithin();
     const state = `${push}|${look}`;
     if (this.controls && state !== this.controlsState) {
       if (!this.controlsState) this.controls.show();

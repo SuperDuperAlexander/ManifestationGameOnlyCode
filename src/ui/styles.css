@@ -270,6 +270,41 @@ body {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
 }
+/* Start choice (only when a checkpoint exists): Begin is the main button, Continue is smaller. */
+.ss-actions {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+.start-screen.has-save .ss-actions {
+  display: flex;
+}
+.ss-btn {
+  font: inherit;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+  color: var(--ink);
+}
+.ss-begin {
+  padding: 11px 34px;
+  font-size: 15px;
+  border: 1px solid rgba(78, 85, 102, 0.35);
+  background: rgba(251, 247, 236, 0.92);
+  box-shadow: 0 4px 16px rgba(78, 85, 102, 0.14);
+}
+.ss-continue {
+  padding: 6px 18px;
+  font-size: 11px;
+  color: #8a8578;
+  border: 1px solid rgba(138, 133, 120, 0.45);
+  background: transparent;
+}
 
 /* Light-and-fog blend at the chapter gate, then a calm card. */
 .transition {

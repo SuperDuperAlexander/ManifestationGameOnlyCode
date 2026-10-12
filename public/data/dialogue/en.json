@@ -3,6 +3,8 @@
   "startTitle": "LIGHT WITHIN",
   "startSubtitle": "The Lantern",
   "startPrompt": "Press any key or tap to begin",
+  "startBegin": "Begin",
+  "startContinue": "Continue",
   "guideHoldIn": "hold to breathe in",
   "guideHoldOut": "now let go and breathe out",
   "guideHoldInDesktop": "hold Space: breathe in",
