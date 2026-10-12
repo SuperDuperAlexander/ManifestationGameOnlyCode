@@ -393,6 +393,10 @@ export class AngerImp {
   private headYaw = 0;
   private spitT = -1;
   private spitFired = false;
+  private roarT = -1;
+  private roarFired = false;
+  private walk = 0;
+  private walkPhase = 0;
   private spitCd = 1.2;
   private steamAcc = 0;
   private boltAcc = 0;
@@ -667,6 +671,45 @@ export class AngerImp {
     }
   }
 
+  /** Starts the roar: lean forward, flame flare, ember burst. Used when a Thought Wave leaves the imp. */
+  roar(): void {
+    if (!this.visible || this.current === 'calm') return;
+    this.roarT = 0;
+    this.roarFired = false;
+  }
+
+  /** 0..1 how much it is walking (waddle). */
+  setWalk(v: number): void {
+    this.walk = clamp(v, 0, 1);
+  }
+
+  /** World point of the mouth (where a Thought Wave starts). */
+  mouthPosition(): Vector3 {
+    this.root.computeWorldMatrix(true);
+    this.upper.computeWorldMatrix(true);
+    this.headPivot.computeWorldMatrix(true);
+    return Vector3.TransformCoordinates(MOUTH_LOCAL, this.headPivot.getWorldMatrix());
+  }
+
+  /** Where a wave appears: at the mouth, a little toward the player so the head does not hide it. */
+  waveSpawnPosition(): Vector3 {
+    const m = this.mouthPosition();
+    const h = this.tmpA;
+    if (this.lookPos) h.set(this.lookPos.x - m.x, 0, this.lookPos.z - m.z);
+    else h.set(Math.sin(this.root.rotation.y), 0, Math.cos(this.root.rotation.y));
+    if (h.lengthSquared() < 1e-6) h.set(0, 0, 1);
+    h.normalize();
+    const k = TUNING.imp.roar.spawnForward * this.S;
+    m.x += h.x * k;
+    m.z += h.z * k;
+    m.y = this.root.position.y + TUNING.imp.roar.chestY * this.S;
+    return m;
+  }
+
+  get isVisible(): boolean {
+    return this.visible;
+  }
+
   /** Where the warm flame is, in world space (for the flame that floats to the lantern). */
   flamePosition(): Vector3 {
     this.upper.computeWorldMatrix(true);
@@ -710,9 +753,12 @@ export class AngerImp {
     const squash = Math.pow(1 - hop, 6) * 0.08 * e;
     if (e > 0.25 && Math.floor(this.stompPhase / Math.PI) !== prevStomp && dt > 0) this.onLand(e);
     const breathe = Math.sin(t * 1.4) * 0.012 * v;
-    this.upper.position.y = hop * 0.07 * e + Math.sin(t * 1.1) * 0.012 * v;
+    const W = T.wander;
+    this.walkPhase += dt * W.stepRate * this.walk;
+    const step = Math.sin(this.walkPhase);
+    this.upper.position.y = hop * 0.07 * e + Math.sin(t * 1.1) * 0.012 * v + Math.abs(step) * W.hop * this.walk;
     this.upper.scaling.set(1 + squash * 0.6, 1 - squash + breathe, 1 + squash * 0.6);
-    this.upper.rotation.z = Math.sin(this.stompPhase * 0.5) * 0.05 * e;
+    this.upper.rotation.z = Math.sin(this.stompPhase * 0.5) * 0.05 * e + step * W.sway * this.walk;
     this.legs.scaling.set((1 + 0.32 * (1 - v)) * (1 + squash * 0.3), 1 - squash * 0.5, 1);
 
     // Spit envelope: head up, small lean back.
@@ -732,7 +778,19 @@ export class AngerImp {
         this.spitCd = lerp(T.spitEveryS[0], T.spitEveryS[1], this.rage) * (0.8 + Math.random() * 0.4);
       }
     }
-    this.upper.rotation.x = -spitK * 0.12;
+    // Roar: lean toward the player, flare, burst of embers.
+    let roarK = 0;
+    if (this.roarT >= 0) {
+      const R = T.roar;
+      this.roarT += dt;
+      roarK = Math.sin(Math.PI * clamp(this.roarT / R.durationS, 0, 1));
+      if (!this.roarFired && this.roarT >= R.fireAtS) {
+        this.roarFired = true;
+        this.roarBurst();
+      }
+      if (this.roarT >= R.durationS) this.roarT = -1;
+    }
+    this.upper.rotation.x = -spitK * 0.12 + roarK * T.roar.lean;
 
     // Arms: raised and shaking when raging, lower when calming, cupped around the flame when calm.
     const shake = Math.sin(t * 21) * 0.08 * e;
@@ -754,7 +812,7 @@ export class AngerImp {
       wantYaw = clamp(rel, -1, 1) * w;
     }
     this.headYaw += (wantYaw - this.headYaw) * damp(4, dt);
-    this.headPivot.rotation.set(lerp(-0.05, 0.12, v) - spitK * 0.45 + Math.sin(t * 1.3) * 0.015 * v, this.headYaw, Math.sin(t * 17) * 0.03 * e);
+    this.headPivot.rotation.set(lerp(-0.05, 0.12, v) - spitK * 0.45 + roarK * T.roar.headDip + Math.sin(t * 1.3) * 0.015 * v, this.headYaw, Math.sin(t * 17) * 0.03 * e);
 
     // Tail wag.
     this.tailPivot.rotation.set(Math.sin(t * 2.1) * 0.06, Math.sin(t * (3 + 7 * e)) * (0.15 + 0.3 * e), 0);
@@ -766,11 +824,12 @@ export class AngerImp {
 
     // Flame and warm glow in the calm form.
     const f = smoothstep(0.55, 0.95, v);
-    this.flame.isVisible = f > 0.02;
-    if (f > 0.02) {
+    const fl = Math.max(f, roarK * T.roar.flare);
+    this.flame.isVisible = fl > 0.02;
+    if (fl > 0.02) {
       const w1 = 1 + 0.06 * Math.sin(t * 9);
       const h1 = 1 + 0.12 * Math.sin(t * 7.3 + 1) + 0.05 * Math.sin(t * 13);
-      this.flame.scaling.set(f * w1, f * h1, f * w1);
+      this.flame.scaling.set(fl * w1, fl * h1, fl * w1);
       this.flameNode.position.y = FLAME_LOCAL.y + Math.sin(t * 2) * 0.015;
     }
     this.toon.glow = f * (0.1 + 0.04 * Math.sin(t * 2.4));
@@ -831,6 +890,29 @@ export class AngerImp {
       }
     } else {
       this.sparkAcc = 0;
+    }
+  }
+
+  /** The flare: fire puffs from the mouth toward the player, and sparks around it. */
+  private roarBurst(): void {
+    const S = this.S;
+    const R = TUNING.imp.roar;
+    const from = this.mouthPosition();
+    const h = this.tmpA;
+    if (this.lookPos) h.set(this.lookPos.x - from.x, 0, this.lookPos.z - from.z);
+    else h.set(Math.sin(this.root.rotation.y), 0, Math.cos(this.root.rotation.y));
+    if (h.lengthSquared() < 1e-6) h.set(0, 0, 1);
+    h.normalize();
+    const sp = R.speed * S;
+    for (let i = 0; i < R.puffs; i++) {
+      const k = (0.7 + Math.random() * 0.6) * sp;
+      const j = 0.35;
+      this.fire.spawn(from.x, from.y, from.z, (h.x * 0.9 + (Math.random() - 0.5) * j) * k, (0.25 + Math.random() * 0.3) * k, (h.z * 0.9 + (Math.random() - 0.5) * j) * k, 0.8 + Math.random() * 0.3, (0.22 + Math.random() * 0.14) * S, Math.random() * 6, 2);
+    }
+    for (let i = 0; i < R.sparks; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * 0.25 * S;
+      this.sparks.spawn(from.x + Math.cos(a) * r, from.y + (Math.random() - 0.3) * 0.2 * S, from.z + Math.sin(a) * r, h.x * 0.8 * S + Math.cos(a) * 0.4 * S, (0.3 + Math.random() * 0.5) * S, h.z * 0.8 * S + Math.sin(a) * 0.4 * S, 0.8 + Math.random() * 0.6, (0.1 + Math.random() * 0.08) * S, Math.random() * 3, 1);
     }
   }
 

@@ -1,6 +1,6 @@
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { TUNING } from '../config/tuning';
-import { clamp01, smoothstep } from '../core/Random';
+import { clamp01, smoothstep, lerp } from '../core/Random';
 import type { WaveLook } from './waveShader';
 
 export type WaveState = 'drifting' | 'returning' | 'passing' | 'pushed' | 'hit' | 'gone';
@@ -25,10 +25,11 @@ export class ThoughtWave {
   dirZ = 1;
   speed: number = TUNING.waves.speed;
   scale = 1;
-  readonly look: WaveLook = { alpha: 0, split: 0, flash: 0, textAlpha: 0 };
+  readonly look: WaveLook = { alpha: 0, split: 0, flash: 0, textAlpha: 0, fire: 0 };
   private stateTime = 0;
   private age = 0;
   private baseScale = 1;
+  fromImp = false;
 
   constructor(readonly mesh: Mesh) {
     mesh.setEnabled(false);
@@ -43,7 +44,7 @@ export class ThoughtWave {
     return this.state === 'drifting' || this.state === 'returning';
   }
 
-  spawn(x: number, y: number, z: number, targetX: number, targetZ: number, scale: number, speed: number, state: WaveState): void {
+  spawn(x: number, y: number, z: number, targetX: number, targetZ: number, scale: number, speed: number, state: WaveState, fromImp = false): void {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -52,11 +53,13 @@ export class ThoughtWave {
     this.scale = scale;
     this.speed = speed;
     this.age = 0;
+    this.fromImp = fromImp;
     this.enter(state);
     this.look.alpha = 0;
     this.look.split = 0;
     this.look.flash = 0;
     this.look.textAlpha = 0;
+    this.look.fire = fromImp ? 1 : 0;
     this.mesh.setEnabled(true);
   }
 
@@ -104,9 +107,12 @@ export class ThoughtWave {
         // Aim at the player until close, then drift straight on and past.
         if (dist > reach * 2.5) this.aimAt(px, pz);
         this.move(dt, 1);
-        const fade = clamp01(this.age / FADE_IN);
+        const F = TUNING.waves.fromImp;
+        const fire = this.fromImp ? 1 - smoothstep(0, F.fireS, this.age) : 0;
+        const fade = clamp01(this.age / (this.fromImp ? F.fadeInS : FADE_IN));
         L.alpha = fade;
-        L.textAlpha = fade;
+        L.textAlpha = fade * (1 - fire);
+        L.fire = fire;
         L.split = 0;
         L.flash = 0;
         if (dist < reach) {
@@ -145,6 +151,7 @@ export class ThoughtWave {
         this.z += az * burst * dt;
         this.scale = this.baseScale * (1 + 0.5 * smoothstep(0, 1, t));
         L.flash = 1 - smoothstep(0, 0.65, t);
+        L.fire = Math.min(L.fire, 1 - smoothstep(0, 0.3, t));
         L.alpha = 1 - smoothstep(0.35, 1, t);
         L.textAlpha = 1 - smoothstep(0, 0.4, t);
         L.split = 0;
@@ -163,7 +170,9 @@ export class ThoughtWave {
       }
     }
 
-    this.y += (py + 1.2 - this.y) * Math.min(1, dt * 2);
+    // A wave from the imp starts at mouth height and sinks slowly to the player's height.
+    const sink = this.fromImp ? 2 * smoothstep(0.4, TUNING.waves.fromImp.fireS + 1, this.age) : 2;
+    this.y += (py + 1.2 - this.y) * Math.min(1, dt * sink);
     this.apply();
   }
 
@@ -178,8 +187,10 @@ export class ThoughtWave {
   }
 
   private apply(): void {
-    const W = TUNING.waves.width * this.scale;
-    const H = TUNING.waves.height * this.scale;
+    const F = TUNING.waves.fromImp;
+    const grow = this.fromImp ? lerp(F.startScale, 1, smoothstep(0, F.growS, this.age)) : 1;
+    const W = TUNING.waves.width * this.scale * grow;
+    const H = TUNING.waves.height * this.scale * grow;
     this.mesh.position.set(this.x, this.y, this.z);
     this.mesh.scaling.set(W, H, W);
   }

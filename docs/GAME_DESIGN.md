@@ -130,7 +130,7 @@ Reuse the existing valley (`src/valley/`): terrain with sandstone cliffs, pond, 
 | **Entrance** | Where the player arrives. A soft column of light. Standing in it and pressing Q also returns. |
 | **Source Pond** | The existing pond and waterfall. Water flows from here into the roots. |
 | **Inner Tree** | Much larger than the Old Tree but the **same silhouette** (same crown shape, same lean), so the link is obvious. Huge roots above ground. |
-| **Imp Clearing** | A clearing between two roots. Here the imp appears after the bump. One root is **burned** (dark, cracked, glowing embers). |
+| **Imp Clearing** | A clearing between two roots. Here the imp appears after the bump. One root is **burned** (dark, cracked, glowing embers). The imp wanders slowly in this clearing. **Inside, every Thought Wave comes visibly from the imp**: it roars, its flame flares, a fiery ring leaves its chest and a fire trail links it to the wave. Outside the same thoughts show as bubbles above the head (Alexander, 2026-10-12). |
 
 - The inner world has more height and depth than the town: roots to walk along, a view down to the pond.
 - **Reveal rule:** before the bump, the Imp Clearing is empty and the root is healthy. The imp does not exist yet. The world shows only what the player has lived through.

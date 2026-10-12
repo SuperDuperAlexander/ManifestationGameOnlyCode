@@ -5,7 +5,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
-import { PALETTE } from '../config/palette';
+import { PALETTE, SHADES } from '../config/palette';
 
 /** Per-wave look values, read by the shared material when each wave mesh is drawn. */
 export interface WaveLook {
@@ -16,6 +16,8 @@ export interface WaveLook {
   flash: number;
   /** 0..1: how readable the text is. */
   textAlpha: number;
+  /** 0..1: fiery ring right after leaving the imp. */
+  fire: number;
 }
 
 const VERTEX = /* glsl */ `
@@ -46,6 +48,8 @@ uniform vec4 uState;
 uniform vec3 uCol1;
 uniform vec3 uCol2;
 uniform vec3 uGold;
+uniform vec3 uHeat;
+uniform float uFire;
 uniform sampler2D uTex;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -63,10 +67,15 @@ void main(void) {
   float body = edge * (0.3 + 0.45 * n) * (0.65 + 0.35 * streak);
   vec3 col = mix(uCol1, uCol2, n);
   col = mix(col, uGold, uState.z * 0.8);
+  // Fresh from the imp: a hot ring in the imp's fire colours.
+  float rr = length(vec2(q.x, q.y * 1.7));
+  float ring = (1.0 - smoothstep(0.0, 0.15, abs(rr - 0.3 + 0.015 * sin(time * 9.0 + atan(q.y, q.x) * 5.0)))) * uFire;
+  col = mix(col, mix(uHeat, uGold, n * 0.8), uFire * 0.85);
   // Text, wobbling a little in the heat.
   vec4 t = texture2D(uTex, vUv + vec2(sin(time * 1.6 + vUv.y * 11.0) * 0.004, sin(time * 1.3 + vUv.x * 7.0) * 0.003));
   float ta = t.a * uState.w;
-  float a = body * 1.3 + uState.z * edge * 0.6;
+  float a = body * (1.3 + uFire * 0.9) + uState.z * edge * 0.6 + ring * 0.85;
+  col = mix(col, uGold, ring * 0.6);
   float ax = abs(vUv.x - 0.5) * 2.0;
   float gap = uState.y * 0.6;
   float keep = 1.0 - uState.y * (1.0 - smoothstep(gap, gap + 0.35, ax));
@@ -98,7 +107,7 @@ export function createWaveMaterial(
   }
   const mat = new ShaderMaterial('wave.mat', scene, 'lwWave', {
     attributes: ['position', 'uv'],
-    uniforms: ['worldViewProjection', 'time', 'uState', 'uCol1', 'uCol2', 'uGold'],
+    uniforms: ['worldViewProjection', 'time', 'uState', 'uCol1', 'uCol2', 'uGold', 'uHeat', 'uFire'],
     samplers: ['uTex'],
     needAlphaBlending: true,
   });
@@ -109,6 +118,7 @@ export function createWaveMaterial(
   const c1 = Color3.FromHexString(PALETTE.cloak);
   const c2 = Color3.FromHexString(PALETTE.sandstone).scale(1.05);
   const gold = Color3.FromHexString(PALETTE.gold);
+  const heat = Color3.FromHexString(SHADES.heatOrange);
   mat.onBindObservable.add((mesh) => {
     const fx = mat.getEffect();
     const look = lookOf(mesh);
@@ -118,6 +128,8 @@ export function createWaveMaterial(
     fx.setColor3('uCol1', c1);
     fx.setColor3('uCol2', c2);
     fx.setColor3('uGold', gold);
+    fx.setColor3('uHeat', heat);
+    fx.setFloat('uFire', look.fire);
   });
   return mat;
 }

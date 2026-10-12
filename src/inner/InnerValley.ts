@@ -27,6 +27,8 @@ import { FollowCamera } from './FollowCamera';
 import { LAYOUT } from './innerLayout';
 import { buildTree, type TreeHandle } from '../world/TreeBuilder';
 import { AngerImp, type ImpState } from './AngerImp';
+import { ImpWander } from './ImpWander';
+import type { WaveEmitter } from '../thought/WaveField';
 import { OLD_TREE } from '../world/TreeShape';
 import { procTexture } from '../world/ProceduralTextures';
 import { ParticleSystem } from '@babylonjs/core/Particles/particleSystem';
@@ -83,6 +85,13 @@ export class InnerValley implements World, WalkGround {
   private flow = 0;
   imp!: AngerImp;
   private impBlock!: Collider;
+  private wander!: ImpWander;
+  /** The imp as the source of the Thought Waves (WaveField uses this). */
+  readonly waveEmitter: WaveEmitter = {
+    ready: () => this.imp.isVisible,
+    roar: () => this.imp.roar(),
+    mouth: () => this.imp.waveSpawnPosition(),
+  };
 
   constructor(
     engine: Engine,
@@ -153,6 +162,8 @@ export class InnerValley implements World, WalkGround {
     this.imp.setVisible(false);
     this.impBlock = { x: w.x, z: w.z, radius: this.imp.bodyRadius(), active: false };
     props.colliders.push(this.impBlock);
+    const trunk = { x: LAYOUT.tree.x, z: LAYOUT.tree.z, radius: TUNING.tree.trunkCollider * TUNING.tree.innerScale };
+    this.wander = new ImpWander(w.x, w.z, impFacing, { walkable: (x, z) => this.groundAt(x, z) !== null, obstacles: [trunk] });
     window.addEventListener('resize', () => this.cam.onResize());
   }
 
@@ -348,6 +359,22 @@ export class InnerValley implements World, WalkGround {
     this.cam.snapTo(this.walker.position, this.walker.heading);
   }
 
+  /** The imp walks slowly around its clearing; it stands still while the player breathes with it. */
+  private updateImpWander(dt: number, p: Vector3): void {
+    if (!this.imp.isVisible) return;
+    const wd = this.wander;
+    const d = Math.hypot(p.x - wd.x, p.z - wd.z);
+    const breathing = this.breath.state !== 'idle' && d < TUNING.story.impBreathRadius;
+    const frozen = breathing || this.imp.state !== 'raging';
+    wd.update(dt, frozen, this.imp.bodyRadius(), p.x, p.z, d < TUNING.story.impSeeRadius);
+    const r = this.imp.root;
+    r.position.set(wd.x, this.terrain.height(wd.x, wd.z), wd.z);
+    r.rotation.y = wd.heading;
+    this.impBlock.x = wd.x;
+    this.impBlock.z = wd.z;
+    this.imp.setWalk(wd.walkAmount);
+  }
+
   /** Near the imp the camera lifts its target and pulls back so the whole imp is in frame. */
   private updateImpFocus(_dt: number, p: Vector3): void {
     const C = TUNING.inner.camera;
@@ -420,6 +447,7 @@ export class InnerValley implements World, WalkGround {
       glow: this.breathVisuals.glow,
       awake: 1,
     });
+    this.updateImpWander(dt, p);
     this.imp.lookAt(p);
     this.imp.update(dt);
     this.impBlock.radius = this.imp.bodyRadius();

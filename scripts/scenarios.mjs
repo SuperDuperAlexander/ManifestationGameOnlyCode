@@ -552,6 +552,66 @@ export default function scenarios({ wait, shot, hold, page }) {
         console.log('imp: PASS');
       }
     },
+    /** Inner waves leave the imp (flare) and the imp wanders to another spot. */
+    async impwaves() {
+      const failures = [];
+      const check = (ok, msg) => {
+        if (!ok) {
+          console.error(`FAIL: ${msg}`);
+          failures.push(msg);
+        }
+      };
+      await page.keyboard.press('Enter');
+      await wait(1000);
+      await page.waitForFunction(() => !!window.__lw, null, { timeout: 30000 });
+      await waitWorld('outer');
+      await lw(() => window.__lw.debugBreath());
+      await lw(() => window.__lw.teleport(5, 36));
+      await wait(800);
+      await lw(() => window.__lw.toggle());
+      await waitWorld('inner');
+      await lw(() => window.__lw.reveal());
+      await lw((v) => window.__lw.setAnger(v), 0.8);
+      const p0 = await lw(() => window.__lw.impPos());
+      await lw((q) => window.__lw.teleport(q.x + 2, q.z - 17), p0);
+      await wait(1500);
+      // Catch the moment a wave appears (roar + flare), shoot at once.
+      const t0 = Date.now();
+      let prevN = await lw(() => window.__lw.waves());
+      let n = prevN;
+      while (Date.now() - t0 < 45000 && n <= prevN) {
+        prevN = Math.min(prevN, n);
+        await wait(40);
+        n = await lw(() => window.__lw.waves());
+      }
+      check(n > prevN, 'no wave left the imp within 45 s');
+      await wait(100);
+      await shot('a-wave-leaves-imp');
+      await wait(600);
+      await shot('a2-wave-1s');
+      await wait(1500);
+      await shot('a3-wave-travels');
+      // Wander: look at the imp position over time.
+      let moved = 0;
+      let last = p0;
+      const dc = await lw(() => window.__lw.drawCalls());
+      console.log('draw calls:', dc);
+      check(dc < 100, `draw calls ${dc}`);
+      for (let i = 0; i < 40; i++) {
+        await wait(1500);
+        const q = await lw(() => window.__lw.impPos());
+        moved = Math.max(moved, Math.hypot(q.x - p0.x, q.z - p0.z));
+        last = q;
+        if (moved > 4) break;
+      }
+      console.log('imp start', JSON.stringify(p0), 'now', JSON.stringify(last), 'max move', moved.toFixed(1));
+      check(moved > 2, `imp moved only ${moved.toFixed(1)} m`);
+      await shot('b-imp-wandered');
+      if (failures.length) {
+        process.exitCode = 3;
+        console.error('impwaves: FAIL');
+      } else console.log('impwaves: PASS');
+    },
     /** Close-up of the figure at fixed screen clip (walk and breath). */
     async closeup() {
       const outDir = process.argv[process.argv.indexOf('--out') + 1];

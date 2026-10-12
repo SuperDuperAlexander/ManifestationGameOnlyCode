@@ -497,7 +497,24 @@ export const TUNING = {
     /** Sparkles per second in the calm form. */
     sparklePerS: 6,
     /** Pool sizes (thin instances, one draw call each). */
-    pool: { steam: 12, bolt: 4, rock: 6, fire: 6, spark: 8 },
+    pool: { steam: 12, bolt: 4, rock: 6, fire: 14, spark: 16 },
+    /** Roar when it sends a Thought Wave: seconds of the pose, when the burst fires, lean (rad), flame flare size. */
+    roar: { durationS: 0.9, fireAtS: 0.4, lean: 0.3, headDip: 0.35, flare: 1.25, puffs: 5, sparks: 8, speed: 2.4, spawnForward: 0.9, chestY: 0.62 },
+    /** Wandering inside the clearing around LAYOUT.impSpot. Distances in metres. */
+    wander: {
+      radius: 7,
+      speed: 1.1,
+      accel: 1.5,
+      turnRate: 1.6,
+      pauseS: [2.5, 6],
+      /** Extra gap to the Inner Tree trunk and to the player (m, added to the body radii). */
+      treeMargin: 1.5,
+      playerMargin: 1.5,
+      /** Waddle while walking: hop height and sway (model units / rad). */
+      hop: 0.05,
+      sway: 0.07,
+      stepRate: 3.2,
+    },
   },
 
   lantern: {
@@ -637,6 +654,19 @@ export const TUNING = {
     /** Share of waves that start at an agitated citizen, and the agitation needed. */
     citizenShare: 0.4, citizenAbove: 0.45,
     maxAge: 60,              // seconds before a wave fades out on its own
+    /** Inner world: a wave leaves the imp as a fiery ring, then turns into the normal look. */
+    fromImp: {
+      /** Seconds between the start of the roar and the wave appearing. */
+      delayS: 0.45,
+      /** Size share at the start, and seconds to reach full size. */
+      startScale: 2.4, growS: 5,
+      /** Seconds until the fire colours are gone. */
+      fireS: 7,
+      /** Seconds until the wave is fully visible. */
+      fadeInS: 0.3,
+      /** Faint glowing line from the imp to its fresh wave: width (m) and opacity. */
+      trailWidth: 1.6, trailAlpha: 0.6,
+    },
   },
   /** Comic Thought Bubbles of the outer town (GAME_DESIGN 7.3). pushLevel / anger rules stay in `waves` and `anger`. */
   bubbles: {

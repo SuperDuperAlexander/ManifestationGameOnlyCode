@@ -76,7 +76,7 @@ export class Game {
     // Thought Bubbles unlock with the bump (beat 3). Debug anger (URL or test hook) forces them on.
     bubbleField.unlocked = () => this.debugBubbles || this.story.state.flags.bumped;
     this.fields.set('outer', bubbleField);
-    this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource));
+    this.fields.set('inner', new WaveField(this.inner, this.anger, LAYOUT.waveSource, this.inner.waveEmitter));
     this.guide = new BreathGuide(ui);
     const start = new StartScreen(ui);
     const started = start.waitForStart();
