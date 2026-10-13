@@ -257,6 +257,19 @@ export default function scenarios({ wait, shot, hold, page }) {
       await shot('b4-after');
       await hold('KeyW', 600);
     },
+    /** Breath light rays: mid-inhale and mid-exhale shots, draw calls. */
+    async breathrays() {
+      await page.keyboard.down('Space');
+      await wait(1000);
+      await shot('rays-inhale');
+      await wait(900);
+      await page.keyboard.up('Space');
+      await page.keyboard.down('ShiftLeft');
+      await wait(900);
+      await shot('rays-exhale');
+      await page.keyboard.up('ShiftLeft');
+      console.log('draw calls:', await lw(() => window.__lw.drawCalls?.()));
+    },
     /** Fresh start: no Thought Bubbles for 30 s of walking (they unlock with the bump). */
     async freshbubbles() {
       await lw(() => window.__lw.clearSave?.()).catch(() => {});
