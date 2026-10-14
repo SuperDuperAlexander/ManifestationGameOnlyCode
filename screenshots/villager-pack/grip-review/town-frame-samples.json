@@ -1,0 +1,1121 @@
+{
+  "note": "Sequential checks; phone viewport on this Windows PC, not a physical phone. Fixed town camera at(0,32). 24 debug samples at250ms per state after3.5s warmup; debug FPS is rolling engine estimate.",
+  "results": [
+    {
+      "mobile": false,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "anger": 0,
+      "gl": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      },
+      "samples": [
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mobile": false,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "anger": 0.9,
+      "gl": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      },
+      "samples": [
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   60\nactive mesh  60 / 80\ntextures     6\nscaling      1.00\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 60,
+          "world": "outer",
+          "canvas": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mobile": true,
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "anger": 0,
+      "gl": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      },
+      "samples": [
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   45\nactive mesh  45 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0\npushLevel    0\nbubbles      0\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 45,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "mobile": true,
+      "viewport": {
+        "width": 412,
+        "height": 915
+      },
+      "anger": 0.9,
+      "gl": {
+        "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+        "vendor": "Google Inc. (Intel)"
+      },
+      "samples": [
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        },
+        {
+          "text": [
+            "fps          60\ndraw calls   58\nactive mesh  58 / 80\ntextures     6\nscaling      0.48\nzones        -\nworld        outer\nanger        0.9\npushLevel    0\nbubbles      1\nx            0\nz            32\nmeshes       80\nbreath       idle"
+          ],
+          "draws": 58,
+          "world": "outer",
+          "canvas": {
+            "width": 856,
+            "height": 1903
+          }
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

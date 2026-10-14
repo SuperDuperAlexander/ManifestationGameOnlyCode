@@ -1,0 +1,300 @@
+{
+  "counts": {
+    "player": [
+      {
+        "name": "player.cloak",
+        "vertices": 620,
+        "triangles": 1080,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.emblem",
+        "vertices": 18,
+        "triangles": 12,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.scarfWrap",
+        "vertices": 760,
+        "triangles": 1458,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.hood",
+        "vertices": 1450,
+        "triangles": 2736,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.leg-1",
+        "vertices": 38,
+        "triangles": 32,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.boot-1",
+        "vertices": 325,
+        "triangles": 576,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.leg1",
+        "vertices": 38,
+        "triangles": 32,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.boot1",
+        "vertices": 325,
+        "triangles": 576,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.shadow",
+        "vertices": 4,
+        "triangles": 2,
+        "material": "player.shadowMat",
+        "submeshes": 1
+      },
+      {
+        "name": "player.halo",
+        "vertices": 4,
+        "triangles": 2,
+        "material": "player.haloMat",
+        "submeshes": 1
+      }
+    ],
+    "citizen": [
+      {
+        "name": "citizen2.mesh",
+        "vertices": 4052,
+        "triangles": 2120,
+        "material": "citizens.figure",
+        "submeshes": 1
+      }
+    ],
+    "scene": [
+      {
+        "name": "player.cloak",
+        "vertices": 620,
+        "triangles": 1080,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.emblem",
+        "vertices": 18,
+        "triangles": 12,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.scarfWrap",
+        "vertices": 760,
+        "triangles": 1458,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.hood",
+        "vertices": 1450,
+        "triangles": 2736,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.leg-1",
+        "vertices": 38,
+        "triangles": 32,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.boot-1",
+        "vertices": 325,
+        "triangles": 576,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.leg1",
+        "vertices": 38,
+        "triangles": 32,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.boot1",
+        "vertices": 325,
+        "triangles": 576,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.scarf0",
+        "vertices": 40,
+        "triangles": 36,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.scarf1",
+        "vertices": 24,
+        "triangles": 20,
+        "material": "player.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "player.shadow",
+        "vertices": 4,
+        "triangles": 2,
+        "material": "player.shadowMat",
+        "submeshes": 1
+      },
+      {
+        "name": "player.halo",
+        "vertices": 4,
+        "triangles": 2,
+        "material": "player.haloMat",
+        "submeshes": 1
+      },
+      {
+        "name": "citizen2.mesh",
+        "vertices": 4052,
+        "triangles": 2120,
+        "material": "citizens.figure",
+        "submeshes": 1
+      },
+      {
+        "name": "citizens.shadows",
+        "vertices": 64,
+        "triangles": 32,
+        "material": "citizens.shadow",
+        "submeshes": 1
+      }
+    ],
+    "all": [
+      {
+        "seed": 1,
+        "head": "hair",
+        "beard": false,
+        "meshes": [
+          {
+            "name": "citizen1.mesh",
+            "vertices": 3706,
+            "triangles": 1980,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 2,
+        "head": "cap",
+        "beard": true,
+        "meshes": [
+          {
+            "name": "citizen2.mesh",
+            "vertices": 4052,
+            "triangles": 2120,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 3,
+        "head": "hair",
+        "beard": true,
+        "meshes": [
+          {
+            "name": "citizen3.mesh",
+            "vertices": 4186,
+            "triangles": 2140,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 4,
+        "head": "bald",
+        "beard": false,
+        "meshes": [
+          {
+            "name": "citizen4.mesh",
+            "vertices": 3226,
+            "triangles": 1820,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 5,
+        "head": "hair",
+        "beard": false,
+        "meshes": [
+          {
+            "name": "citizen5.mesh",
+            "vertices": 3706,
+            "triangles": 1980,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 6,
+        "head": "cap",
+        "beard": false,
+        "meshes": [
+          {
+            "name": "citizen6.mesh",
+            "vertices": 3572,
+            "triangles": 1960,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 7,
+        "head": "cap",
+        "beard": true,
+        "meshes": [
+          {
+            "name": "citizen7.mesh",
+            "vertices": 4052,
+            "triangles": 2120,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      },
+      {
+        "seed": 8,
+        "head": "hair",
+        "beard": true,
+        "meshes": [
+          {
+            "name": "citizen8.mesh",
+            "vertices": 4186,
+            "triangles": 2140,
+            "material": "citizens.figure",
+            "submeshes": 1
+          }
+        ]
+      }
+    ]
+  },
+  "errors": []
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "mobileViewport": false,
+    "anger": 0,
+    "fpsMin": 60,
+    "fpsMax": 60,
+    "fpsMean": 60,
+    "drawMin": 45,
+    "drawMax": 45,
+    "gl": {
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "vendor": "Google Inc. (Intel)"
+    },
+    "canvas": {
+      "width": 1280,
+      "height": 720
+    },
+    "errors": []
+  },
+  {
+    "mobileViewport": false,
+    "anger": 0.9,
+    "fpsMin": 60,
+    "fpsMax": 60,
+    "fpsMean": 60,
+    "drawMin": 60,
+    "drawMax": 60,
+    "gl": {
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "vendor": "Google Inc. (Intel)"
+    },
+    "canvas": {
+      "width": 1280,
+      "height": 720
+    },
+    "errors": []
+  },
+  {
+    "mobileViewport": true,
+    "anger": 0,
+    "fpsMin": 60,
+    "fpsMax": 60,
+    "fpsMean": 60,
+    "drawMin": 45,
+    "drawMax": 45,
+    "gl": {
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "vendor": "Google Inc. (Intel)"
+    },
+    "canvas": {
+      "width": 856,
+      "height": 1903
+    },
+    "errors": []
+  },
+  {
+    "mobileViewport": true,
+    "anger": 0.9,
+    "fpsMin": 60,
+    "fpsMax": 60,
+    "fpsMean": 60,
+    "drawMin": 58,
+    "drawMax": 58,
+    "gl": {
+      "renderer": "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+      "vendor": "Google Inc. (Intel)"
+    },
+    "canvas": {
+      "width": 856,
+      "height": 1903
+    },
+    "errors": []
+  }
+]

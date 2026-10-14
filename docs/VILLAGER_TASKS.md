@@ -31,3 +31,16 @@
 - Town phone check passed at 48 calm / 61 angry draw calls with zero console errors.
 - Anger-to-calm sequence had zero console errors. The wide town view did not resolve the lowered flame in detail.
 - Evidence: `screenshots/villager-pack/torch-hold/`.
+
+## Grip depth and figure cost review
+
+- [x] Extend the torch handle below the fist to make the grip clear.
+- [x] Check the grip in close front and side views.
+- [x] Compare the live player and villager shape counts and game render cost.
+
+- Handle depth is 0.11. Wood shows above and below the fist in the close views.
+- Full build and desktop/phone pack tests passed with zero browser errors and 8 draw calls.
+- Player body: 6,558 triangles in 10 meshes. Cap/beard villager body: 2,120 triangles in one mesh.
+- Town sampling held 60 frames per second on this PC in desktop and phone screen tests. Phone screen tests still use the PC chip.
+- Colour, light, scarf, and boots fit the player. The villager face has more detail. No art change was made.
+- Full measurements and images: `screenshots/villager-pack/grip-review/`. A real phone test remains open.

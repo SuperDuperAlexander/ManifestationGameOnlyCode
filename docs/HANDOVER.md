@@ -71,3 +71,4 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - Final build passed on source commit `f916e2d`. The final phone town check passed with 48 calm / 61 angry draw calls and zero console problems.
 - A real-phone hardware check remains open.
 - Torch carry follow-up: bent elbow, relaxed upper arm, and a separate wrist joint in the same body mesh. The hand and torch share the grip transform. Front/side/phone preview review, full build, and browser checks passed. Evidence is in `screenshots/villager-pack/torch-hold/`.
+- Grip and cost review: shaft now exits below the fist. Close-view checks and the full build passed. Town sampling held 60 frames per second on this PC in desktop and phone screen tests. This does not verify a real phone. Live player/villager comparison and raw counts are in `screenshots/villager-pack/grip-review/`.

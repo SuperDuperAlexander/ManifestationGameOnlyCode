@@ -337,9 +337,9 @@ export const TUNING = {
       torchElbowPitch: -1.35,
       torchElbowRoll: 0.4,
       torchWristPitch: 0.45,
-      /** The shaft crosses the fist; a short handle remains below the fingers. */
+      /** The shaft crosses the fist and visibly exits below the fingers. */
       torchGripPitch: Math.PI / 2,
-      torchHandleBelowGrip: 0.045,
+      torchHandleBelowGrip: 0.11,
       torchSway: 0.012,
       torchSwayRate: 1.5,
     },

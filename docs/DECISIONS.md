@@ -84,3 +84,5 @@ Keep all game inputs, story text, save behavior and the 2-second breath timing. 
 **L23. Citizen appearance and state preview (2026-10-14).** Peaceful and angry citizens use the same code-made identity. Six seeded colour sets and a per-instance runtime appearance API support variation. `villager-kit/` re-exports the live game model. A lit torch stays softly lit when a citizen calms, and the arm lowers.
 
 **L24. Natural torch carry (2026-10-14).** The torch arm has a lower upper arm, bent elbow, and a right wrist joint. The hand and torch share one grip transform. The torch sits beside the face, with a short handle below the fist. The figure keeps one body mesh.
+
+**L25. Visible torch grip (2026-10-14).** Set the handle depth below the grip to 0.11 so the shaft visibly exits below the fist. The hand continues to hold the same shaft. The figure, flame, and carry pose stay the same.
