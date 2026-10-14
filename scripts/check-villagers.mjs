@@ -2,8 +2,8 @@ import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 
-const outDir = 'screenshots/villager-pack';
 const baseUrl = process.argv[2] ?? 'http://localhost:5173';
+const outDir = process.argv[3] ?? 'screenshots/villager-pack';
 mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({
   headless: true,
@@ -91,14 +91,23 @@ async function runViewport(name, viewport, mobile) {
   check(sceneFacts.steamInstanceCount >= 12, `${name}: steam cloud uses pooled thin instances`);
   check(sceneFacts.torchesAttached === 4, `${name}: all four torch meshes attach to hand mounts`);
 
+  await page.evaluate(() => {
+    window.__villagers.setPalette('earthy');
+    window.__villagers.setStateSwapped(false);
+  });
+  await wait(2300);
+
   if (mobile) {
     await page.screenshot({ path: join(outDir, `${name}-phone.png`), fullPage: true });
   } else {
     await page.mouse.move(viewport.width / 2, 400);
     await page.mouse.down();
-    await page.mouse.move(viewport.width / 2 + 220, 430, { steps: 12 });
+    await page.mouse.move(viewport.width / 2 + 260, 430, { steps: 12 });
     await page.mouse.up();
+    await page.mouse.wheel(0, -200);
     await wait(500);
+    await page.locator('.stage').screenshot({ path: join(outDir, 'desktop-side-close.png') });
+    console.log(`screenshot: ${join(outDir, 'desktop-side-close.png')}`);
     await page.screenshot({ path: join(outDir, `${name}-rear-orbit.png`), fullPage: true });
   }
   check(errors.length === 0, `${name}: no browser errors${errors.length ? ` (${errors.join(' | ')})` : ''}`);

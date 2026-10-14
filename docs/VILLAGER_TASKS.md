@@ -20,3 +20,14 @@
 ## Open check
 
 - Test on a real phone. Phone emulation does not measure phone hardware.
+
+## Torch hold follow-up
+
+- [x] Pose: bend the elbow, relax the shoulder, and align the wrist and grip.
+- [x] Check: build, desktop and phone preview, side view, and town smoke test.
+
+- Natural hold: full build and desktop/phone pack checks passed. The preview remains at 8 draw calls and 4,906 triangles.
+- Front, side, and phone images were reviewed. The shaft stays beside the face and the elbow bends.
+- Town phone check passed at 48 calm / 61 angry draw calls with zero console errors.
+- Anger-to-calm sequence had zero console errors. The wide town view did not resolve the lowered flame in detail.
+- Evidence: `screenshots/villager-pack/torch-hold/`.

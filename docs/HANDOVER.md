@@ -70,3 +70,4 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - Town checks showed 48 calm / 63 angry draw calls on desktop and 48 calm / 61 angry draw calls in phone emulation. The full lantern story passed with zero console problems.
 - Final build passed on source commit `f916e2d`. The final phone town check passed with 48 calm / 61 angry draw calls and zero console problems.
 - A real-phone hardware check remains open.
+- Torch carry follow-up: bent elbow, relaxed upper arm, and a separate wrist joint in the same body mesh. The hand and torch share the grip transform. Front/side/phone preview review, full build, and browser checks passed. Evidence is in `screenshots/villager-pack/torch-hold/`.

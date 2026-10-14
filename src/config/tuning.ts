@@ -331,6 +331,17 @@ export const TUNING = {
       hipY: 0.34,
       /** Torch size relative to the hand mount. Keeps a raised flame in frame. */
       torchScale: 0.65,
+      /** Carry pose in radians: relaxed shoulder, bent elbow and a slight wrist bow. */
+      torchUpperPitch: -0.85,
+      torchUpperRoll: 0.10,
+      torchElbowPitch: -1.35,
+      torchElbowRoll: 0.4,
+      torchWristPitch: 0.45,
+      /** The shaft crosses the fist; a short handle remains below the fingers. */
+      torchGripPitch: Math.PI / 2,
+      torchHandleBelowGrip: 0.045,
+      torchSway: 0.012,
+      torchSwayRate: 1.5,
     },
     count: 8,
     /** agitation = personalBase + townAnger * agitationWeight */

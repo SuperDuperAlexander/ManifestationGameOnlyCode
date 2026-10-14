@@ -82,3 +82,5 @@ Change: `GAME_DESIGN.md` (sections 1–13), `public/data/dialogue/en.json` (new 
 Keep all game inputs, story text, save behavior and the 2-second breath timing. No dependency was added. Build and desktop/phone browser checks passed. Test setup now uses a walkable point near the imp and the required first breath in both story orders; game rules stay the same. Concurrent villager work blocked the final shared runtime check, so final interface checks used base `1a7b348` plus identical interface/test files in an isolated copy. A real-phone playtest remains open.
 
 **L23. Citizen appearance and state preview (2026-10-14).** Peaceful and angry citizens use the same code-made identity. Six seeded colour sets and a per-instance runtime appearance API support variation. `villager-kit/` re-exports the live game model. A lit torch stays softly lit when a citizen calms, and the arm lowers.
+
+**L24. Natural torch carry (2026-10-14).** The torch arm has a lower upper arm, bent elbow, and a right wrist joint. The hand and torch share one grip transform. The torch sits beside the face, with a short handle below the fist. The figure keeps one body mesh.

@@ -3,7 +3,7 @@ import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
-import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 import { PALETTE, SHADES } from '../config/palette';
@@ -77,7 +77,7 @@ function sharedFor(scene: Scene): Shared {
   return shared;
 }
 
-type JointName = 'body' | 'head' | 'browL' | 'browR' | 'mouth' | 'legL' | 'legR' | 'armL' | 'armR' | 'foreL' | 'foreR';
+type JointName = 'body' | 'head' | 'browL' | 'browR' | 'mouth' | 'legL' | 'legR' | 'armL' | 'armR' | 'foreL' | 'foreR' | 'handR';
 type ColourKey = keyof CitizenAppearance | 'ink' | 'gold' | 'mouthInside';
 interface ColourRun { start: number; count: number; key: ColourKey; shade: number }
 interface Part { joint: JointName; start: number; count: number; pos: Float32Array; nrm: Float32Array }
@@ -152,7 +152,8 @@ export class CitizenVisual {
   private readonly seedPhase: number;
   private readonly mouthDepth: number;
   private readonly shadowPosition = Vector3.Zero();
-  private readonly grip = new Vector3(0, -TUNING.citizens.visual.armLength * 0.42, 0.018);
+  private readonly grip = new Vector3(0, -TUNING.citizens.visual.armLength * 0.42 * 0.28 + 0.01, 0.018);
+  private readonly torchPose = Matrix.Identity();
   private phase = 0;
   private time = 0;
   private agitation = 0;
@@ -266,10 +267,12 @@ export class CitizenVisual {
       add(round(0.067, 0.066, 0.066), 'sleeve', 0, -0.025);
       finish(side < 0 ? 'armL' : 'armR');
       add(tube(0.087, 0.07, lower * 0.71), 'skin', 0, -lower * 0.30);
-      add(round(0.053, 0.06, 0.047, 2), 'skin', 0, -lower + 0.01, 0.007);
-      add(round(0.024, 0.033, 0.033), 'skin', -side * 0.039, -lower + 0.02, 0.03, 1.04);
-      add(box(0.069, 0.022, 0.015), 'skin', 0, -lower + 0.015, 0.046, 1.06);
-      finish(side < 0 ? 'foreL' : 'foreR');
+      if (side > 0) finish('foreR');
+      const wrist = side > 0 ? lower * 0.72 : 0;
+      add(round(0.053, 0.06, 0.047, 2), 'skin', 0, -lower + wrist + 0.01, 0.007);
+      add(round(0.024, 0.033, 0.033), 'skin', -side * 0.039, -lower + wrist + 0.02, 0.03, 1.04);
+      add(box(0.069, 0.022, 0.015), 'skin', 0, -lower + wrist + 0.015, 0.046, 1.06);
+      finish(side < 0 ? 'foreL' : 'handR');
     }
 
     const total = sources.reduce((n, source) => n + source.mesh.getTotalVertices(), 0);
@@ -294,6 +297,7 @@ export class CitizenVisual {
     this.mesh.alwaysSelectAsActiveMesh = true;
     this.torchMount = new TransformNode('citizen.torchMount', scene);
     this.torchMount.parent = this.root;
+    this.torchMount.rotationQuaternion = Quaternion.Identity();
     this.torchMount.scaling.setAll(cfg.torchScale);
     this.shadows = shared.shadows;
     this.shadowSlot = this.shadows.take();
@@ -336,9 +340,14 @@ export class CitizenVisual {
       const arm = left ? 'armL' : 'armR';
       const fore = left ? 'foreL' : 'foreR';
       const normalArm = -side * swing * 0.35 * walking * (1 - fist) - fist * (0.60 + side * shake);
-      const angle = left ? normalArm : normalArm * (1 - this.raise) - 2.35 * this.raise + shake * this.raise;
-      this.joint(arm, 'body', side * 0.213, cfg.shoulderY - cfg.hipY, 0, angle, side * (0.10 + fist * 0.19));
-      this.joint(fore, arm, 0, -upper, 0, -0.10 - fist * 0.95 * (left ? 1 : 1 - this.raise));
+      const raised = left ? 0 : this.raise;
+      const carrySway = Math.sin(this.time * cfg.torchSwayRate + this.seedPhase) * cfg.torchSway;
+      const angle = normalArm * (1 - raised) + (cfg.torchUpperPitch + carrySway) * raised;
+      const roll = side * (0.10 + fist * 0.19) * (1 - raised) + cfg.torchUpperRoll * raised;
+      this.joint(arm, 'body', side * 0.213, cfg.shoulderY - cfg.hipY, 0, angle, roll);
+      const elbow = (-0.10 - fist * 0.95) * (1 - raised) + cfg.torchElbowPitch * raised;
+      this.joint(fore, arm, 0, -upper, 0, elbow, cfg.torchElbowRoll * raised);
+      if (!left) this.joint('handR', 'foreR', 0, -cfg.armLength * 0.42 * 0.72, 0, cfg.torchWristPitch * raised);
     }
     this.joint('mouth', 'head', 0, -cfg.headSize * 0.245, this.mouthDepth + cfg.headSize * a * 0.012);
     for (const part of this.parts) {
@@ -361,7 +370,15 @@ export class CitizenVisual {
     }
     this.mesh.updateVerticesData(VertexBuffer.PositionKind, this.pos);
     this.mesh.updateVerticesData(VertexBuffer.NormalKind, this.nrm);
-    Vector3.TransformCoordinatesToRef(this.grip, this.joints.foreR, this.torchMount.position);
+    // The shaft crosses the same closed hand that supplies its mount transform.
+    Vector3.TransformCoordinatesToRef(this.grip, this.joints.handR, this.torchMount.position);
+    Matrix.RotationXToRef(cfg.torchGripPitch * this.raise, this.torchPose);
+    this.torchPose.multiplyToRef(this.joints.handR, this.torchPose);
+    Quaternion.FromRotationMatrixToRef(this.torchPose, this.torchMount.rotationQuaternion!);
+    const axis = this.torchPose.m;
+    this.torchMount.position.x -= axis[4]! * cfg.torchHandleBelowGrip;
+    this.torchMount.position.y -= axis[5]! * cfg.torchHandleBelowGrip;
+    this.torchMount.position.z -= axis[6]! * cfg.torchHandleBelowGrip;
   }
 
   update(dt: number, state: CitizenVisualState): void {
