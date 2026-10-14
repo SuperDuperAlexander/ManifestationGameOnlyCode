@@ -77,7 +77,9 @@ In a second terminal, run the villager and town checks:
 
 ```bash
 node scripts/check-villagers.mjs http://localhost:4173
+node scripts/check-browser.mjs http://localhost:4173 --scenario town
+node scripts/check-browser.mjs http://localhost:4173 --scenario town --mobile
 node scripts/check-browser.mjs http://localhost:4173 --scenario lantern
 ```
 
-The final torch flame and framing check is pending. A real-phone hardware check is also open.
+Desktop and phone emulation checks passed. The final torch and steam fit the preview. A check on a real phone remains open.
