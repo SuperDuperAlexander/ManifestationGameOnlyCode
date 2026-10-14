@@ -322,6 +322,8 @@ export const TUNING = {
     visual: {
       scale: 1.1,
       headSize: 0.34,
+      /** Women keep the same joints, sleeves and boots, with a longer work tunic. */
+      female: { headWidth: 0.94, headHeight: 1.02, hemDrop: 0.065, hemWidth: 0.258 },
       bodyHeight: 0.5,
       stepRate: 4.5,
       calmSway: 0.012,

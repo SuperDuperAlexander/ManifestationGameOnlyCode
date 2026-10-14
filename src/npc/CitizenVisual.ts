@@ -163,9 +163,11 @@ export class CitizenVisual {
 
   constructor(scene: Scene, def: CitizenDef, appearance: Partial<CitizenAppearance> = {}) {
     const cfg = TUNING.citizens.visual;
+    const female = def.gender === 'female';
+    const beard = def.beard && !female;
     this.appearance = citizenAppearance(def.colors, def.seed, appearance);
     this.seedPhase = def.seed * 1.7;
-    this.mouthDepth = cfg.headSize * (def.beard ? 0.50 : 0.43);
+    this.mouthDepth = cfg.headSize * (beard ? 0.50 : 0.43);
     this.root = new TransformNode(`citizen${def.seed}`, scene);
     this.root.scaling.setAll(def.scale * cfg.scale);
     this.shadowScale = def.scale * cfg.scale;
@@ -199,9 +201,10 @@ export class CitizenVisual {
     const tube = (top: number, bottom: number, height: number): Mesh => MeshBuilder.CreateCylinder('citizen.fold', { diameterTop: top, diameterBottom: bottom, height, tessellation: 10 }, scene);
 
     // Shoulder, waist and flared hem give the tunic a sewn silhouette.
-    const base = cfg.shoulderY - cfg.bodyHeight;
-    add(cloth(scene, [[base - hip, 0.235, 0.148], [0.56 - hip, 0.158, 0.115], [0.72 - hip, 0.185, 0.135], [cfg.shoulderY + 0.025 - hip, 0.176, 0.105]], true), 'tunic');
-    add(cloth(scene, [[base - hip + 0.014, 0.236, 0.15], [base - hip + 0.036, 0.23, 0.146]], true), 'tunic', 0, 0, 0, 0.78);
+    const base = cfg.shoulderY - cfg.bodyHeight - (female ? cfg.female.hemDrop : 0);
+    const hemWidth = female ? cfg.female.hemWidth : 0.235;
+    add(cloth(scene, [[base - hip, hemWidth, 0.148], [0.56 - hip, 0.158, 0.115], [0.72 - hip, 0.185, 0.135], [cfg.shoulderY + 0.025 - hip, 0.176, 0.105]], true), 'tunic');
+    add(cloth(scene, [[base - hip + 0.014, hemWidth + 0.001, 0.15], [base - hip + 0.036, hemWidth - 0.005, 0.146]], true), 'tunic', 0, 0, 0, 0.78);
     add(box(0.012, 0.175, 0.012), 'tunic', 0, 0.43 - hip, 0.145, 0.77);
     add(cloth(scene, [[0.555 - hip, 0.166, 0.123], [0.607 - hip, 0.168, 0.125]]), 'belt');
     add(box(0.055, 0.047, 0.018), 'gold', 0.015, 0.581 - hip, 0.132);
@@ -216,7 +219,7 @@ export class CitizenVisual {
     finish('body');
 
     // The face looks toward +Z. Large planes do the work, with only a few marks.
-    add(round(h * 0.47, h * 0.54, h * 0.43, 2), 'skin');
+    add(round(h * 0.47 * (female ? cfg.female.headWidth : 1), h * 0.54 * (female ? cfg.female.headHeight : 1), h * 0.43, 2), 'skin');
     for (const side of [-1, 1]) {
       add(round(h * 0.12, h * 0.17, h * 0.105), 'skin', side * h * 0.47, -h * 0.025, -h * 0.005);
       add(round(h * 0.032, h * 0.068, h * 0.024), 'skin', side * h * 0.53, -h * 0.025, h * 0.075, 0.8);
@@ -226,7 +229,7 @@ export class CitizenVisual {
     if (def.head === 'hair') {
       add(round(h * 0.49, h * 0.30, h * 0.44, 2), 'hair', 0, h * 0.34, -h * 0.065);
       for (const side of [-1, 1]) {
-        add(round(h * 0.17, h * 0.23, h * 0.22), 'hair', side * h * 0.34, h * 0.18, -h * 0.18);
+        add(round(h * 0.17, h * (female ? 0.38 : 0.23), h * 0.22), 'hair', side * h * 0.34, h * (female ? 0.04 : 0.18), -h * 0.18);
         add(round(h * 0.19, h * 0.10, h * 0.17), 'hair', side * h * 0.21, h * 0.37, h * 0.23).rotation.z = side * 0.25;
       }
     } else if (def.head === 'cap') {
@@ -234,7 +237,26 @@ export class CitizenVisual {
       add(tube(h * 0.96, h * 0.96, h * 0.08), 'tunic', 0, h * 0.28, -h * 0.01, 0.8).scaling.z = 0.89;
       add(round(h * 0.37, h * 0.035, h * 0.21), 'tunic', 0, h * 0.27, h * 0.30, 0.9);
     }
-    if (def.beard) {
+    if (female && def.head !== 'bald') {
+      // A few broad facets make tied hair readable, including below a cap.
+      // The seed fixes the hairstyle across calm and angry poses.
+      if (def.head === 'cap') {
+        for (const side of [-1, 1]) {
+          add(round(h * 0.13, h * 0.31, h * 0.20), 'hair', side * h * 0.39, -h * 0.035, -h * 0.17);
+        }
+      }
+      if (def.seed % 2 === 0) {
+        // Three large overlapping lobes read as a practical side braid.
+        for (let i = 0; i < 3; i++) {
+          add(round(h * (0.17 - i * 0.025), h * 0.18, h * 0.15), 'hair', -h * (0.43 + i * 0.015), -h * (0.26 + i * 0.22), -h * 0.11, 1 - i * 0.04);
+        }
+        add(tube(h * 0.18, h * 0.18, h * 0.065), 'scarf', -h * 0.46, -h * 0.78, -h * 0.11);
+      } else {
+        add(round(h * 0.30, h * 0.28, h * 0.26), 'hair', -h * 0.32, h * 0.05, -h * 0.47);
+        add(round(h * 0.22, h * 0.20, h * 0.12), 'hair', -h * 0.36, h * 0.05, -h * 0.65, 0.9);
+      }
+    }
+    if (beard) {
       add(round(h * 0.40, h * 0.24, h * 0.20, 2), 'hair', 0, -h * 0.31, h * 0.25);
       for (const side of [-1, 1]) {
         add(round(h * 0.13, h * 0.20, h * 0.13), 'hair', side * h * 0.30, -h * 0.19, h * 0.245);

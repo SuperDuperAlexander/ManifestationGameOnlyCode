@@ -86,3 +86,5 @@ Keep all game inputs, story text, save behavior and the 2-second breath timing. 
 **L24. Natural torch carry (2026-10-14).** The torch arm has a lower upper arm, bent elbow, and a right wrist joint. The hand and torch share one grip transform. The torch sits beside the face, with a short handle below the fist. The figure keeps one body mesh.
 
 **L25. Visible torch grip (2026-10-14).** Set the handle depth below the grip to 0.11 so the shaft visibly exits below the fist. The hand continues to hold the same shaft. The figure, flame, and carry pose stay the same.
+
+**L26. Women and men residents (2026-10-14).** Add an optional citizen gender with male as the old default. Four town residents are women and four are men. Women use a bun or braid and a longer work tunic. Both use the same colour controls, calm/angry states, shared body material, and torch grip. The preview starts with Woman and lets the user choose Man.

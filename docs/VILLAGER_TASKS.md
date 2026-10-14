@@ -44,3 +44,16 @@
 - Town sampling held 60 frames per second on this PC in desktop and phone screen tests. Phone screen tests still use the PC chip.
 - Colour, light, scarf, and boots fit the player. The villager face has more detail. No art change was made.
 - Full measurements and images: `screenshots/villager-pack/grip-review/`. A real phone test remains open.
+
+## Women and men residents
+
+- [x] Add a woman figure with the same state, colour, and torch controls.
+- [x] Use four women and four men in the town.
+- [x] Add Woman and Man choices to the pack preview.
+- [x] Check both figures, repeated choice changes, and the town.
+
+- Full build and desktop/phone preview checks passed with zero errors.
+- Ten Woman/Man switches per view kept the same mesh count, colours, and mood state.
+- Woman preview: 8 draw calls and 4,786 triangles, with the same pooled steam and held torch.
+- Town has four women and four men. The phone view passed at 48 calm / 61 angry draw calls.
+- Front and side views passed visual review. Evidence: `screenshots/villager-pack/women/`.

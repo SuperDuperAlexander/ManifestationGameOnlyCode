@@ -11,7 +11,7 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { Scene } from '@babylonjs/core/scene';
 import { PALETTE } from '../../src/config/palette';
-import type { CitizenDef } from '../../src/outer/townLayout';
+import type { CitizenDef, CitizenGender } from '../../src/outer/townLayout';
 import { citizenAppearance, CITIZEN_PALETTES, type CitizenAppearance, CitizenVisual, SteamPool, Torch } from './index';
 
 type PaletteName = keyof typeof CITIZEN_PALETTES;
@@ -24,6 +24,7 @@ interface FigureSnapshot {
   torchPosition: { x: number; y: number; z: number };
 }
 interface VillagerSnapshot {
+  gender: CitizenGender;
   states: { left: FigureState; right: FigureState };
   colors: CitizenAppearance;
   meshCount: number;
@@ -38,6 +39,7 @@ interface VillagerSnapshot {
 }
 interface VillagerTestHook {
   snapshot(): VillagerSnapshot;
+  setGender(gender: CitizenGender): void;
   setPalette(name: PaletteName): void;
   setStateSwapped(swapped: boolean): void;
   setAppearance(overrides: Partial<CitizenAppearance>): void;
@@ -47,6 +49,7 @@ declare global { interface Window { __villagers: VillagerTestHook } }
 
 const canvas = document.getElementById('villagers') as HTMLCanvasElement;
 const paletteSelect = document.getElementById('palette') as HTMLSelectElement;
+const genderSelect = document.getElementById('gender') as HTMLSelectElement;
 const swapButton = document.getElementById('swap') as HTMLButtonElement;
 const labels = [document.getElementById('left-label')!, document.getElementById('right-label')!];
 const colorInputs = ['tunic', 'scarf', 'hair', 'skin'].map((id) => document.getElementById(id) as HTMLInputElement);
@@ -72,15 +75,16 @@ camera.wheelPrecision = 45;
 camera.minZ = 0.05;
 camera.attachControl(canvas, true);
 
-const def: CitizenDef = {
+const baseDef: Omit<CitizenDef, 'gender'> = {
   colors: 'earthy', head: 'hair', beard: true, torch: false,
   personalBase: 0, loop: 0, start: 0, scale: 1, seed: 17,
 };
-const initial = citizenAppearance(def.colors, def.seed, CITIZEN_PALETTES.earthy);
-const figures = [new CitizenVisual(scene, def, initial), new CitizenVisual(scene, def, initial)];
-figures[0]!.root.position.x = 0.78;
-figures[1]!.root.position.x = -0.78;
-const torches = figures.map((figure) => new Torch(scene, figure.torchMount));
+const initial = citizenAppearance(baseDef.colors, baseDef.seed, CITIZEN_PALETTES.earthy);
+const requestedGender = new URLSearchParams(location.search).get('gender');
+let gender: CitizenGender = requestedGender === 'male' ? 'male' : 'female';
+genderSelect.value = gender;
+let figures: CitizenVisual[] = [];
+let torches: Torch[] = [];
 const steam = new SteamPool(scene, 12);
 const steamAt = new Vector3();
 let appearance: CitizenAppearance = { ...initial };
@@ -89,6 +93,25 @@ let puffTimer = 0;
 let renderedFrames = 0;
 let disposed = false;
 
+function createFigures(): void {
+  const def: CitizenDef = { ...baseDef, gender, seed: gender === 'female' ? 18 : baseDef.seed, beard: gender === 'male' };
+  figures = [new CitizenVisual(scene, def, appearance), new CitizenVisual(scene, def, appearance)];
+  figures[0]!.root.position.x = 0.78;
+  figures[1]!.root.position.x = -0.78;
+  torches = figures.map((figure) => new Torch(scene, figure.torchMount));
+}
+
+function setGender(next: CitizenGender): void {
+  genderSelect.value = next;
+  if (gender === next) return;
+  for (const torch of torches) torch.dispose();
+  for (const figure of figures) figure.dispose();
+  gender = next;
+  createFigures();
+}
+
+createFigures();
+
 function applyAppearance(next: Partial<CitizenAppearance>): void {
   appearance = { ...appearance, ...next };
   for (const figure of figures) figure.setAppearance(appearance);
@@ -96,7 +119,7 @@ function applyAppearance(next: Partial<CitizenAppearance>): void {
 }
 function setPalette(name: PaletteName): void {
   paletteSelect.value = name;
-  applyAppearance(citizenAppearance(def.colors, def.seed, CITIZEN_PALETTES[name]));
+  applyAppearance(citizenAppearance(baseDef.colors, baseDef.seed, CITIZEN_PALETTES[name]));
 }
 function setSwapped(value: boolean): void {
   swapped = value;
@@ -105,6 +128,7 @@ function setSwapped(value: boolean): void {
 }
 
 paletteSelect.addEventListener('change', () => setPalette(paletteSelect.value as PaletteName));
+genderSelect.addEventListener('change', () => setGender(genderSelect.value as CitizenGender));
 for (const input of colorInputs) input.addEventListener('input', () => applyAppearance({ [input.id]: input.value }));
 swapButton.addEventListener('click', () => setSwapped(!swapped));
 
@@ -135,6 +159,7 @@ function snapshot(): VillagerSnapshot {
     (mesh.name === 'torchStick' || mesh.name === 'torchFlame') && mesh.parent?.name === 'citizen.torchMount',
   ).length;
   return {
+    gender,
     states: swapped ? { left: 'Angry', right: 'Peaceful' } : { left: 'Peaceful', right: 'Angry' },
     colors: { ...appearance },
     meshCount: meshes.length,
@@ -159,7 +184,7 @@ function dispose(): void {
   scene.dispose();
   engine.dispose();
 }
-window.__villagers = { snapshot, setPalette, setStateSwapped: setSwapped, setAppearance: applyAppearance, dispose };
+window.__villagers = { snapshot, setGender, setPalette, setStateSwapped: setSwapped, setAppearance: applyAppearance, dispose };
 
 let previous = performance.now();
 function render(): void {

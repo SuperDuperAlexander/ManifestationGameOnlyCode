@@ -97,17 +97,41 @@ async function runViewport(name, viewport, mobile) {
   });
   await wait(2300);
 
+  await page.evaluate(() => window.__villagers.setStateSwapped(true));
+  await wait(2300);
+  const femaleBase = await page.evaluate(() => window.__villagers.snapshot());
+  const genderMeshCount = femaleBase.meshCount;
+  const genderColors = JSON.stringify(femaleBase.colors);
+  check(femaleBase.gender === 'female', `${name}: preview starts with female villagers`);
+  for (const gender of ['male', 'female', 'male', 'female']) {
+    await page.evaluate((value) => window.__villagers.setGender(value), gender);
+    await wait(2300);
+    const genderSnap = await page.evaluate(() => window.__villagers.snapshot());
+    check(genderSnap.gender === gender, `${name}: gender changes to ${gender}`);
+    check(genderSnap.figures.length === 2 && genderSnap.figures.every((figure) => figure.bodyVertexCount > 0), `${name}: ${gender} figures keep one body mesh each`);
+    check(new Set(genderSnap.figures.map((figure) => figure.bodyMeshId)).size === 2, `${name}: ${gender} body mesh ids stay unique`);
+    check(genderSnap.meshCount === genderMeshCount, `${name}: repeated gender changes do not grow scene meshes`);
+    check(JSON.stringify(genderSnap.colors) === genderColors, `${name}: gender change preserves colors`);
+    check(genderSnap.states.left === femaleBase.states.left && genderSnap.states.right === femaleBase.states.right, `${name}: gender change preserves state`);
+    check(genderSnap.figures[0].torchPosition.y > genderSnap.figures[1].torchPosition.y + 0.15, `${name}: ${gender} swap keeps torch poses`);
+    check(genderSnap.finiteVertices && genderSnap.figures.every((figure) => Number.isFinite(figure.torchPosition.x + figure.torchPosition.y + figure.torchPosition.z)), `${name}: ${gender} poses and torch positions are finite`);
+  }
+  await page.evaluate(() => window.__villagers.setStateSwapped(false));
+  await wait(2300);
+
   if (mobile) {
     await page.screenshot({ path: join(outDir, `${name}-phone.png`), fullPage: true });
   } else {
+    await page.locator('.stage').screenshot({ path: join(outDir, 'female-calm-angry-front.png') });
+    console.log(`screenshot: ${join(outDir, 'female-calm-angry-front.png')}`);
     await page.mouse.move(viewport.width / 2, 400);
     await page.mouse.down();
     await page.mouse.move(viewport.width / 2 + 260, 430, { steps: 12 });
     await page.mouse.up();
     await page.mouse.wheel(0, -200);
     await wait(500);
-    await page.locator('.stage').screenshot({ path: join(outDir, 'desktop-side-close.png') });
-    console.log(`screenshot: ${join(outDir, 'desktop-side-close.png')}`);
+    await page.locator('.stage').screenshot({ path: join(outDir, 'female-calm-angry-side-close.png') });
+    console.log(`screenshot: ${join(outDir, 'female-calm-angry-side-close.png')}`);
     await page.screenshot({ path: join(outDir, `${name}-rear-orbit.png`), fullPage: true });
   }
   check(errors.length === 0, `${name}: no browser errors${errors.length ? ` (${errors.join(' | ')})` : ''}`);

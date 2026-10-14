@@ -10,7 +10,22 @@ From the game repo root, run:
 npm run dev
 ```
 
-Open [http://localhost:5173/villager-kit/](http://localhost:5173/villager-kit/). Drag the mouse to orbit. Use the wheel to zoom. Choose one of six colour sets, change the tunic, scarf, hair, or skin colour, or swap the peaceful and angry states.
+Open [http://localhost:5173/villager-kit/](http://localhost:5173/villager-kit/). Drag the mouse to orbit. Use the wheel to zoom. Choose Woman or Man under **Resident**. The preview starts with Woman. You can also open `/villager-kit/?gender=male` or `/villager-kit/?gender=female`.
+
+The selector changes both figures. It keeps the camera, colour set, custom colours, and peaceful/angry swap. Both figures keep the same seed and look. This selector is only for the preview. Game code can set gender on `CitizenDef`:
+
+```ts
+import type { CitizenDef, CitizenGender } from '../outer/townLayout';
+
+const gender: CitizenGender = 'female';
+const def: CitizenDef = {
+  gender,
+  colors: 'earthy', head: 'hair', beard: false, torch: false,
+  personalBase: 0, loop: 0, start: 0, scale: 1, seed: 7,
+};
+```
+
+The game uses the same `CitizenVisual` code as this preview.
 
 The angry state raises a live torch and emits pooled white steam. The game keeps a torch burning gently after anger fades. It has no combat.
 
