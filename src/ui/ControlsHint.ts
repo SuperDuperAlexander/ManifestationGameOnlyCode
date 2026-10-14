@@ -1,3 +1,5 @@
+import { createControlIcon, type ControlIconName } from './ControlIcons';
+
 /** Key names shown in the caps. These are the real bindings (see InputManager.ts and Game.ts). */
 const KEYS = {
   walk: 'W A S D',
@@ -24,15 +26,14 @@ export class ControlsHint {
     this.touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
     this.el = document.createElement('div');
     this.el.className = 'controls-hint';
-    this.el.setAttribute('aria-hidden', 'true');
     if (this.touch) this.el.style.display = 'none';
 
-    const rowDefs: { key: string; cap: string; label: string; name?: 'push' | 'lookWithin' }[] = [
-      { key: 'controlsWalk', cap: KEYS.walk, label: texts('controlsWalk') },
-      { key: 'controlsBreatheIn', cap: KEYS.breatheIn, label: texts('controlsBreatheIn') },
-      { key: 'controlsBreatheOut', cap: KEYS.breatheOut, label: texts('controlsBreatheOut') },
-      { key: 'controlsPush', cap: KEYS.push, label: texts('controlsPush'), name: 'push' },
-      { key: 'controlsLookWithin', cap: KEYS.lookWithin, label: texts('controlsLookWithin'), name: 'lookWithin' },
+    const rowDefs: { key: string; cap: string; label: string; icon: ControlIconName; name?: 'push' | 'lookWithin' }[] = [
+      { key: 'controlsWalk', cap: KEYS.walk, label: texts('controlsWalk'), icon: 'walk' },
+      { key: 'controlsBreatheIn', cap: KEYS.breatheIn, label: texts('controlsBreatheIn'), icon: 'breathe' },
+      { key: 'controlsBreatheOut', cap: KEYS.breatheOut, label: texts('controlsBreatheOut'), icon: 'breathe' },
+      { key: 'controlsPush', cap: KEYS.push, label: texts('controlsPush'), icon: 'push', name: 'push' },
+      { key: 'controlsLookWithin', cap: KEYS.lookWithin, label: texts('controlsLookWithin'), icon: 'look-within', name: 'lookWithin' },
     ];
 
     const rows: Partial<Record<'push' | 'lookWithin', HTMLDivElement>> = {};
@@ -42,10 +43,13 @@ export class ControlsHint {
       const cap = document.createElement('span');
       cap.className = 'ch-key';
       cap.textContent = def.cap;
+      const icon = document.createElement('span');
+      icon.className = 'ch-icon';
+      icon.appendChild(createControlIcon(def.icon));
       const label = document.createElement('span');
       label.className = 'ch-label';
       label.textContent = def.label;
-      row.append(cap, label);
+      row.append(icon, cap, label);
       this.el.appendChild(row);
       if (def.name) rows[def.name] = row;
     }

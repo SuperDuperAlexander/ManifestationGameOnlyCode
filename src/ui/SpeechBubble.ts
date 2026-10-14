@@ -9,6 +9,11 @@ export class SpeechBubble {
   private left = 0;
   private anchor: (() => Vector3) | null = null;
   private readonly out = new Vector3();
+  private measuredText = '';
+  private measuredParentWidth = -1;
+  private measuredParentHeight = -1;
+  private bubbleWidth = 0;
+  private bubbleHeight = 0;
 
   constructor(
     parent: HTMLElement,
@@ -21,6 +26,7 @@ export class SpeechBubble {
 
   show(text: string, anchor: () => Vector3, seconds: number): void {
     this.el.textContent = text;
+    this.measuredText = '';
     this.anchor = anchor;
     this.left = seconds;
   }
@@ -32,11 +38,27 @@ export class SpeechBubble {
     if (this.left > 0 && this.anchor && scene && camera) {
       const w = this.engine.getRenderWidth();
       const h = this.engine.getRenderHeight();
+      const parent = this.el.parentElement;
+      const parentWidth = parent?.clientWidth ?? w;
+      const parentHeight = parent?.clientHeight ?? h;
+      if (this.measuredText !== this.el.textContent || this.measuredParentWidth !== parentWidth || this.measuredParentHeight !== parentHeight) {
+        const bounds = this.el.getBoundingClientRect();
+        this.bubbleWidth = bounds.width;
+        this.bubbleHeight = bounds.height;
+        this.measuredText = this.el.textContent;
+        this.measuredParentWidth = parentWidth;
+        this.measuredParentHeight = parentHeight;
+      }
       Vector3.ProjectToRef(this.anchor(), Matrix.IdentityReadOnly, scene.getTransformMatrix(), camera.viewport.toGlobal(w, h), this.out);
       if (this.out.z > 0 && this.out.z < 1) {
-        const sx = (this.el.parentElement?.clientWidth ?? w) / w;
-        const sy = (this.el.parentElement?.clientHeight ?? h) / h;
-        this.el.style.transform = `translate(calc(${(this.out.x * sx).toFixed(1)}px - 50%), calc(${(this.out.y * sy).toFixed(1)}px - 100%))`;
+        const sx = parentWidth / w;
+        const sy = parentHeight / h;
+        const edge = 16;
+        const maxLeft = Math.max(edge, parentWidth - this.bubbleWidth - edge);
+        const maxTop = Math.max(edge, parentHeight - this.bubbleHeight - edge);
+        const left = Math.min(maxLeft, Math.max(edge, this.out.x * sx - this.bubbleWidth / 2));
+        const top = Math.min(maxTop, Math.max(edge, this.out.y * sy - this.bubbleHeight));
+        this.el.style.transform = `translate(${left.toFixed(1)}px, ${top.toFixed(1)}px)`;
         visible = true;
       }
     }

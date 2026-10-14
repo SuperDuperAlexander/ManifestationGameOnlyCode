@@ -1,6 +1,6 @@
 # HANDOVER — Light Within
 
-Last update: 2026-10-11
+Last update: 2026-10-14
 Owner: Alexander
 Repo: https://github.com/SuperDuperAlexander/ManifestationGameOnlyCode
 Game title: **Light Within**. Current PoC (proof of concept = small complete test): **"The Lantern"**.
@@ -35,6 +35,12 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - **Step 5 done**: whole PoC playable, beats 0–9, both orders (scenarios `lantern`, `lantern-alt`). Town 42–58 draw calls, inner 31–42, 60 fps.
 - **Step 6 done**: touch controls, synth sounds, wave sources, phone grass cut. Max 59 draw calls (desktop and mobile emulation), 60 fps on this PC.
 - **Look pass done** (after Alexander's feedback): town has valley layout + charm, nicer houses, visible breath ring, start screen. Town 42–62 draw calls, 60 fps.
+- **Interface refresh done (2026-10-14).** The menu uses warm paper and code-made lantern and arch art. It shows Begin when ready and Continue when a save exists.
+- Control icons now match their actions and have clear names. The layout accounts for desktop, phone portrait and phone landscape. Speech text stays inside the screen.
+- A small tab icon is added. All game inputs, story text, save behavior and 2-second breath timing stay the same. No dependency was added.
+- Build passes. Desktop and phone browser views, keys, touch, fresh Begin, Continue, both story orders and speech bounds pass. Peak: 55 draw calls. A real-phone playtest remains open.
+- Two browser-test setup faults were fixed: use a walkable point near the imp and take the required first breath in both story orders. Game rules did not change.
+- Separate villager work changed the live game during checks. The last shared browser check was blocked by a vertex-data error, then a page-load timeout. Those files were left untouched. Final interface checks passed with zero browser errors in `build/ui-refresh-check-20261014` (base `1a7b348` plus the same interface/test files). Review: `http://127.0.0.1:5180/`.
 - **Next: Step 7 = playtest by Alexander** on desktop and a real phone. Then tune `TUNING.anger`, `TUNING.waves`, `TUNING.citizens` only.
 
 ## 3. Next step — start here
@@ -54,4 +60,5 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 
 (Add Alexander's playtest feedback here, newest first.)
 
+- 2026-10-14: Interface refresh completed. Menu, matching controls and desktop/mobile layouts are recorded in L22. Browser checks passed in the isolated review copy. Real-phone feedback remains open.
 - 2026-10-11: "Nothing happened" — story waited for a first breath, hint was missed; breathing was not shown. Town looked like a greybox. → Fixed in the look pass (L18).

@@ -77,3 +77,6 @@ Change: section 3 (core loop), 5.1 (town table) and 9 (beats 1–3, 6) of `GAME_
 
 **L21. Thought Bubbles (Alexander, 2026-10-12).** Thought Waves become comic Thought Bubbles. Push → bigger next bubble + a citizen bumps into the player. Breathing calms the town. Imp 5x size, mirrors outer anger. Thought texts are drafts by Claude.
 Change: `GAME_DESIGN.md` (sections 1–13), `public/data/dialogue/en.json` (new keys `thoughts`, `thoughtPushed`, `thoughtPassed`; old `wave…` keys kept).
+
+**L22. Interface refresh (2026-10-14).** Warm-paper menu with code-made lantern and arch. Begin appears when ready; Continue appears when a save exists. Control icons match their actions and names. Speech text stays within the screen. The layout supports desktop, phone portrait and phone landscape. A small tab icon is added.
+Keep all game inputs, story text, save behavior and the 2-second breath timing. No dependency was added. Build and desktop/phone browser checks passed. Test setup now uses a walkable point near the imp and the required first breath in both story orders; game rules stay the same. Concurrent villager work blocked the final shared runtime check, so final interface checks used base `1a7b348` plus identical interface/test files in an isolated copy. A real-phone playtest remains open.

@@ -2,8 +2,8 @@
 export type StartChoice = 'begin' | 'continue';
 
 /**
- * A quiet start screen: the title, and "press any key or tap".
- * If a checkpoint exists, a small "Continue" button sits below the prompt.
+ * A quiet paper start screen. Begin is shown once the texts are ready.
+ * If a checkpoint exists, Continue is shown as a second choice.
  * It also makes sure sound may play (browsers need one key press or tap first).
  */
 export class StartScreen {
@@ -15,14 +15,34 @@ export class StartScreen {
   constructor(parent: HTMLElement) {
     this.el = document.createElement('div');
     this.el.className = 'start-screen';
+    this.el.setAttribute('aria-busy', 'true');
     this.el.innerHTML = `
-      <div class="ss-sun"></div>
-      <h1 class="ss-title"></h1>
-      <p class="ss-sub"></p>
-      <p class="ss-prompt"></p>
-      <div class="ss-actions">
-        <button type="button" class="ss-btn ss-begin"></button>
-        <button type="button" class="ss-btn ss-continue"></button>
+      <div class="ss-frame">
+        <div class="ss-art" aria-hidden="true">
+          <div class="ss-arch">
+            <div class="ss-sun"></div>
+            <div class="ss-hill ss-hill-far"></div>
+            <div class="ss-hill ss-hill-near"></div>
+            <div class="ss-lantern">
+              <span class="ss-lantern-handle"></span>
+              <span class="ss-lantern-cap"></span>
+              <span class="ss-lantern-body"><span class="ss-flame"></span></span>
+              <span class="ss-lantern-base"></span>
+            </div>
+          </div>
+          <span class="ss-art-line"></span>
+        </div>
+        <div class="ss-content">
+          <h1 class="ss-title"></h1>
+          <p class="ss-sub"></p>
+          <div class="ss-rule" aria-hidden="true"><span></span></div>
+          <div class="ss-actions">
+            <button type="button" class="ss-btn ss-begin"></button>
+            <button type="button" class="ss-btn ss-continue"></button>
+          </div>
+          <p class="ss-prompt"></p>
+          <span class="ss-loading" aria-hidden="true"><i></i><i></i><i></i></span>
+        </div>
       </div>`;
     parent.appendChild(this.el);
     this.actions = this.el.querySelector('.ss-actions') as HTMLDivElement;
@@ -39,6 +59,7 @@ export class StartScreen {
     this.continueBtn.textContent = cont ?? '';
     this.el.classList.toggle('has-save', cont !== null);
     this.el.classList.add('ready');
+    this.el.setAttribute('aria-busy', 'false');
   }
 
   /** Resolves with the choice. Any key or tap means "begin". Then fades away. */

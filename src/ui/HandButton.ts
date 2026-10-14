@@ -1,3 +1,5 @@
+import { createControlIcon } from './ControlIcons';
+
 export type HandMode = 'dim' | 'push' | 'interact';
 
 /** Round hand button (touch). No label. Push near a wave, interact near a glowing object. */
@@ -10,8 +12,7 @@ export class HandButton {
     this.el.className = 'hand-button dim';
     this.el.setAttribute('role', 'button');
     this.el.setAttribute('aria-label', 'Push or interact');
-    this.el.innerHTML =
-      '<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 26V12a2.5 2.5 0 0 1 5 0v10m0-2V9a2.5 2.5 0 0 1 5 0v11m0-1.5V11a2.5 2.5 0 0 1 5 0v10m0-4a2.5 2.5 0 0 1 5 0v14c0 7-4.500 11-11 11-5 0-8-2.500-10.500-7L9 29.500a2.600 2.600 0 0 1 4-3.300L17 31" fill="none" stroke="currentColor" stroke-width="2.400" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    this.el.appendChild(createControlIcon('push'));
     parent.appendChild(this.el);
     this.el.addEventListener('pointerdown', (e) => {
       e.preventDefault();

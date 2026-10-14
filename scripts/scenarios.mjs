@@ -114,7 +114,13 @@ export default function scenarios({ wait, shot, hold, page }) {
   };
   const transformStep = async () => {
     const p = await lw(() => window.__lw.impPos());
-    await teleportTo({ x: p.x + 1.5, z: p.z });
+    // Stay on the walkable entrance side instead of teleporting into the imp or its terrain.
+    const towardEntrance = { x: -p.x, z: -19 - p.z };
+    const length = Math.hypot(towardEntrance.x, towardEntrance.z);
+    await teleportTo({ x: p.x + towardEntrance.x / length * 8, z: p.z + towardEntrance.z / length * 8 });
+    const [player, imp] = await lw(() => [window.__lw.playerPos(), window.__lw.impPos()]);
+    const distance = Math.hypot(player.x - imp.x, player.z - imp.z);
+    expect(distance < 15, `player is outside the imp breath range after teleport (${distance.toFixed(1)} m)`);
     await breathGood(3);
     await waitFor('flags().lanternRelit (10 s)', () => window.__lw.flags().lanternRelit, null, 10000);
     await snapChecked('b8-calm');
@@ -132,16 +138,14 @@ export default function scenarios({ wait, shot, hold, page }) {
       await bootFresh();
       await waitFor('beat >= 0 (wake)', () => window.__lw.beat() >= 0);
       await snapChecked('b0-wake');
-      if (!alt) {
-        await breathGood(1);
-        await wait(500);
-      }
+      await breathGood(1);
+      await wait(500);
       await squareStep();
       await bumpStep();
       await treeWeakStep();
-      await toggleTo('inner');
-      await impSeeStep();
       if (!alt) {
+        await toggleTo('inner');
+        await impSeeStep();
         await breathGood(3);
         expect(!(await flagsNow()).impCalm, 'imp calmed before the alley was helped');
         await toggleTo('outer');
@@ -149,9 +153,9 @@ export default function scenarios({ wait, shot, hold, page }) {
         await alleyStep();
         await toggleTo('inner');
       } else {
-        await toggleTo('outer');
         await alleyStep();
         await toggleTo('inner');
+        await impSeeStep();
       }
       await transformStep();
       await toggleTo('outer');
@@ -167,7 +171,7 @@ export default function scenarios({ wait, shot, hold, page }) {
     async lantern() {
       await playLantern(false);
     },
-    /** Same playthrough, but without the first breath (the Square must not be blocked) and alley after the imp. */
+    /** Same first breath, with the alley step before the imp visit. */
     async 'lantern-alt'() {
       await playLantern(true);
     },
