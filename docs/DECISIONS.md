@@ -88,3 +88,5 @@ Keep all game inputs, story text, save behavior and the 2-second breath timing. 
 **L25. Visible torch grip (2026-10-14).** Set the handle depth below the grip to 0.11 so the shaft visibly exits below the fist. The hand continues to hold the same shaft. The figure, flame, and carry pose stay the same.
 
 **L26. Women and men residents (2026-10-14).** Add an optional citizen gender with male as the old default. Four town residents are women and four are men. Women use a bun or braid and a longer work tunic. Both use the same colour controls, calm/angry states, shared body material, and torch grip. The preview starts with Woman and lets the user choose Man.
+
+**L27. Thought spawn rate (2026-10-14).** Set automatic Thought Wave and town Thought Bubble frequency to one third of the prior rate. Keep anger scaling, source proximity scaling, the immediate first bubble after the bump, push relief, and all other timing unchanged. Wave rate at full anger: 0.33 to 0.11 per second. Bubble gaps: calm 3.2 to 9.6 seconds, angry 1.2 to 3.6 seconds.

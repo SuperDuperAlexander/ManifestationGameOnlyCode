@@ -676,7 +676,7 @@ export const TUNING = {
     townDelayS: 4, townRampS: 20,
   },
   waves: {
-    rateAtFullAnger: 0.33,   // waves per second at anger 1
+    rateAtFullAnger: 0.11,   // waves per second at anger 1
     speed: 2.2,              // m/s, slower than walking
     width: 6, height: 2.2,   // metres
     pushRelief: 4,           // seconds without waves after a push
@@ -737,7 +737,7 @@ export const TUNING = {
     /** Seconds without a new bubble after a push. */
     pushRelief: 1.2,
     /** Seconds between bubbles: calm (anger 0) and furious (anger 1). */
-    gapCalm: 3.2, gapAngry: 1.2, firstGap: 2,
+    gapCalm: 9.6, gapAngry: 3.6, firstGap: 2,
     /** Nothing done: after this many seconds the bubble sinks onto the head and bursts. */
     holdTime: 14, burstTime: 0.9, hitShoveMin: 0.3, bigShove: 2.5, hitSlowTime: 2, hitSlowFactor: 0.5,
     /** Anger level of the text: score = anger + pushLevel * pushScore. */
