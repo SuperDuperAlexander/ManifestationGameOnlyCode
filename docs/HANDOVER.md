@@ -62,3 +62,10 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 
 - 2026-10-14: Interface refresh completed. Menu, matching controls and desktop/mobile layouts are recorded in L22. Browser checks passed in the isolated review copy. Real-phone feedback remains open.
 - 2026-10-11: "Nothing happened" — story waited for a first breath, hint was missed; breathing was not shown. Town looked like a greybox. → Fixed in the look pass (L18).
+
+## 6. Villager kit update (2026-10-14)
+
+- `villager-kit/` previews the live in-game citizen model with peaceful and angry states, six seeded colour sets, runtime colour controls, torch, and pooled steam.
+- The full build passed before the final torch visual polish. Production preview checks on port 4173 passed for desktop and phone emulation, colours, and shared identity. Final torch flame and framing validation is pending.
+- Town checks showed 48 calm / 63 angry draw calls on desktop and 48 calm / 61 angry draw calls in phone emulation. The full lantern story passed with zero console problems.
+- A real-phone hardware check remains open.

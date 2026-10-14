@@ -1,5 +1,6 @@
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
+import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
@@ -8,44 +9,79 @@ import type { Scene } from '@babylonjs/core/scene';
 import { PALETTE, SHADES, color3 } from '../config/palette';
 import { TUNING } from '../config/tuning';
 
-/**
- * A citizen's torch, made in code: an umber stick and a flame of three small
- * unlit cones (orange outside, gold middle, pale core). No real lights.
- * Intensity 0 = small calm flame, 1 = tall flare. Materials are shared by all torches.
- */
-
-interface TorchMaterials {
-  stick: StandardMaterial;
-  flame: StandardMaterial;
-}
-
+/** Two shared-material draws: wrapped wood and layered flame tongues. No lights. */
+interface TorchMaterials { stick: StandardMaterial; flame: StandardMaterial }
 const materialCache = new WeakMap<Scene, TorchMaterials>();
 
-function unlitMaterial(name: string, scene: Scene, hex: string): StandardMaterial {
+function unlitMaterial(name: string, scene: Scene): StandardMaterial {
   const mat = new StandardMaterial(name, scene);
   mat.disableLighting = true;
-  mat.diffuseColor = color3(hex);
-  mat.emissiveColor = color3(hex);
+  mat.diffuseColor = new Color3(1, 1, 1);
+  mat.emissiveColor = new Color3(1, 1, 1);
   mat.specularColor = new Color3(0, 0, 0);
   mat.backFaceCulling = false;
   return mat;
 }
-
 function materialsFor(scene: Scene): TorchMaterials {
   let mats = materialCache.get(scene);
   if (!mats) {
-    mats = {
-      stick: unlitMaterial('torchStick', scene, SHADES.umber),
-      flame: unlitMaterial('torchFlame', scene, '#FFFFFF'),
-    };
+    mats = { stick: unlitMaterial('torchStick', scene), flame: unlitMaterial('torchFlame', scene) };
     materialCache.set(scene, mats);
   }
   return mats;
 }
+function painted(mesh: Mesh, hex: string): Mesh {
+  const c = color3(hex);
+  const colours = new Float32Array(mesh.getTotalVertices() * 4);
+  for (let i = 0; i < mesh.getTotalVertices(); i++) colours.set([c.r, c.g, c.b, 1], i * 4);
+  mesh.setVerticesData(VertexBuffer.ColorKind, colours);
+  return mesh;
+}
+
+/** Crossed, double-sided tongues keep the gold and core visible from both sides.
+ * The inner colours sit on exposed surfaces instead of inside an opaque cone.
+ */
+function flameMesh(scene: Scene): Mesh {
+  const positions: number[] = [], normals: number[] = [], colours: number[] = [], indices: number[] = [];
+  // y, centre, half width. The sideways bend gives a soft flame tip.
+  const outline = [[0, 0, 0.13], [0.13, -0.035, 0.45], [0.38, 0.025, 0.37], [0.68, 0.10, 0.20], [1, -0.045, 0]] as const;
+  const layers = [
+    { hex: SHADES.heatOrange, height: 1, width: 1, depth: 0 },
+    { hex: PALETTE.gold, height: 0.79, width: 0.71, depth: 0.045 },
+    { hex: SHADES.flameCore, height: 0.49, width: 0.39, depth: 0.085 },
+  ];
+  for (const angle of [0, Math.PI / 2]) {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    for (const layer of layers) {
+      const colour = color3(layer.hex);
+      for (const side of layer.depth === 0 ? [1] : [-1, 1]) {
+        const start = positions.length / 3;
+        for (const [y, centre, width] of outline) {
+          for (const edge of [-1, 1]) {
+            const x = (centre + edge * width) * layer.width;
+            const depth = layer.depth * side;
+            positions.push(x * c - depth * s, y * layer.height, x * s + depth * c);
+            normals.push(-s * side, 0, c * side);
+            colours.push(colour.r, colour.g, colour.b, 1);
+          }
+        }
+        for (let i = 0; i < outline.length - 1; i++) {
+          const a = start + i * 2;
+          indices.push(a, a + 1, a + 3, a, a + 3, a + 2);
+        }
+      }
+    }
+  }
+  const data = new VertexData();
+  data.positions = positions; data.normals = normals; data.colors = colours; data.indices = indices;
+  const mesh = new Mesh('torchFlame', scene);
+  data.applyToMesh(mesh);
+  return mesh;
+}
 
 export class Torch {
   private readonly meshes: Mesh[] = [];
-  private flame!: Mesh;
+  private readonly flame: Mesh;
   private target = 0;
   private current = 0;
   private time = 0;
@@ -53,72 +89,50 @@ export class Torch {
   constructor(scene: Scene, parent: TransformNode) {
     const cfg = TUNING.torch;
     const mats = materialsFor(scene);
-
-    const stick = MeshBuilder.CreateCylinder(
-      'torchStick',
-      {
-        height: cfg.stickLength,
-        diameterTop: cfg.stickTopDiameter,
-        diameterBottom: cfg.stickBottomDiameter,
-        tessellation: 6,
-      },
-      scene,
-    );
+    const shaft = painted(MeshBuilder.CreateCylinder('torchShaft', {
+      height: cfg.stickLength, diameterTop: cfg.stickTopDiameter,
+      diameterBottom: cfg.stickBottomDiameter, tessellation: 6,
+    }, scene), SHADES.umber);
+    shaft.position.y = cfg.stickLength / 2;
+    const wrap = painted(MeshBuilder.CreateCylinder('torchWrap', {
+      height: cfg.stickLength * 0.18, diameterTop: cfg.stickTopDiameter * 1.9,
+      diameterBottom: cfg.stickTopDiameter * 1.4, tessellation: 6,
+    }, scene), SHADES.timber);
+    wrap.position.y = cfg.stickLength * 0.91;
+    const rim = painted(MeshBuilder.CreateCylinder('torchWrapRim', {
+      height: cfg.stickLength * 0.045, diameter: cfg.stickTopDiameter * 2.05, tessellation: 6,
+    }, scene), SHADES.timberDark);
+    rim.position.y = cfg.stickLength * 0.975;
+    const stick = Mesh.MergeMeshes([shaft, wrap, rim], true, true)!;
+    stick.name = 'torchStick';
     stick.material = mats.stick;
-    stick.position.y = cfg.stickLength / 2;
     stick.parent = parent;
+    stick.isPickable = false;
     this.meshes.push(stick);
-
-    // Three nested cones merged into ONE mesh (vertex colours): one draw call for the flame.
-    const defs: { hex: string; hs: number; ws: number }[] = [
-      { hex: SHADES.heatOrange, hs: 1, ws: 1 },
-      { hex: PALETTE.gold, hs: 0.78, ws: 0.72 },
-      { hex: SHADES.flameCore, hs: 0.5, ws: 0.45 },
-    ];
-    const cones = defs.map((d) => {
-      const cone = MeshBuilder.CreateCylinder('c', { height: d.hs, diameterTop: 0, diameterBottom: d.ws, tessellation: 6 }, scene);
-      cone.position.y = d.hs / 2;
-      const c = color3(d.hex);
-      const n = cone.getTotalVertices();
-      const col = new Float32Array(n * 4);
-      for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b, 1], i * 4);
-      cone.setVerticesData(VertexBuffer.ColorKind, col);
-      return cone;
-    });
-    const flame = Mesh.MergeMeshes(cones, true, true)!;
-    flame.name = 'torchFlame';
-    flame.material = mats.flame;
-    flame.parent = parent;
-    flame.isPickable = false;
-    this.meshes.push(flame);
-    this.flame = flame;
-
+    this.flame = flameMesh(scene);
+    this.flame.material = mats.flame;
+    this.flame.parent = parent;
+    this.flame.isPickable = false;
+    this.meshes.push(this.flame);
     this.layoutFlames();
   }
 
   /** Sets the wanted flame size: 0 = small calm flame, 1 = tall flare. */
-  setIntensity(v: number): void {
-    this.target = Math.min(1, Math.max(0, v));
-  }
-
+  setIntensity(v: number): void { this.target = Math.min(1, Math.max(0, v)); }
   setVisible(v: boolean): void {
-    for (const m of this.meshes) if (m.isEnabled() !== v) m.setEnabled(v);
+    for (const mesh of this.meshes) if (mesh.isEnabled() !== v) mesh.setEnabled(v);
   }
-
   update(dt: number): void {
     const cfg = TUNING.torch;
     this.time += dt;
-    const k = Math.min(1, cfg.intensityEase * dt);
-    this.current += (this.target - this.current) * k;
+    this.current += (this.target - this.current) * Math.min(1, cfg.intensityEase * dt);
     this.layoutFlames();
   }
-
   dispose(): void {
-    for (const m of this.meshes) m.dispose();
+    for (const mesh of this.meshes) mesh.dispose();
     this.meshes.length = 0;
     // Shared materials stay alive for the other torches of this scene.
   }
-
   private layoutFlames(): void {
     const cfg = TUNING.torch;
     const wave = Math.sin(this.time * cfg.flickerSpeed) * 0.6 + Math.sin(this.time * cfg.flickerSpeed * 1.7) * 0.4;

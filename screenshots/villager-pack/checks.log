@@ -1,0 +1,65 @@
+screenshots: screenshots\villager-pack\desktop-initial.png, screenshots\villager-pack\desktop-stage.png
+PASS desktop: peaceful and angry states show at start
+PASS desktop: two body meshes exist
+PASS desktop: each figure has one stable body mesh id
+PASS desktop: canvas and controls fit with no horizontal overflow
+PASS desktop: actual draw calls 8 < 100
+PASS desktop: muted recolors both vertex buffers
+PASS desktop: deep recolors both vertex buffers
+PASS desktop: market recolors both vertex buffers
+PASS desktop: dusk recolors both vertex buffers
+PASS desktop: clay recolors both vertex buffers
+PASS desktop: earthy recolors both vertex buffers
+PASS desktop: custom tunic changes both buffers
+PASS desktop: custom tunic keeps mesh ids and count
+PASS desktop: custom scarf changes both buffers
+PASS desktop: custom scarf keeps mesh ids and count
+PASS desktop: custom hair changes both buffers
+PASS desktop: custom hair keeps mesh ids and count
+PASS desktop: custom skin changes both buffers
+PASS desktop: custom skin keeps mesh ids and count
+PASS desktop: state swap updates labels and state
+PASS desktop: torch hand rises with angry state
+PASS desktop: swap keeps body ids and colors
+PASS desktop: torch lowers again when anger clears
+PASS desktop: state changes keep mesh ids and count
+PASS desktop: actual draw calls 8 < 100 after changes
+PASS desktop: scene vertex positions are finite
+PASS desktop: scene has 4906 triangles
+PASS desktop: both body meshes have triangles
+PASS desktop: steam cloud uses pooled thin instances
+PASS desktop: all four torch meshes attach to hand mounts
+PASS desktop: no browser errors
+screenshots: screenshots\villager-pack\phone-initial.png, screenshots\villager-pack\phone-stage.png
+PASS phone: peaceful and angry states show at start
+PASS phone: two body meshes exist
+PASS phone: each figure has one stable body mesh id
+PASS phone: canvas and controls fit with no horizontal overflow
+PASS phone: actual draw calls 8 < 100
+PASS phone: muted recolors both vertex buffers
+PASS phone: deep recolors both vertex buffers
+PASS phone: market recolors both vertex buffers
+PASS phone: dusk recolors both vertex buffers
+PASS phone: clay recolors both vertex buffers
+PASS phone: earthy recolors both vertex buffers
+PASS phone: custom tunic changes both buffers
+PASS phone: custom tunic keeps mesh ids and count
+PASS phone: custom scarf changes both buffers
+PASS phone: custom scarf keeps mesh ids and count
+PASS phone: custom hair changes both buffers
+PASS phone: custom hair keeps mesh ids and count
+PASS phone: custom skin changes both buffers
+PASS phone: custom skin keeps mesh ids and count
+PASS phone: state swap updates labels and state
+PASS phone: torch hand rises with angry state
+PASS phone: swap keeps body ids and colors
+PASS phone: torch lowers again when anger clears
+PASS phone: state changes keep mesh ids and count
+PASS phone: actual draw calls 8 < 100 after changes
+PASS phone: scene vertex positions are finite
+PASS phone: scene has 4906 triangles
+PASS phone: both body meshes have triangles
+PASS phone: steam cloud uses pooled thin instances
+PASS phone: all four torch meshes attach to hand mounts
+PASS phone: no browser errors
+Villager checks: PASS (0 failed assertion(s))

@@ -210,7 +210,7 @@ export class Citizen {
     const y = ctx.groundY(this.x, this.z);
     this.visual.root.position.set(this.x, y, this.z);
     const shownSpeed = Math.min(this.speed, Math.hypot(vx, vz));
-    this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && (this.torchLit || a > T.torchShowAbove) });
+    this.visual.update(dt, { speed: shownSpeed, heading: this.heading, agitation: a, far, torchRaised: this.torch !== null && a > T.torchShowAbove });
 
     // Steam: now and then at medium, often at high.
     if (a > T.mediumAbove) {

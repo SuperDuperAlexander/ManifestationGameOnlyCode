@@ -319,6 +319,19 @@ export const TUNING = {
 
   /** Citizens of the outer town (GAME_DESIGN 6.1). Spawns and waypoints: src/outer/townLayout.ts. */
   citizens: {
+    visual: {
+      scale: 1.1,
+      headSize: 0.34,
+      bodyHeight: 0.5,
+      stepRate: 4.5,
+      calmSway: 0.012,
+      angryLean: 0.16,
+      armLength: 0.32,
+      shoulderY: 0.8,
+      hipY: 0.34,
+      /** Torch size relative to the hand mount. Keeps a raised flame in frame. */
+      torchScale: 0.65,
+    },
     count: 8,
     /** agitation = personalBase + townAnger * agitationWeight */
     agitationWeight: 1.0,

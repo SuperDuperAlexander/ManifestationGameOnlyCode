@@ -61,6 +61,26 @@ export const SHADES = {
   glass: '#6F86A6',
   /** Town houses: soft leaf green for flower boxes. */
   leaf: '#7F9460',
+  /** Citizen tunic: soft blue-grey for a calm town variation. */
+  citizenBlue: '#71839A',
+  /** Citizen cloth: muted clay for warm clothing variations. */
+  citizenClay: '#A85F4A',
+  /** Citizen cloth: dusty green for natural clothing variations. */
+  citizenMoss: '#657354',
+  /** Citizen trousers: warm grey-brown. */
+  citizenTrouser: '#665449',
+  /** Citizen hair: soft brown, never pure black. */
+  citizenHair: '#6B5142',
+  /** Citizen hair: muted grey-brown. */
+  citizenGreyHair: '#898276',
+  /** Citizen skin: light warm peach. */
+  citizenSkinLight: '#E6B891',
+  /** Citizen skin: medium warm brown. */
+  citizenSkinMedium: '#B97A55',
+  /** Citizen skin: deep warm brown. */
+  citizenSkinDeep: '#80533F',
+  /** Citizen belt: dark leather brown. */
+  citizenBelt: '#79543C',
 } as const;
 
 export function color3(hex: string): Color3 {

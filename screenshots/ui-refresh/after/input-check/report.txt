@@ -1,0 +1,28 @@
+PASS fresh start choices: {"begin":"block","cont":"none","save":null}
+PASS Begin starts fresh: {"beat":0,"flags":{"bumped":false,"sawImp":false,"helped":false,"impCalm":false,"lanternRelit":false,"delivered":false},"save":null}
+PASS checkpoint saved: {"beat":1,"flags":{"bumped":false,"sawImp":false,"helped":false,"impCalm":false,"lanternRelit":false,"delivered":false}}
+PASS W walks: {"x":0,"y":1.7243329665685647,"z":41} -> {"x":0,"y":1.7265783774335055,"z":42.98029121284313}
+PASS Space inhale and Shift exhale: inhale/exhale
+PASS Q opens inner
+PASS portrait breath label inside viewport: {"left":194,"top":805.703125,"right":374,"bottom":828,"width":180,"height":22.296875,"opacity":"1","display":"block","text":"breathe in","class":"bg-label"}
+PASS portrait label avoids dialogue: label={"left":194,"top":805.703125,"right":374,"bottom":828,"width":180,"height":22.296875,"opacity":"1","display":"block","text":"breathe in","class":"bg-label"} dialogue={"left":16,"top":548.5,"right":374,"bottom":616,"width":358,"height":67.5,"opacity":"1","display":"flex","text":"✦This is my inner valley. The big tree is mine too.","class":"dialogue-line show"}
+PASS touch hold inhale and release exhale: inhale->exhale; held=true
+PASS 568x320 active label inside viewport: {"left":396,"top":282,"right":552,"bottom":304,"width":156,"height":22,"opacity":"1","display":"block","text":"breathe in","class":"bg-label"}
+PASS touch controls visible and sized: [{"s":".breath-button","w":80.0010986328125,"h":80.00108337402344},{"s":".hand-button","w":52,"h":52},{"s":".look-button","w":52,"h":52}]
+PASS hand touch dispatches push: pushLevel=1
+PASS diamond touch opens inner
+PASS continue screen shows choices: {"has":true,"begin":"block","cont":"block"}
+PASS Continue restores checkpoint: {"beat":1,"flags":{"bumped":false,"sawImp":false,"helped":false,"impCalm":false,"lanternRelit":false,"delivered":false},"save":"{\"beat\":1,\"flags\":{\"bumped\":false,\"sawImp\":false,\"helped\":false,\"impCalm\":false,\"lanternRelit\":false,\"delivered\":false}}"}
+PASS begin screen shows choices: {"has":true,"begin":"block","cont":"block"}
+PASS Begin clears checkpoint and flags: {"beat":0,"flags":{"bumped":false,"sawImp":false,"helped":false,"impCalm":false,"lanternRelit":false,"delivered":false},"save":null}
+HARNESS ERROR Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'D:\node_modules\@babylonjs\core\Engines\engine.js' imported from D:\MyDrive\ALEXANDER\PROJEKTE\ManifestationGameOnlyCode\[eval1]
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:932:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1056:11)
+    at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:654:12)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:603:25)
+    at ModuleLoader.resolve (node:internal/modules/esm/loader:586:38)
+    at ModuleLoader.getModuleJobForImport (node:internal/modules/esm/loader:242:38)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:546:36)
+    at TracingChannel.tracePromise (node:diagnostics_channel:344:14)
+    at ModuleLoader.import (node:internal/modules/esm/loader:545:21)

@@ -24,7 +24,8 @@
     "noEmit": true
   },
   "include": [
-    "src"
+    "src",
+    "villager-kit/src"
   ],
   "exclude": [
     "legacy"
