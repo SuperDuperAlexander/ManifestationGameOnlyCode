@@ -56,6 +56,7 @@ export class Game {
   private readonly guide: BreathGuide;
   private controls: ControlsHint | null = null;
   private controlsState = '';
+  private lookWithinButton: LookWithinButton | null = null;
   private readonly touch: boolean;
 
   /** Debug only: bubbles appear without the bump. */
@@ -92,6 +93,7 @@ export class Game {
     this.lanterns = [outerLantern, innerLantern];
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
       this.controls = new ControlsHint(ui, (key) => this.dialogue.line(key));
+      this.updateLookWithinLabels();
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
       const raw = this.dialogue.data('thoughts');
@@ -134,7 +136,7 @@ export class Game {
     );
     if (touch || new URLSearchParams(location.search).has('touch')) {
       document.body.classList.add('touch');
-      new LookWithinButton(ui, () => this.toggle());
+      this.lookWithinButton = new LookWithinButton(ui, () => this.toggle());
       this.hand = new HandButton(ui, () => this.press());
       new TapPicker(
         this.engine,
@@ -200,6 +202,15 @@ export class Game {
     for (const [k, o] of this.overlays) o.setVisible(this.debugOn && k === id);
   }
 
+  private updateLookWithinLabels(): void {
+    const inside = this.current.id === 'inner';
+    this.controls?.setLookWithinLabel(this.dialogue.line(inside ? 'controlsGoOutside' : 'controlsGoInside'));
+    this.lookWithinButton?.setLabel(
+      this.dialogue.line(inside ? 'controlsGoOutside' : 'touchGoInside'),
+      this.dialogue.line(inside ? 'touchGoOutside' : 'touchGoInside'),
+    );
+  }
+
   /** Shared global values must match the shown world. */
   private applyShared(w: World): void {
     if (w.id === 'inner') {
@@ -247,12 +258,13 @@ export class Game {
     this.guide.update(dt, shown.breathSystem());
     const push = (this.storyReady && this.story.state.flags.bumped) || this.debugBubbles;
     const look = this.storyReady && this.story.canLookWithin();
-    const state = `${push}|${look}`;
+    const state = `${push}|${look}|${this.current.id}`;
     if (this.controls && state !== this.controlsState) {
       if (!this.controlsState) this.controls.show();
       this.controlsState = state;
       this.controls.setPushVisible(push);
       this.controls.setLookWithinVisible(look);
+      this.updateLookWithinLabels();
     }
     shown.scene.render();
     const o = this.overlays.get(shown.id);

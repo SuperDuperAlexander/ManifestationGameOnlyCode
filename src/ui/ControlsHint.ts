@@ -17,6 +17,7 @@ const KEYS = {
 export class ControlsHint {
   private readonly el: HTMLDivElement;
   private readonly rows: Record<'push' | 'lookWithin', HTMLDivElement>;
+  private readonly lookWithinLabel!: HTMLSpanElement;
   private readonly touch: boolean;
 
   constructor(
@@ -51,6 +52,7 @@ export class ControlsHint {
       label.textContent = def.label;
       row.append(icon, cap, label);
       this.el.appendChild(row);
+      if (def.name === 'lookWithin') this.lookWithinLabel = label;
       if (def.name) rows[def.name] = row;
     }
     this.rows = rows as Record<'push' | 'lookWithin', HTMLDivElement>;
@@ -77,5 +79,10 @@ export class ControlsHint {
   /** Shows or hides the look-within row (e.g. once the player may look within). */
   setLookWithinVisible(b: boolean): void {
     this.rows.lookWithin.classList.toggle('off', !b);
+  }
+
+  /** Updates the Q action name for the active world. */
+  setLookWithinLabel(text: string): void {
+    this.lookWithinLabel.textContent = text;
   }
 }

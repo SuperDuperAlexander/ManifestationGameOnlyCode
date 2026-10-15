@@ -7,7 +7,6 @@ import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { PALETTE } from '../config/palette';
 import { TUNING } from '../config/tuning';
-import { smoothstep } from '../core/Random';
 import { InputManager } from '../core/InputManager';
 import { isTouchDevice } from '../core/Performance';
 import { PlayerVisual } from '../player/PlayerVisual';
@@ -375,21 +374,6 @@ export class InnerValley implements World, WalkGround {
     this.imp.setWalk(wd.walkAmount);
   }
 
-  /** Near the imp the camera lifts its target and pulls back so the whole imp is in frame. */
-  private updateImpFocus(_dt: number, p: Vector3): void {
-    const C = TUNING.inner.camera;
-    if (!this.imp.root.isEnabled()) {
-      this.cam.setFocus(null, 0, 0, 0);
-      return;
-    }
-    const ip = this.imp.root.position;
-    const d = Math.hypot(p.x - ip.x, p.z - ip.z);
-    const h = this.imp.height();
-    const near = TUNING.story.impSeeRadius;
-    const w = 1 - smoothstep(near * 0.8, near * 1.5, d);
-    this.cam.setFocus(new Vector3(ip.x, ip.y + h * C.impFocusHeight, ip.z), w, h * C.impPullBack, C.impTargetBlend);
-  }
-
   private applyBurnedRoot(): void {
     this.tree.setRootHealth(LAYOUT.burnedRoot, this.burnedVisible ? this.rootHealthValue : 1);
   }
@@ -420,6 +404,11 @@ export class InnerValley implements World, WalkGround {
       const f = VALLEY_UNIFORMS.fogColor;
       this.scene.clearColor.set(f.r, f.g, f.b, 1);
       this.cam.onResize();
+      if (this.imp.root.isEnabled()) {
+        const C = TUNING.inner.camera;
+        const ip = this.imp.root.position;
+        this.cam.focusOnEntry(new Vector3(ip.x, ip.y + this.imp.height() * C.impFocusHeight, ip.z), this.imp.height() * C.impPullBack, C.impTargetBlend);
+      }
     } else {
       this.input.touchMoveX = 0;
       this.input.touchMoveY = 0;
@@ -451,7 +440,6 @@ export class InnerValley implements World, WalkGround {
     this.imp.lookAt(p);
     this.imp.update(dt);
     this.impBlock.radius = this.imp.bodyRadius();
-    this.updateImpFocus(dt, p);
     this.cam.update(dt, p, this.walker.heading, this.walker.speedRatio);
     this.tree.update(dt);
     const target = this.burnedVisible ? this.rootHealthValue : 0;

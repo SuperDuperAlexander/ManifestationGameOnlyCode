@@ -8,7 +8,6 @@ export class LookWithinButton {
     this.el = document.createElement('div');
     this.el.className = 'look-button';
     this.el.setAttribute('role', 'button');
-    this.el.setAttribute('aria-label', 'Look within');
     this.el.appendChild(createControlIcon('look-within'));
     parent.appendChild(this.el);
     this.el.addEventListener('pointerdown', (e) => {
@@ -16,5 +15,10 @@ export class LookWithinButton {
       e.stopPropagation();
       onPress();
     });
+  }
+
+  setLabel(label: string, accessibleLabel = label): void {
+    this.el.setAttribute('aria-label', accessibleLabel);
+    this.el.title = accessibleLabel;
   }
 }

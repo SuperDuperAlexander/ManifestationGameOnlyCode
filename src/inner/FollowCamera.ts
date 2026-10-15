@@ -94,11 +94,29 @@ export class FollowCamera {
     this.focusBlend = blend;
   }
 
+  /** Briefly frames a point when this world opens. Player input releases the focus. */
+  focusOnEntry(point: Vector3, extraDist: number, blend: number): void {
+    this.focus.copyFrom(point);
+    this.focusWant = 1;
+    this.focusExtra = extraDist;
+    this.focusBlend = blend;
+    this.focusW = 0;
+    this.idle = 0;
+  }
+
+  private releaseFocus(): void {
+    if (this.focusWant === 0) return;
+    this.focusWant = 0;
+    this.focusExtra = 0;
+    this.idle = 0;
+  }
+
   private turn(dx: number, dy: number): void {
     const c = TUNING.inner.camera;
     this.yaw += dx * c.dragSpeed;
     this.pitch = clamp(this.pitch + dy * c.dragSpeed * 0.6, c.minPitch, c.maxPitch);
     this.idle = 0;
+    this.releaseFocus();
   }
 
   /** Gently turns the view toward a yaw (e.g. the alley story) unless the player is dragging the camera. */
@@ -125,6 +143,7 @@ export class FollowCamera {
   update(dt: number, pos: Vector3, heading: number, moving: number): void {
     const c = TUNING.inner.camera;
     this.idle += dt;
+    if (moving > 0.1) this.releaseFocus();
     // Swing slowly behind the player while walking sideways, unless the player just turned
     // the camera. Walking toward the camera does not spin it around (sin = 0 there).
     if (this.idle > c.recenterDelay && moving > 0.1) {
