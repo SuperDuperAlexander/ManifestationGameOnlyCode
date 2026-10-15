@@ -1,6 +1,10 @@
 # Decisions — "The Lantern" (restart 2026-10-11)
 
 Each entry: what was decided, why, and how to change it.
+
+**Breath light feedback (2026-10-15).** Alexander asked for light particles to flow inward during both breath phases, with a small visual difference and no outward shots. Reuse the pooled light mesh with short gold/ivory flecks. Inhale follows a direct inward path; exhale follows a slower, gently curved inward path. Keep the two-second phases and all gameplay. Tune the look in `TUNING.breath.rays`.
+
+**Player breath duration (2026-10-15).** Alexander then asked for menu controls for breath duration. Give inhale and exhale separate choices of 1, 2, 3, or 4 seconds. Both default to 2 seconds. Save the choices locally. Fill/empty rates, the guide, and rhythm checks follow the selected times in both worlds. This request replaces the fixed-duration rule; story completion rules stay unchanged.
 The old decisions D1–D29 (diorama + valley) are archived in `legacy/valley-v1/docs/DECISIONS.md`.
 New numbers start with **L** (for "Lantern").
 

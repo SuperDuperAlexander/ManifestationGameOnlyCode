@@ -25,6 +25,8 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 
 ## 2. Status
 
+- **Breath light and player timing (2026-10-15).** Short gold/ivory light flecks flow inward in both phases. Exhale moves more slowly along a gentle curve. The pause menu has separate inhale/exhale choices of 1, 2, 3, or 4 seconds, defaulting to 2. Choices persist locally and drive fill/empty rates, rhythm scoring, and the guide in both worlds. Build and typecheck pass. Browser checks pass with zero console problems; all 16 timing pairs and saved 1/4-second choices after reload pass. Valid inhale/exhale and desktop/phone menu images are in `screenshots/breath-inward/`. Desktop: 51 draw calls, 59–60 frames per second. Phone emulation: 48 draw calls, 28 frames per second in the paused menu; a real phone remains unchecked. Concurrent navigation work initially caused a Ray import error, then fixed it before the final shared-source checks.
+
 - **Reference interface revision complete (2026-10-15).** Reference: `ChatGPTManifestationGame`. Georgia / Work Sans, live-scene start, cream action pills, gold star, dark-green Return, and a persistent menu match the supplied images. Escape, ×, and Return resume the same game. Existing keys, saves, worlds, and two-second breath stay. No dependency or old-game content was added. Build, keyboard/touch, Begin/Continue, menu focus, closed-dialog hiding, and portrait/landscape layout checks pass. Full desktop and mobile Lantern stories pass with zero console errors and a peak of 55 draw calls. Review: `http://127.0.0.1:5185/`. A real phone check remains open.
 
 - Docs written: `CLAUDE.md`, `AGENTS.md` (same content, for other coding agents), `docs/GAME_DESIGN.md`, `docs/BUILD_PLAN.md`,

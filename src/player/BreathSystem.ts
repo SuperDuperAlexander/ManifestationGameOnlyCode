@@ -1,5 +1,6 @@
 import { TUNING } from '../config/tuning';
 import { clamp01 } from '../core/Random';
+import { getBreathPreferences } from './BreathPreferences';
 
 export type BreathState = 'idle' | 'inhale' | 'exhale';
 
@@ -23,7 +24,7 @@ export interface ExhaleEvent {
 
 /**
  * The breath. Hold to breathe in (the light grows), then breathe out (the light flows out).
- * A calm rhythm of about 4 s in and 4 s out gives more light. A poor rhythm is never punished;
+ * A calm rhythm that follows the selected inhale and exhale times gives more light. A poor rhythm is never punished;
  * it only gives a little less.
  */
 export class BreathSystem {
@@ -57,18 +58,26 @@ export class BreathSystem {
     return b.lightRadiusBase + b.lightRadiusGain * this.breathLevel;
   }
 
-  /** Rhythm guide value 0..1: rises for 4 s, falls for 4 s. */
+  /** Rhythm guide value 0..1: rises during inhale and falls during exhale. */
   get guideLevel(): number {
-    const b = TUNING.breath;
-    const total = b.inhaleTarget + b.exhaleTarget;
+    const preferences = getBreathPreferences();
+    const inhaleTarget = preferences.inhaleSeconds;
+    const exhaleTarget = preferences.exhaleSeconds;
+    const total = inhaleTarget + exhaleTarget;
     const t = this.guidePhase * total;
-    const raw = t < b.inhaleTarget ? t / b.inhaleTarget : 1 - (t - b.inhaleTarget) / b.exhaleTarget;
+    const raw = t < inhaleTarget ? t / inhaleTarget : 1 - (t - inhaleTarget) / exhaleTarget;
     // Ease in and out, like a real breath.
     return 0.5 - 0.5 * Math.cos(raw * Math.PI);
   }
 
+  get guideIsInhaling(): boolean {
+    const preferences = getBreathPreferences();
+    return this.guidePhase * (preferences.inhaleSeconds + preferences.exhaleSeconds) < preferences.inhaleSeconds;
+  }
+
   update(dt: number, input: BreathInput): void {
     const b = TUNING.breath;
+    const preferences = getBreathPreferences();
     this.lightThisFrame = 0;
     this.stateTime += dt;
 
@@ -88,15 +97,15 @@ export class BreathSystem {
 
     switch (this.state) {
       case 'inhale': {
-        this.breathLevel = clamp01(this.breathLevel + b.inhaleRate * dt);
+        this.breathLevel = clamp01(this.breathLevel + dt / preferences.inhaleSeconds);
         break;
       }
       case 'exhale': {
         const before = this.breathLevel;
-        this.breathLevel = clamp01(this.breathLevel - b.exhaleRate * dt);
+        this.breathLevel = clamp01(this.breathLevel - dt / preferences.exhaleSeconds);
         const spent = before - this.breathLevel;
         // Rhythm while exhaling: how close the inhale was to the target so far.
-        const rhythm = this.scorePhase(this.lastInhale, b.inhaleTarget);
+        const rhythm = this.scorePhase(this.lastInhale, preferences.inhaleSeconds);
         this.lightThisFrame = spent * (b.lightBase + b.rhythmBonus * rhythm);
         if (this.breathLevel <= 0 && before > 0 && !this.exhaleCounted) {
           this.exhaleCounted = true;
@@ -110,8 +119,8 @@ export class BreathSystem {
         break;
       }
     }
-    // The guide runs on its own clock: 4 s up, 4 s down. It restarts with each inhale.
-    this.guidePhase = (this.guidePhase + dt / (b.inhaleTarget + b.exhaleTarget)) % 1;
+    // The guide follows the selected inhale and exhale times.
+    this.guidePhase = (this.guidePhase + dt / (preferences.inhaleSeconds + preferences.exhaleSeconds)) % 1;
   }
 
   /** Test hook: counts as one full, good breath (same listeners as a real one). */
@@ -132,10 +141,10 @@ export class BreathSystem {
   }
 
   private finishBreath(): void {
-    const b = TUNING.breath;
     const exhale = this.stateTime;
-    const rIn = this.scorePhase(this.lastInhale, b.inhaleTarget);
-    const rOut = this.scorePhase(exhale, b.exhaleTarget);
+    const preferences = getBreathPreferences();
+    const rIn = this.scorePhase(this.lastInhale, preferences.inhaleSeconds);
+    const rOut = this.scorePhase(exhale, preferences.exhaleSeconds);
     const score = (rIn + rOut) / 2;
     // Smooth, so one uneven breath does not swing the score.
     this.rhythmScore = this.rhythmScore * 0.4 + score * 0.6;

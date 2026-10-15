@@ -19,8 +19,8 @@ const frac = (x: number): number => x - Math.floor(x);
 
 /**
  * What breathing looks like around the player:
- * - in-breath: soft golden light rays glide in from around the figure and meet at the chest,
- * - out-breath: rays radiate out from the chest, lengthening and fading; a light ring on the ground.
+ * - both breath phases draw soft golden light flecks toward the chest,
+ * - exhale flecks curl gently as they arrive; a light ring rests on the ground.
  * All rays are one pooled mesh (one draw call); positions are rewritten each frame.
  */
 export class BreathVisuals {
@@ -53,7 +53,7 @@ export class BreathVisuals {
     this.ring.alwaysSelectAsActiveMesh = true;
     this.ring.isVisible = false;
 
-    // Rays: 2 groups (in, out) x n streaks x 4 vertices.
+    // Rays: 2 groups (inhale, exhale) x n flecks x 4 vertices.
     const quads = this.n * 2;
     this.pos = new Float32Array(quads * 12);
     this.col = new Float32Array(quads * 16);
@@ -141,9 +141,9 @@ export class BreathVisuals {
     const lvl = 0.6 + 0.4 * breath.breathLevel;
     const n = this.n;
     for (let i = 0; i < n; i++) {
-      // Inward: continuous stream, evenly staggered.
+      // Inhale: direct, steady flecks moving toward the chest.
       {
-        const t = frac(this.inClock / R.travelS + i / n);
+        const t = frac(this.inClock / R.inhaleTravelS + i / n);
         const a = i * GOLDEN;
         const dist = R.inStart[0] + (R.inStart[1] - R.inStart[0]) * frac(i * 0.618 + 0.13);
         const h = R.inHeight[0] + (R.inHeight[1] - R.inHeight[0]) * frac(i * 0.381 + 0.27);
@@ -151,29 +151,32 @@ export class BreathVisuals {
         const sx = cx + Math.cos(a) * dist, sy = playerPos.y + h, sz = cz + Math.sin(a) * dist;
         const hx = sx + (cx - sx) * e, hy = sy + (cy - sy) * e, hz = sz + (cz - sz) * e;
         // The tail trails back toward where the ray came from.
-        const back = (R.inLength * (1 - 0.6 * e)) / dist;
+        const back = (R.fleckLength * (1 - 0.15 * e)) / dist;
         const tx = hx + (sx - cx) * back, ty = hy + (sy - cy) * back, tz = hz + (sz - cz) * back;
         const fade = Math.sin(Math.PI * t);
         const alpha = this.inMix * R.brightness * lvl * fade * fade;
-        this.writeRay(i, tx, ty, tz, hx, hy, hz, R.width * (0.6 + 0.6 * (1 - e)), alpha, e * 0.8, cam);
+        this.writeRay(i, tx, ty, tz, hx, hy, hz, R.width * (0.85 + 0.15 * (1 - e)), alpha, e * 0.8, cam);
       }
-      // Outward: a few soft pulses (groups of rays), lengthening and fading.
+      // Exhale: slower flecks curl softly inward and fade at the chest.
       {
-        const t = frac(this.outClock / R.travelS + (i % 3) / 3);
+        const t = frac(this.outClock / R.exhaleTravelS + i / n);
         const a = (i + 0.5) * GOLDEN;
-        const elev = 0.25 * Math.sin(i * 1.7) + 0.12;
-        const ch = Math.cos(elev), sh = Math.sin(elev);
+        const dist = R.exhaleStart[0] + (R.exhaleStart[1] - R.exhaleStart[0]) * frac(i * 0.618 + 0.31);
+        const h = R.inHeight[0] + (R.inHeight[1] - R.inHeight[0]) * frac(i * 0.381 + 0.61);
         const e = ease(t);
-        const headD = 0.35 + e * R.outReach;
-        const tailD = Math.max(0.2, headD - R.outLength * (0.3 + 0.7 * e));
-        const ux = Math.cos(a) * ch, uy = sh, uz = Math.sin(a) * ch;
-        const fade = Math.max(0, Math.sin(Math.PI * Math.min(1, t * 1.15)) * (1 - t * 0.4));
+        const sx = cx + Math.cos(a) * dist, sy = playerPos.y + h, sz = cz + Math.sin(a) * dist;
+        const curl = Math.sin(Math.PI * e) * R.exhaleCurl;
+        const hx = sx + (cx - sx) * e - Math.sin(a) * curl;
+        const hy = sy + (cy - sy) * e;
+        const hz = sz + (cz - sz) * e + Math.cos(a) * curl;
+        const back = (R.fleckLength * 0.8) / dist;
+        const tx = hx + (sx - cx) * back, ty = hy + (sy - cy) * back, tz = hz + (sz - cz) * back;
+        const fade = Math.sin(Math.PI * t);
         const alpha = this.outMix * R.brightness * lvl * fade * fade;
         this.writeRay(
           n + i,
-          cx + ux * tailD, cy + uy * tailD, cz + uz * tailD,
-          cx + ux * headD, cy + uy * headD, cz + uz * headD,
-          R.width * (0.8 + 0.8 * e), alpha, 1 - e, cam,
+          tx, ty, tz, hx, hy, hz,
+          R.width * 0.9, alpha, 0.45 + e * 0.35, cam,
         );
       }
     }

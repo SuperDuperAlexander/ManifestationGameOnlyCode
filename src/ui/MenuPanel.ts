@@ -1,4 +1,5 @@
 export type MenuText = (key: string) => string;
+import { BREATH_DURATION_CHOICES, getBreathPreferences, setBreathPreference } from '../player/BreathPreferences';
 
 /** A native pause menu that keeps the current world and story alive. */
 export class MenuPanel {
@@ -33,6 +34,7 @@ export class MenuPanel {
         <h2 id="menu-title"></h2>
         <p></p>
         <section class="menu-controls" aria-label=""></section>
+        <section class="menu-breath-settings" aria-label=""></section>
         <button type="button" class="menu-return"></button>
       </div>
       <button type="button" class="menu-close"></button>`;
@@ -73,6 +75,30 @@ export class MenuPanel {
       copy.textContent = labels.map((label) => text(label)).join(' · ');
       row.append(copy);
       controls.append(row);
+    }
+    const settings = this.dialog.querySelector<HTMLElement>('.menu-breath-settings')!;
+    settings.setAttribute('aria-label', text('breathSettings'));
+    const settingsHeading = document.createElement('h3');
+    settingsHeading.textContent = text('breathSettings');
+    settings.append(settingsHeading);
+    const preferences = getBreathPreferences();
+    for (const [phase, labelKey] of [['inhaleSeconds', 'inhaleDuration'], ['exhaleSeconds', 'exhaleDuration']] as const) {
+      const row = document.createElement('label');
+      row.className = 'breath-setting-row';
+      const label = document.createElement('span');
+      label.textContent = text(labelKey);
+      const select = document.createElement('select');
+      select.setAttribute('aria-label', text(labelKey));
+      for (const seconds of BREATH_DURATION_CHOICES) {
+        const option = document.createElement('option');
+        option.value = String(seconds);
+        option.textContent = `${seconds} ${text(seconds === 1 ? 'second' : 'seconds')}`;
+        select.append(option);
+      }
+      select.value = String(preferences[phase]);
+      select.addEventListener('change', () => setBreathPreference(phase, Number(select.value)));
+      row.append(label, select);
+      settings.append(row);
     }
     const returnButton = this.dialog.querySelector<HTMLButtonElement>('.menu-return')!;
     returnButton.textContent = text('menuReturn');

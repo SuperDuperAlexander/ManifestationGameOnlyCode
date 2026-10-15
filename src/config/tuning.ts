@@ -138,18 +138,19 @@ export const TUNING = {
     lightRadiusGain: 3.6,
     /** Exhaled light reaches fog within this distance. */
     reach: 7.5,
-    /** Light rays: in-breath draws them to the chest, out-breath sends them out (BreathVisuals). */
+    /** Soft light flecks drift toward the chest in both phases (BreathVisuals). */
     rays: {
-      /** Rays per direction. */
+      /** Flecks per breath phase. */
       count: 10,
-      /** Inhale: start distance from the figure (min, max) and start height (min, max), metres. */
+      /** Inhale: start distance from the figure (min, max) and height (min, max), metres. */
       inStart: [3, 4.2], inHeight: [0.2, 2.4],
-      /** Exhale: reach (m) and ray height at the chest. */
-      outReach: 5.2, chestHeight: 0.9,
-      /** Streak length (m) and width (m) for in and out. */
-      inLength: 2.4, outLength: 3.2, width: 0.2,
-      /** Seconds one ray takes from start to end. */
-      travelS: 1.6,
+      /** Exhale starts a little closer and curls gently as it reaches the chest. */
+      exhaleStart: [2.6, 3.8], exhaleCurl: 0.12,
+      chestHeight: 0.9,
+      /** Short fleck length and width, in metres. */
+      fleckLength: 0.28, width: 0.12,
+      /** Visual travel time per fleck. Exhale is slower and softer than inhale. */
+      inhaleTravelS: 1.45, exhaleTravelS: 1.9,
       /** Overall brightness 0..1 and how fast the in/out mix fades (per second). */
       brightness: 1.6, mixRate: 5,
     },

@@ -47,7 +47,7 @@ export class BreathGuide {
     this.fill.style.transform = `scale(${f.toFixed(3)})`;
     const close = Math.abs(breath.guideLevel - breath.breathLevel) < 0.18;
     this.el.classList.toggle('in-rhythm', close && breath.state !== 'idle');
-    const phase = breath.guidePhase < 0.5 ? 'in' : 'out';
+    const phase = breath.guideIsInhaling ? 'in' : 'out';
     const L = this.labels;
     if (breath.state === 'idle') this.label.textContent = this.wanted ? (phase === 'in' ? L.holdIn : L.holdOut) : '';
     else this.label.textContent = phase === 'in' ? L.breatheIn : L.breatheOut;
