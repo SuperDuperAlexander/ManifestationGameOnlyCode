@@ -11,6 +11,7 @@ import type { Town } from '../outer/Town';
 import { TOWN } from '../outer/townLayout';
 import { EndCard } from '../ui/EndCard';
 import { Beacon } from './Beacon';
+import { NextStepHint } from '../ui/NextStepHint';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import type { Anger } from './Anger';
 import type { Lantern } from './Lantern';
@@ -49,6 +50,8 @@ export class Story {
   private angryInnerVisited = false;
   private angryT = 0;
   private readonly beacon: Beacon;
+  private readonly innerBeacon: Beacon;
+  private readonly nextStep: NextStepHint;
   private hintT = 0;
   /** Seconds since the bump hit (Infinity = no ramp running). */
   private sinceBump = Infinity;
@@ -77,6 +80,9 @@ export class Story {
     this.endCard = new EndCard(deps.ui);
     this.bubble = new SpeechBubble(deps.ui, deps.engine);
     this.beacon = new Beacon(deps.outer.scene, TOWN.beacon.x, TOWN.beacon.z, deps.outer.groundY(TOWN.beacon.x, TOWN.beacon.z));
+    this.innerBeacon = new Beacon(deps.inner.scene, 0, 0, 0);
+    this.innerBeacon.hide();
+    this.nextStep = new NextStepHint(deps.ui);
     // Before the bump both trees are healthy and the root is not burned (reveal rule).
     deps.outer.setOldTreeBranchHealth(1);
     deps.inner.setBranchHealth(1);
@@ -176,9 +182,6 @@ export class Story {
     const d = this.d;
     const f = this.state.flags;
 
-    // Gold guide light at the mouth of the Square: warm from the start, gone once the player is there.
-    this.beacon.setLit(true);
-    if (this.lookWithinOpen || f.bumped) this.beacon.hide();
     // The Square invites the first Look Within (no breath needed).
     if (shown === 'outer' && !busy && !this.lookWithinOpen && d.outer.playerPosition().z >= TOWN.bump.triggerZ) {
       this.lookWithinOpen = true;
@@ -186,7 +189,6 @@ export class Story {
       this.hint('hintLookWithin');
       this.hintT = 0;
     }
-    this.beacon.update(dt);
 
     // Gentle repeat of the current hint until the step is done.
     const needBreath = this.needsBreathHelp();
@@ -230,6 +232,7 @@ export class Story {
     if (this.sinceBump < Infinity) this.sinceBump += dt;
     this.updateImp(dt);
     this.updateTransform(dt);
+    this.updateGuidance(dt, busy);
 
     d.outerLantern.update(dt);
     d.innerLantern.update(dt);
@@ -239,6 +242,57 @@ export class Story {
   }
 
   // --- Player actions ---
+
+  private updateGuidance(dt: number, busy: boolean): void {
+    const d = this.d;
+    const f = this.state.flags;
+    const inner = this.shownId === 'inner';
+    const world = inner ? d.inner : d.outer;
+    let key = '';
+    let label = '';
+    let target: Vector3 | null = null;
+    if (f.delivered) key = inner ? 'stepExploreInner' : 'stepExplore';
+    else if (inner) {
+      if (!f.bumped) key = 'stepReturn';
+      else if (f.lanternRelit) key = 'stepReturnTree';
+      else if (f.impCalm) key = 'stepFlame';
+      else if (!f.helped) key = 'stepReturnAlley';
+      else {
+        key = 'stepImp';
+        target = d.inner.imp.root.position.clone();
+        label = 'targetImp';
+      }
+    } else if (f.lanternRelit) {
+      key = 'stepTree';
+      target = d.outer.treeNiche().clone();
+      label = 'targetTree';
+    } else if (f.helped) key = 'stepInside';
+    else if (f.bumped) {
+      key = f.sawImp ? 'stepAlley' : 'stepAngry';
+      const p = d.outer.playerPosition();
+      const a = TOWN.alleyStory.basket;
+      if (dist2(p.x, p.z, a.x, a.z) < TUNING.story.guidanceNearRadius) key = 'stepApples';
+      target = new Vector3(a.x, d.outer.groundY(a.x, a.z), a.z);
+      label = 'targetAlley';
+    } else if (!this.lookWithinOpen) {
+      key = 'stepSquare';
+      target = new Vector3(TOWN.beacon.x, d.outer.groundY(TOWN.beacon.x, TOWN.beacon.z), TOWN.beacon.z);
+      label = 'targetSquare';
+    } else key = this.innerVisited ? 'stepSquareReturn' : 'stepFirstInside';
+
+    this.beacon.hide();
+    this.innerBeacon.hide();
+    if (target && !busy) {
+      const beacon = inner ? this.innerBeacon : this.beacon;
+      beacon.setLit(true);
+      beacon.showAt(target.x, target.z, target.y);
+      target.y += TUNING.story.guidanceMarkerHeight;
+    }
+    this.beacon.update(dt);
+    this.innerBeacon.update(dt);
+    const touchKey = d.touch && d.dialogue.data(`${key}Touch`) ? `${key}Touch` : key;
+    this.nextStep.update(key, d.dialogue.line(touchKey), label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera);
+  }
 
   /** E / tap. Returns true if an object took the press (then it is not a push). */
   interact(): boolean {

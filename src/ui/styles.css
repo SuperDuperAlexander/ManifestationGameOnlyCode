@@ -480,3 +480,61 @@ body.touch .bg-label { inset: auto -64px -28px !important; width: 184px; }
   body.touch .dialogue-line.show { transform: translate(-50%, 0); }
   body.touch .breath-guide { bottom: calc(174px + var(--edge-bottom)); width: 52px; height: 52px; margin-left: -26px; }
 }
+
+/* A small task line leaves the inner voice free for story text. */
+.next-step-hint {
+  position: absolute;
+  z-index: 7;
+  top: var(--edge-top);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(540px, calc(100% - 210px));
+  padding: 10px 15px;
+  border: 1px solid var(--gold);
+  border-radius: 14px;
+  background: var(--paper);
+  color: var(--umber);
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.45;
+  pointer-events: none;
+  box-shadow: var(--soft-shadow);
+}
+.next-step-marker {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  color: var(--umber);
+  font-size: 12px;
+}
+.next-step-marker > span:last-child {
+  background: var(--paper);
+  padding: 3px 7px;
+  border-radius: 9px;
+  white-space: nowrap;
+}
+.next-step-diamond {
+  width: 13px;
+  height: 13px;
+  background: var(--gold);
+  border: 2px solid var(--ivory);
+  transform: rotate(45deg);
+  box-shadow: 0 0 12px var(--gold);
+}
+.next-step-marker.at-edge .next-step-diamond { border-color: var(--umber); }
+.next-step-hint[hidden], .next-step-marker[hidden] { display: none; }
+@media (max-width: 600px) {
+  .next-step-hint {
+    top: calc(var(--edge-top) + 54px);
+    max-width: calc(100% - 2 * var(--edge-left));
+    width: max-content;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}

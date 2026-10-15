@@ -167,6 +167,75 @@ export default function scenarios({ wait, shot, hold, page }) {
     }
   };
   return {
+    /** Task hints follow real flags, both story orders, and a saved checkpoint. */
+    async guidance() {
+      if (!(await requireHooks(LANTERN_HOOKS, 'guidance'))) return;
+      const hint = async (key, target = '') => {
+        await waitFor(`task hint ${key}`, (k) => document.querySelector('.next-step-hint')?.dataset.step === k, key);
+        const ui = await lw(() => {
+          const el = document.querySelector('.next-step-hint');
+          const marker = document.querySelector('.next-step-marker');
+          const r = el.getBoundingClientRect();
+          const m = marker.getBoundingClientRect();
+          return {
+            text: el.textContent, target: marker.hidden ? '' : marker.dataset.target,
+            fits: r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight,
+            markerFits: marker.hidden || (m.left >= 0 && m.right <= innerWidth && m.top >= 0 && m.bottom <= innerHeight),
+          };
+        });
+        expect(ui.text.length > 0 && ui.fits, `task line missing or outside screen: ${key}`);
+        expect(ui.target === target && ui.markerFits, `wrong or clipped target for ${key}: ${JSON.stringify(ui)}`);
+        console.log(`guidance ${key}: ${ui.text} target=${ui.target || 'none'}`);
+      };
+      try {
+        await bootFresh();
+        await hint('stepSquare', 'Square');
+        await shot('guidance-01-square');
+        await squareStep();
+        await bumpStep();
+        await hint('stepAngry', 'Alley');
+        await shot('guidance-02-alley-distance');
+        await toggleTo('inner');
+        await hint('stepReturnAlley');
+        await shot('guidance-03-return');
+        await toggleTo('outer');
+        await hint('stepAlley', 'Alley');
+        // Reload the actual checkpoint. Use Continue rather than the fresh-start key.
+        await page.reload({ waitUntil: 'load' });
+        await page.locator('.ss-continue').click();
+        await waitWorldStable('outer');
+        await hint('stepAlley', 'Alley');
+        const apples = await lw(() => window.__lw.alleyApplePositions());
+        await teleportTo(apples[0]);
+        await hint('stepApples', 'Alley');
+        await shot('guidance-04-apples');
+        await alleyStep();
+        await hint('stepInside');
+        await toggleTo('inner');
+        await hint('stepImp', 'Imp');
+        await shot('guidance-05-imp');
+        await transformStep();
+        await hint('stepReturnTree');
+        await toggleTo('outer');
+        await hint('stepTree', 'Old Tree');
+        await deliverStep();
+        await hint('stepExplore');
+        // The other permitted order: help before the angry inner visit.
+        await bootFresh();
+        await squareStep();
+        await bumpStep();
+        await alleyStep();
+        expect(!(await flagsNow()).sawImp, 'alternate order did not reach help before the imp');
+        await hint('stepInside');
+        await toggleTo('inner');
+        await hint('stepImp', 'Imp');
+        await shot('guidance-06-help-first');
+        console.log('guidance: PASS (both orders, Continue, target clearing, task layout)');
+      } catch (e) {
+        console.error(`FAIL (guidance): ${e.message}`);
+        process.exitCode = 3;
+      }
+    },
     /** Full PoC playthrough, beats 0-9 in the normal order. Screenshots: b0..b9. */
     async lantern() {
       await playLantern(false);
