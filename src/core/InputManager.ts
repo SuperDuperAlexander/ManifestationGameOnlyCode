@@ -4,6 +4,7 @@
  * Touch devices feed the same fields through the joystick and the breath button.
  */
 export class InputManager {
+  private static readonly instances = new Set<InputManager>();
   /** Walk direction, -1..1. x = east, y = north. */
   moveX = 0;
   moveY = 0;
@@ -25,11 +26,18 @@ export class InputManager {
   touchBreathUsed = false;
 
   private readonly keys = new Set<string>();
+  private readonly uiKeys = new Set<string>();
   private readonly listeners: [string, EventListener][] = [];
   private readonly interactCallbacks: (() => void)[] = [];
 
   attach(): void {
+    InputManager.instances.add(this);
     const down = (e: KeyboardEvent): void => {
+      const target = e.target;
+      const openDialog = document.querySelector('dialog[open]');
+      if (openDialog && target instanceof Node && openDialog.contains(target)) return;
+      const focusedControl = target instanceof Element ? target.closest('button, [role="button"]') : null;
+      if (focusedControl && (e.code === 'Space' || e.code === 'Enter')) return;
       this.markInteracted();
       if (e.code === 'F3') {
         e.preventDefault();
@@ -43,11 +51,45 @@ export class InputManager {
     const up = (e: KeyboardEvent): void => {
       this.keys.delete(e.code);
     };
-    const blur = (): void => this.keys.clear();
+    const blur = (): void => this.reset();
     this.on('keydown', down as EventListener);
     this.on('keyup', up as EventListener);
     this.on('blur', blur);
     this.on('pointerdown', () => this.markInteracted());
+  }
+
+  /** Feed a held key from a desktop action button without changing physical key state. */
+  static setUIKey(code: string, held: boolean): void {
+    for (const input of InputManager.instances) {
+      if (held) {
+        if (input.enabled) {
+          input.markInteracted();
+          input.uiKeys.add(code);
+        }
+      } else {
+        input.uiKeys.delete(code);
+      }
+    }
+  }
+
+  /** Clear held input before a menu opens or a world becomes inactive. */
+  static resetAll(): void {
+    for (const input of InputManager.instances) input.reset();
+  }
+
+  private reset(): void {
+    this.keys.clear();
+    this.uiKeys.clear();
+    this.touchMoveX = 0;
+    this.touchMoveY = 0;
+    this.touchBreathHeld = false;
+    this.touchBreathUsed = false;
+    this.moveX = 0;
+    this.moveY = 0;
+    this.inhaleHeld = false;
+    this.exhaleHeld = false;
+    this.pushPressed = false;
+    this.debugTogglePressed = false;
   }
 
   onFirstInteraction(cb: () => void): void {
@@ -68,13 +110,13 @@ export class InputManager {
 
   /** Call once per frame before the game reads input. */
   update(): void {
-    const k = this.keys;
+    const has = (code: string): boolean => this.keys.has(code) || this.uiKeys.has(code);
     let x = 0;
     let y = 0;
-    if (k.has('KeyA') || k.has('ArrowLeft')) x -= 1;
-    if (k.has('KeyD') || k.has('ArrowRight')) x += 1;
-    if (k.has('KeyW') || k.has('ArrowUp')) y += 1;
-    if (k.has('KeyS') || k.has('ArrowDown')) y -= 1;
+    if (has('KeyA') || has('ArrowLeft')) x -= 1;
+    if (has('KeyD') || has('ArrowRight')) x += 1;
+    if (has('KeyW') || has('ArrowUp')) y += 1;
+    if (has('KeyS') || has('ArrowDown')) y -= 1;
     x += this.touchMoveX;
     y += this.touchMoveY;
     const len = Math.hypot(x, y);
@@ -85,8 +127,8 @@ export class InputManager {
     const on = this.enabled;
     this.moveX = on ? x : 0;
     this.moveY = on ? y : 0;
-    this.inhaleHeld = on && (k.has('Space') || this.touchBreathHeld);
-    this.exhaleHeld = on && (k.has('ShiftLeft') || k.has('ShiftRight'));
+    this.inhaleHeld = on && (has('Space') || this.touchBreathHeld);
+    this.exhaleHeld = on && (has('ShiftLeft') || has('ShiftRight'));
   }
 
   /** Call once per frame after the game has read the one-frame presses. */
@@ -96,6 +138,8 @@ export class InputManager {
   }
 
   dispose(): void {
+    InputManager.instances.delete(this);
+    this.reset();
     for (const [type, fn] of this.listeners) window.removeEventListener(type, fn);
     this.listeners.length = 0;
   }

@@ -1,6 +1,6 @@
 # HANDOVER — Light Within
 
-Last update: 2026-10-14
+Last update: 2026-10-15
 Owner: Alexander
 Repo: https://github.com/SuperDuperAlexander/ManifestationGameOnlyCode
 Game title: **Light Within**. Current PoC (proof of concept = small complete test): **"The Lantern"**.
@@ -25,6 +25,8 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 
 ## 2. Status
 
+- **Reference interface revision complete (2026-10-15).** Reference: `ChatGPTManifestationGame`. Georgia / Work Sans, live-scene start, cream action pills, gold star, dark-green Return, and a persistent menu match the supplied images. Escape, ×, and Return resume the same game. Existing keys, saves, worlds, and two-second breath stay. No dependency or old-game content was added. Build, keyboard/touch, Begin/Continue, menu focus, closed-dialog hiding, and portrait/landscape layout checks pass. Full desktop and mobile Lantern stories pass with zero console errors and a peak of 55 draw calls. Review: `http://127.0.0.1:5185/`. A real phone check remains open.
+
 - Docs written: `CLAUDE.md`, `AGENTS.md` (same content, for other coding agents), `docs/GAME_DESIGN.md`, `docs/BUILD_PLAN.md`,
   this file, `docs/DECISIONS.md` (restarted), `legacy/valley-v1/README.md`, `legacy/valley-v1/docs/` (old docs).
 - **Step 0 done** (2026-10-11): tag `archive/valley-v1` on GitHub, frozen build in `legacy/valley-v1/playable/`, old code in `legacy/valley-v1/src/`.
@@ -40,7 +42,7 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 - A small tab icon is added. All game inputs, story text, save behavior and 2-second breath timing stay the same. No dependency was added.
 - Build passes. Desktop and phone browser views, keys, touch, fresh Begin, Continue, both story orders and speech bounds pass. Peak: 55 draw calls. A real-phone playtest remains open.
 - Two browser-test setup faults were fixed: use a walkable point near the imp and take the required first breath in both story orders. Game rules did not change.
-- Separate villager work changed the live game during checks. The last shared browser check was blocked by a vertex-data error, then a page-load timeout. Those files were left untouched. Final interface checks passed with zero browser errors in `build/ui-refresh-check-20261014` (base `1a7b348` plus the same interface/test files). Review: `http://127.0.0.1:5180/`.
+- Historical test note, resolved by later villager work: concurrent villager changes caused a vertex-data error and one page-load timeout during an earlier shared check. The final 2026-10-14 interface check passed with zero browser errors in `build/ui-refresh-check-20261014` (base `1a7b348` plus the same interface/test files). This is not a current blocker.
 - **Next: Step 7 = playtest by Alexander** on desktop and a real phone. Then tune `TUNING.anger`, `TUNING.waves`, `TUNING.citizens` only.
 - **Thought timing tune (2026-10-14).** Automatic Thought Waves and town Thought Bubbles now spawn at one third of the old frequency. Wave rate at full anger is 0.11 per second (was 0.33). Bubble gaps are 9.6 seconds when calm (was 3.2) and 3.6 seconds when angry (was 1.2). Anger and source scaling stay in place. The first bubble after the bump and 2-second breath timing stay the same. Build passes. Focused town cadence matched the configured gap (4.74 seconds observed, 4.8 expected). Focused `impwaves` checks pass on desktop and phone view, with zero console problems and 41 draw calls (42 in one phone screenshot). The broad `waves` scenario failed its push check: its readiness hook checks for any wave, but push needs one within 6 m. The failure does not show that the gameplay push failed.
 
@@ -61,6 +63,7 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
 
 (Add Alexander's playtest feedback here, newest first.)
 
+- 2026-10-15: Replaced the rejected arch menu and key grid with the supplied reference style. Menu, Return, close, action pills, desktop and phone browser checks pass. Screenshots: `screenshots/ui-reference/after/final-proof/`. A real phone check remains open.
 - 2026-10-14: Interface refresh completed. Menu, matching controls and desktop/mobile layouts are recorded in L22. Browser checks passed in the isolated review copy. Real-phone feedback remains open.
 - 2026-10-11: "Nothing happened" — story waited for a first breath, hint was missed; breathing was not shown. Town looked like a greybox. → Fixed in the look pass (L18).
 

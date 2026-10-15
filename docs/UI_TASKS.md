@@ -1,4 +1,21 @@
-# Interface refresh — 2026-10-14
+# Interface refresh — 2026-10-15
+
+## Reference revision
+
+Reference: `D:\MyDrive\ALEXANDER\PROJEKTE\ChatGPTManifestationGame` and Alexander's new screenshots.
+
+- [x] Read the real reference start screen, action pills and modal.
+- [x] Replace the boxed menu and key grid with the reference screen style. (Luna)
+- [x] Add an always-available menu with close and return controls. (Luna)
+- [x] Finish closed-dialog, landscape, and full-story checks. (Luna checker)
+- [x] Review screenshots, add final metrics, and commit.
+
+Scope: Screens and menu only. Keep the Lantern story, worlds, saves and two-second breath rhythm. The reference repository stays read-only.
+Results: Build and full desktop/mobile Lantern stories pass. Peak: 55 draw calls. Console errors: 0. Menu open/close/Return/Escape, keyboard focus, native button activation, Begin/Continue, keyboard/touch actions, closed-menu hiding, and layout checks pass. Checked portrait, landscape and desktop views include 320×568, 390×844, 568×320, 800×600 and 1280×720. Final proof: `screenshots/ui-reference/after/final-proof/`.
+
+Review: `http://127.0.0.1:5185/`. Real phone testing remains open.
+
+## Earlier revision
 
 Scope: Live start menu and game interface only. Keep all game actions, saves, text, and story rules.
 

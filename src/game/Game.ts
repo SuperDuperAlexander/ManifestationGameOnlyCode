@@ -1,6 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PALETTE } from '../config/palette';
+import { InputManager } from '../core/InputManager';
 import { isTouchDevice, Performance } from '../core/Performance';
 import { InnerValley } from '../inner/InnerValley';
 import { VALLEY_UNIFORMS } from '../inner/valleyShader';
@@ -10,6 +11,7 @@ import { LookWithin } from '../transition/LookWithin';
 import { DebugOverlay } from '../ui/DebugOverlay';
 import { LookWithinButton } from '../ui/LookWithinButton';
 import { HandButton } from '../ui/HandButton';
+import { BreathButton } from '../ui/BreathButton';
 import { TapPicker, type TapTarget } from '../ui/TapPicker';
 import { TUNING } from '../config/tuning';
 import { DialogueSystem } from '../companion/DialogueSystem';
@@ -24,6 +26,7 @@ import { BreathGuide } from '../ui/BreathGuide';
 import { ControlsHint } from '../ui/ControlsHint';
 import { StartScreen } from '../ui/StartScreen';
 import { HitTint } from '../ui/HitTint';
+import { MenuPanel } from '../ui/MenuPanel';
 import { Lantern } from './Lantern';
 import { Story } from './Story';
 import { StoryState } from './StoryState';
@@ -56,6 +59,7 @@ export class Game {
   private readonly guide: BreathGuide;
   private controls: ControlsHint | null = null;
   private controlsState = '';
+  private menu: MenuPanel | null = null;
   private lookWithinButton: LookWithinButton | null = null;
   private readonly touch: boolean;
 
@@ -92,8 +96,13 @@ export class Game {
     const innerLantern = new Lantern(this.inner.scene, this.inner.visual);
     this.lanterns = [outerLantern, innerLantern];
     void this.dialogue.load(`${import.meta.env.BASE_URL}data/dialogue/en.json`).then(() => {
-      this.controls = new ControlsHint(ui, (key) => this.dialogue.line(key));
+      this.controls = new ControlsHint(ui, (key) => this.dialogue.line(key), {
+        push: () => this.press(),
+        lookWithin: () => this.toggle(),
+      });
       this.updateLookWithinLabels();
+      BreathButton.setTexts(this.dialogue.line('controlsBreathe'), this.dialogue.line('controlsHoldRelease'));
+      HandButton.setTexts(this.dialogue.line('controlsPush'), this.dialogue.line('controlsInteract'));
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
       const raw = this.dialogue.data('thoughts');
@@ -110,18 +119,34 @@ export class Game {
         breatheOut: dl.line('guideOut'),
       };
       const hasSave = StoryState.savedBeat() > 0;
-      start.setTexts(dl.line('startTitle'), dl.line('startSubtitle'), dl.line('startPrompt'), dl.line('startBegin'), hasSave ? dl.line('startContinue') : null);
+      start.setTexts(dl.line('startTitle'), dl.line('startSubtitle'), dl.line('startPrompt'), dl.line('startBegin'), hasSave ? dl.line('startContinue') : null, dl.line('taskLantern'));
+      this.menu = new MenuPanel(ui, (key) => dl.line(key), (open) => {
+        if (open) {
+          if (!this.storyReady || this.transition.active) return false;
+          this.pushQueued = false;
+          InputManager.resetAll();
+          window.dispatchEvent(new Event('blur'));
+          return true;
+        }
+        InputManager.resetAll();
+        window.dispatchEvent(new Event('blur'));
+        return true;
+      });
       void started.then((choice) => {
         // "Begin" clears the checkpoint BEFORE the story reads it. "Continue" keeps it.
         if (choice === 'begin') StoryState.clear();
+        InputManager.resetAll();
+        window.dispatchEvent(new Event('blur'));
         this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
         this.storyReady = true;
+        this.current.setActive(true);
+        this.menu?.setAvailable(true);
         this.story.begin();
       });
     });
     if (new URLSearchParams(location.search).has('reveal')) this.inner.reveal();
     this.applyShared(this.outer);
-    this.outer.setActive(true);
+    this.outer.setActive(false);
 
     this.transition = new LookWithin(
       ui,
@@ -152,6 +177,7 @@ export class Game {
     this.showOverlay('outer');
 
     window.addEventListener('keydown', (e) => {
+      if (this.menu?.isOpen) return;
       if (e.repeat) return;
       if (e.code === 'KeyQ') this.toggle();
       if (e.code === 'KeyE') this.press();
@@ -168,13 +194,13 @@ export class Game {
   }
 
   toggle(): void {
-    if (this.transition.active || !this.storyReady || !this.story.canLookWithin()) return;
+    if (this.menu?.isOpen || this.transition.active || !this.storyReady || !this.story.canLookWithin()) return;
     this.transition.start(this.current, this.current === this.outer ? this.inner : this.outer);
   }
 
   /** E / hand button / tap: interact with a glowing object, else push a wave. */
   private press(): void {
-    if (this.transition.active) return;
+    if (this.menu?.isOpen || this.transition.active) return;
     if (!this.storyReady || !this.story.interact()) this.pushQueued = true;
   }
 
@@ -230,41 +256,45 @@ export class Game {
   private frame(): void {
     const dt = Math.min(0.05, this.engine.getDeltaTime() / 1000);
     this.perf.update(dt);
-    let shown: World | null = this.transition.update(dt);
-    if (!shown) {
+    const paused = this.menu?.isOpen ?? false;
+    let shown: World | null = paused ? this.current : this.transition.update(dt);
+    if (!paused && !shown) {
       shown = this.current;
       shown.update(dt);
     }
+    shown ??= this.current;
     const field = this.fields.get(shown.id);
-    if (field && shown === this.current && !this.transition.active) {
-      if (this.pushQueued) field.push();
-      field.update(dt);
-    }
-    this.pushQueued = false;
-    // The town and the imp show the anger ramped in after the bump (thought first, then the town heats up).
-    const shownAnger = this.anger.value * (this.storyReady ? this.story.townGate : 1);
-    this.heat.apply(shownAnger);
-    this.outer.setAnger(shownAnger);
-    this.inner.setAnger(shownAnger);
-    this.hitTint.update(dt);
-    if (this.hand) {
-      const near = shown === this.current && !this.transition.active;
-      this.hand.setMode(near && this.glowTargets().length > 0 ? 'interact' : near && (field?.count ?? 0) > 0 ? 'push' : 'dim');
-    }
-    if (this.storyReady) {
-      this.story.update(dt, shown.id, this.transition.active);
-      this.guide.wanted = this.story.needsBreathHelp();
-    }
-    this.guide.update(dt, shown.breathSystem());
-    const push = (this.storyReady && this.story.state.flags.bumped) || this.debugBubbles;
-    const look = this.storyReady && this.story.canLookWithin();
-    const state = `${push}|${look}|${this.current.id}`;
-    if (this.controls && state !== this.controlsState) {
-      if (!this.controlsState) this.controls.show();
-      this.controlsState = state;
-      this.controls.setPushVisible(push);
-      this.controls.setLookWithinVisible(look);
-      this.updateLookWithinLabels();
+    if (!paused) {
+      if (field && shown === this.current && !this.transition.active) {
+        if (this.pushQueued) field.push();
+        field.update(dt);
+      }
+      this.pushQueued = false;
+      // The town and the imp show the anger ramped in after the bump (thought first, then the town heats up).
+      const shownAnger = this.anger.value * (this.storyReady ? this.story.townGate : 1);
+      this.heat.apply(shownAnger);
+      this.outer.setAnger(shownAnger);
+      this.inner.setAnger(shownAnger);
+      this.hitTint.update(dt);
+      if (this.hand) {
+        const near = shown === this.current && !this.transition.active;
+        this.hand.setMode(near && this.glowTargets().length > 0 ? 'interact' : near && (field?.count ?? 0) > 0 ? 'push' : 'dim');
+      }
+      if (this.storyReady) {
+        this.story.update(dt, shown.id, this.transition.active);
+        this.guide.wanted = this.story.needsBreathHelp();
+      }
+      this.guide.update(dt, shown.breathSystem());
+      const push = (this.storyReady && this.story.state.flags.bumped) || this.debugBubbles;
+      const look = this.storyReady && this.story.canLookWithin();
+      const state = `${push}|${look}|${this.current.id}`;
+      if (this.controls && state !== this.controlsState) {
+        if (!this.controlsState) this.controls.show();
+        this.controlsState = state;
+        this.controls.setPushVisible(push);
+        this.controls.setLookWithinVisible(look);
+        this.updateLookWithinLabels();
+      }
     }
     shown.scene.render();
     const o = this.overlays.get(shown.id);

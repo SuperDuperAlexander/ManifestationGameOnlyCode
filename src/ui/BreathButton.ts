@@ -1,45 +1,69 @@
 import type { InputManager } from '../core/InputManager';
 import { createControlIcon } from './ControlIcons';
 
-/**
- * The one large round breath button for touch screens (right side).
- * Hold = breathe in. Let go = breathe out (the breath flows out by itself).
- * The rhythm guide sits right on top of it.
- */
+/** Touch hold button. Holding breathes in; release breathes out. */
 export class BreathButton {
+  private static readonly instances = new Set<BreathButton>();
+  private static labelText = '';
+  private static hintText = '';
   readonly el: HTMLDivElement;
   private pointer: number | null = null;
+  private readonly label: HTMLSpanElement;
+  private readonly hint: HTMLSpanElement;
 
-  constructor(
-    parent: HTMLElement,
-    private readonly input: InputManager,
-  ) {
+  constructor(parent: HTMLElement, private readonly input: InputManager) {
     this.el = document.createElement('div');
     this.el.className = 'breath-button';
     this.el.setAttribute('role', 'button');
-    this.el.setAttribute('aria-label', 'Breathe: hold to breathe in, let go to breathe out');
-    this.el.innerHTML = '<div class="bb-core" aria-hidden="true"></div>';
+    this.el.setAttribute('tabindex', '0');
+    this.label = document.createElement('span');
+    this.label.className = 'control-label';
+    this.hint = document.createElement('span');
+    this.hint.className = 'control-hint';
     this.el.appendChild(createControlIcon('breathe'));
+    this.el.append(this.label, this.hint);
     parent.appendChild(this.el);
+    BreathButton.instances.add(this);
+    this.applyTexts();
 
-    this.el.addEventListener('pointerdown', (e) => {
+    this.el.addEventListener('pointerdown', (event) => {
       if (this.pointer !== null) return;
-      e.preventDefault();
-      e.stopPropagation();
-      this.pointer = e.pointerId;
-      this.el.setPointerCapture(e.pointerId);
+      event.preventDefault();
+      event.stopPropagation();
+      this.pointer = event.pointerId;
+      this.el.setPointerCapture(event.pointerId);
       this.el.classList.add('held');
       this.input.touchBreathHeld = true;
       this.input.touchBreathUsed = true;
       this.input.markInteracted();
     });
-    const end = (e: PointerEvent): void => {
-      if (e.pointerId !== this.pointer) return;
+    const end = (event: PointerEvent): void => {
+      if (event.pointerId !== this.pointer) return;
       this.pointer = null;
       this.el.classList.remove('held');
       this.input.touchBreathHeld = false;
     };
     this.el.addEventListener('pointerup', end);
     this.el.addEventListener('pointercancel', end);
+    this.el.addEventListener('lostpointercapture', end);
+    window.addEventListener('blur', () => this.resetHeld());
+  }
+
+  static setTexts(text: string, hint: string): void {
+    BreathButton.labelText = text;
+    BreathButton.hintText = hint;
+    for (const instance of BreathButton.instances) instance.applyTexts();
+  }
+
+  private applyTexts(): void {
+    this.label.textContent = BreathButton.labelText;
+    this.hint.textContent = BreathButton.hintText;
+    this.el.setAttribute('aria-label', [BreathButton.labelText, BreathButton.hintText].filter(Boolean).join('. '));
+  }
+
+  private resetHeld(): void {
+    this.pointer = null;
+    this.el.classList.remove('held');
+    this.input.touchBreathHeld = false;
   }
 }

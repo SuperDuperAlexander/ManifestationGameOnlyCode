@@ -81,6 +81,18 @@ export const SHADES = {
   citizenSkinDeep: '#80533F',
   /** Citizen belt: dark leather brown. */
   citizenBelt: '#79543C',
+  /** Deep green used by the quiet menu controls. */
+  uiDeep: '#344a3b',
+  /** Warm paper used by the menu card. */
+  uiPaper: '#fbf7e9',
+  /** Muted text used by menu help. */
+  uiMuted: '#687261',
+  /** Soft green mist behind the menu light. */
+  uiMist: '#bdc6a4',
+  /** Sage green used by the menu light. */
+  uiSage: '#718879',
+  /** Pale veil used by the start screen. */
+  uiVeil: '#f5f0e5',
 } as const;
 
 export function color3(hex: string): Color3 {
