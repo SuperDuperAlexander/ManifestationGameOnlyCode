@@ -107,6 +107,8 @@ export class WaveField implements WaveHooks {
     return this.waves.filter((w) => w.approaching && Math.hypot(w.x - p.x, w.z - p.z) - w.width * TUNING.waves.reachFactor < TUNING.waves.pushRange);
   }
 
+  get pushCueText(): string { return this.text; }
+
   /** Stable identities for the same range-checked candidates accepted by push(). */
   get pushCueToken(): string {
     return this.pushCandidates().map((w) => w.pushCueId).join(',');

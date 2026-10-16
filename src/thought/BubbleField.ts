@@ -75,6 +75,11 @@ export class BubbleField implements ThoughtField, BubbleHooks {
     return this.pushCandidates().map((b) => b.pushCueId).join(',');
   }
 
+  /** Text of the thought the choice card refers to. */
+  get pushCueText(): string {
+    return this.pushCandidates()[0]?.thoughtText ?? '';
+  }
+
   push(): boolean {
     const b = this.pushCandidates()[0];
     if (!b) return false;

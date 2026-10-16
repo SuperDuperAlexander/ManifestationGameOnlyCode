@@ -53,6 +53,10 @@ export class Story {
   private readonly innerBeacon: Beacon;
   private readonly nextStep: NextStepHint;
   private hintT = 0;
+  /** Idle reminder: current step signature and seconds spent in it. */
+  private stepSig = '';
+  private stepIdleT = 0;
+  private reminderKey = '';
   /** Seconds since the bump hit (Infinity = no ramp running). */
   private sinceBump = Infinity;
   private movedSinceBegin = false;
@@ -235,7 +239,9 @@ export class Story {
     // Gentle repeat of the current hint until the step is done.
     const needBreath = this.needsBreathHelp();
     const needLook = this.lookWithinOpen && !this.innerVisited && !f.bumped && this.state.beat <= 1;
-    const needAngry = f.bumped && !this.angryInnerVisited;
+    const nearAlley = dist2(outerPosition.x, outerPosition.z, TOWN.alleyStory.basket.x, TOWN.alleyStory.basket.z) < TUNING.story.guidanceNearRadius;
+    // Not while the player is already busy with the alley (that is the current step).
+    const needAngry = f.bumped && !this.angryInnerVisited && !f.helped && !nearAlley;
     if (shown === 'outer' && !busy && needAngry) {
       this.angryT += dt;
       if (this.angryT >= TUNING.story.hintRepeatS * 0.5 && !d.dialogue.busy) {
@@ -339,7 +345,38 @@ export class Story {
     this.beacon.update(dt);
     this.innerBeacon.update(dt);
     const touchKey = d.touch && d.dialogue.data(`${key}Touch`) ? `${key}Touch` : key;
-    this.nextStep.update(key, d.dialogue.line(touchKey), label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera);
+    let uiKey = key;
+    let line = d.dialogue.line(touchKey);
+    let sig = key;
+    if (key === 'stepApples') {
+      const total = TOWN.alleyStory.apples.length;
+      const left = d.outer.alley.applesLeft();
+      line += ` ${d.dialogue.line('applesProgress').replace('{count}', String(total - left)).replace('{total}', String(total))}`;
+      uiKey = `${key}${left}`;
+      sig = uiKey;
+    } else if (key === 'stepImp') sig = `${key}${this.impBreaths}`;
+    this.updateReminder(dt, sig, key, busy);
+    this.nextStep.update(uiKey, line, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera);
+  }
+
+  /** Calm reminder when the player stays in one step for a while. Stale reminders are dropped on step change. */
+  private updateReminder(dt: number, sig: string, key: string, busy: boolean): void {
+    const dlg = this.d.dialogue;
+    if (sig !== this.stepSig) {
+      this.stepSig = sig;
+      this.stepIdleT = 0;
+      if (this.reminderKey) dlg.cancel(this.reminderKey);
+      this.reminderKey = '';
+      return;
+    }
+    if (busy || dlg.busy || this.state.flags.delivered) return;
+    this.stepIdleT += dt;
+    if (this.stepIdleT < TUNING.story.idleReminderS) return;
+    this.stepIdleT = 0;
+    const rk = `remind${key.charAt(0).toUpperCase()}${key.slice(1)}`;
+    if (dlg.data(rk) === undefined) return;
+    this.reminderKey = rk;
+    this.say(rk);
   }
 
   /** E / tap. Returns true if an object took the press (then it is not a push). */

@@ -11,6 +11,8 @@ export class ControlsHint {
   private readonly moveNote: HTMLDivElement;
   private readonly inhaleButton: HTMLButtonElement;
   private readonly exhaleButton: HTMLButtonElement;
+  private readonly plaque: HTMLDivElement;
+  private readonly thoughtEl: HTMLDivElement;
   private readonly touch: boolean;
   private readonly heldKeys = new Set<string>();
   private pushContext: 'push' | 'collectApple' | 'interact' = 'push';
@@ -103,6 +105,24 @@ export class ControlsHint {
     group.append(pushChoice, breathChoice, this.lookAction);
     this.el.append(this.moveNote, group);
     parent.appendChild(this.el);
+
+    // Plaque (card) behind the choice buttons. It is shown for desktop and touch alike.
+    this.plaque = document.createElement('div');
+    this.plaque.className = 'thought-plaque';
+    this.plaque.setAttribute('role', 'group');
+    const title = document.createElement('div');
+    title.className = 'thought-plaque-title';
+    title.setAttribute('role', 'status');
+    title.setAttribute('aria-live', 'polite');
+    title.textContent = texts('thoughtCardTitle');
+    const prompt = document.createElement('div');
+    prompt.className = 'thought-plaque-prompt';
+    prompt.textContent = texts('thoughtCardPrompt');
+    this.plaque.setAttribute('aria-label', texts('thoughtCardTitle'));
+    this.thoughtEl = document.createElement('div');
+    this.thoughtEl.className = 'thought-plaque-text';
+    this.plaque.append(title, this.thoughtEl, prompt);
+    parent.appendChild(this.plaque);
   }
 
   private makePill(className: string, icon: 'push' | 'look-within', labelText: string, keyText: string): HTMLButtonElement {
@@ -169,9 +189,23 @@ export class ControlsHint {
   setPushVisible(visible: boolean): void { this.pushAction.classList.toggle('off', !visible); }
   setThoughtChoiceActive(active: boolean): void {
     this.el.classList.toggle('thought-choice-active', active);
+    this.plaque.classList.toggle('open', active);
+    document.body.classList.toggle('thought-choice-open', active);
     if (!active) for (const button of [this.pushButton, this.inhaleButton, this.exhaleButton]) button.classList.remove('thought-choice-pop');
   }
+  /** Shows the actual thought on the card (presentation only). */
+  setThoughtText(text: string): void {
+    if (this.thoughtEl.textContent !== text) this.thoughtEl.textContent = text;
+    this.plaque.classList.toggle('has-text', text !== '');
+  }
+  /** Breath level 0..1 drives the fill of the breath buttons. */
+  setBreathLevel(level: number): void {
+    document.body.style.setProperty('--breath-level', level.toFixed(3));
+  }
   cueThoughtChoice(): void {
+    this.plaque.classList.remove('pop');
+    void this.plaque.offsetWidth;
+    this.plaque.classList.add('pop');
     for (const button of [this.pushButton, this.inhaleButton, this.exhaleButton]) {
       button.classList.remove('thought-choice-pop');
       void button.offsetWidth;

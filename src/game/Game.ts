@@ -333,6 +333,10 @@ export class Game {
         this.controls.setPushVisible(push);
         const choiceActive = pushToken !== '';
         this.controls.setThoughtChoiceActive(choiceActive);
+        if (choiceActive) {
+          this.controls.setThoughtText(field instanceof BubbleField || field instanceof WaveField ? field.pushCueText : '');
+          this.controls.setBreathLevel(shown.breathSystem().breathLevel);
+        }
         HandButton.setThoughtChoiceActive(choiceActive);
         BreathButton.setThoughtChoiceActive(choiceActive);
         if (!pushToken) {

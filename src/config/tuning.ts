@@ -581,6 +581,8 @@ export const TUNING = {
   story: {
     /** Hint is shown again after this many seconds of silence until the step is done. */
     hintRepeatS: 12,
+    /** Seconds in one story step before a gentle reminder line is spoken (repeats at the same interval). */
+    idleReminderS: 35,
     /** Gold guide light on Main Street: brightness waiting (before beat 2) and lit. */
     beaconDim: 0.22,
     beaconLit: 0.85,

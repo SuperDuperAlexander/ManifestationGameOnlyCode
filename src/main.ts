@@ -1,4 +1,5 @@
 import './ui/styles.css';
+import './ui/thought-card.css';
 import { Game } from './game/Game';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;

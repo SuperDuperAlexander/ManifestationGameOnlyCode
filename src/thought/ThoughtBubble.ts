@@ -191,8 +191,12 @@ export class ThoughtBubble {
     return this.state !== 'gone' && this.state !== 'pushed';
   }
 
+  /** Text of the current thought (presentation only, shown on the choice card). */
+  thoughtText = '';
+
   spawn(text: string, size: number, cx: number, cy: number, cz: number): void {
     this.pushCueId = ThoughtBubble.nextPushCueId++;
+    this.thoughtText = text;
     this.size = size;
     this.x = cx;
     this.y = cy;
