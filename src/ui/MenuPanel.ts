@@ -28,7 +28,6 @@ export class MenuPanel {
     this.dialog.innerHTML = `
       <div class="menu-visual">
         <div class="menu-light" aria-hidden="true"><i></i><i></i><i></i><span>✧</span></div>
-        <span class="menu-kicker"></span>
       </div>
       <div class="menu-copy">
         <h2 id="menu-title"></h2>
@@ -40,7 +39,6 @@ export class MenuPanel {
       <button type="button" class="menu-close"></button>`;
     parent.append(this.dialog);
 
-    this.dialog.querySelector('.menu-kicker')!.textContent = text('menuTitle').toUpperCase();
     this.dialog.querySelector('h2')!.textContent = text('menuTitle');
     this.dialog.querySelector('.menu-copy > p')!.textContent = text('taskLantern');
     const controls = this.dialog.querySelector('.menu-controls')!;

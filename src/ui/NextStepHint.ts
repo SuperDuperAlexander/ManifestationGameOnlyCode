@@ -22,10 +22,20 @@ export class NextStepHint {
     parent.append(this.el, this.marker);
   }
 
-  update(key: string, line: string, label: string, turn: string, target: Vector3 | null, scene: Scene, camera: Camera): void {
+  update(key: string, line: string, label: string, turn: string, target: Vector3 | null, scene: Scene, camera: Camera, badge = ''): void {
     if (this.el.dataset.step !== key) {
       this.el.dataset.step = key;
-      this.el.textContent = line;
+      this.el.textContent = '';
+      const main = document.createElement('span');
+      main.className = 'next-step-line';
+      main.textContent = line;
+      this.el.append(main);
+      if (badge) {
+        const pill = document.createElement('span');
+        pill.className = 'next-step-badge';
+        pill.textContent = badge;
+        this.el.append(pill);
+      }
     }
     this.el.hidden = !line;
     this.marker.hidden = !target;

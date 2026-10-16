@@ -145,6 +145,7 @@ export class Story {
         this.innerVisited = true;
         if (!this.state.flags.bumped) this.say('innerFirst', true);
       }
+      if (this.state.flags.helped && !this.state.flags.impCalm && !this.d.dialogue.hasSaid('impReturn')) this.say('impReturn', true);
       if (this.state.flags.bumped) {
         this.angryInnerVisited = true;
         // The imp is revealed the moment the player looks within after the bump.
@@ -155,6 +156,7 @@ export class Story {
         }
       }
     } else {
+      if (this.state.flags.lanternRelit && !this.state.flags.delivered && !this.d.dialogue.hasSaid('treeReturn')) this.say('treeReturn', true);
       if (this.innerVisited && this.state.beat < 2) this.state.reach(2);
       if (this.state.flags.bumped && this.angryInnerVisited && !this.d.dialogue.hasSaid('outerAngry')) this.say('outerAngry', true);
     }
@@ -334,6 +336,10 @@ export class Story {
       label = 'targetSquare';
     } else key = 'stepFirstInside';
 
+    // Presentation only: a gentle glow on the Look Within control while the objective is "press Q".
+    const lookSteps = ['stepFirstInside', 'stepReturn', 'stepInside', 'stepReturnTree', 'stepReturnAlley'];
+    document.body.classList.toggle('look-pulse', !busy && lookSteps.includes(key));
+
     this.beacon.hide();
     this.innerBeacon.hide();
     if (target && !busy) {
@@ -348,15 +354,16 @@ export class Story {
     let uiKey = key;
     let line = d.dialogue.line(touchKey);
     let sig = key;
+    let badge = '';
     if (key === 'stepApples') {
       const total = TOWN.alleyStory.apples.length;
       const left = d.outer.alley.applesLeft();
-      line += ` ${d.dialogue.line('applesProgress').replace('{count}', String(total - left)).replace('{total}', String(total))}`;
+      badge = d.dialogue.line('applesProgress').replace('{count}', String(total - left)).replace('{total}', String(total));
       uiKey = `${key}${left}`;
       sig = uiKey;
     } else if (key === 'stepImp') sig = `${key}${this.impBreaths}`;
     this.updateReminder(dt, sig, key, busy);
-    this.nextStep.update(uiKey, line, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera);
+    this.nextStep.update(uiKey, line, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera, badge);
   }
 
   /** Calm reminder when the player stays in one step for a while. Stale reminders are dropped on step change. */
@@ -487,6 +494,7 @@ export class Story {
     d.outer.alley.standUpAndWave();
     this.bubble.show(d.dialogue.line('strangerSorry'), () => d.outer.alley.strangerSpeechAnchor(), TUNING.story.bubbleS);
     this.say('insight');
+    this.say('helpedNext');
     d.anger.floor = 0;
     d.anger.set(d.anger.value + TUNING.anger.afterHelp);
   }
@@ -617,6 +625,7 @@ export class Story {
     this.state.reach(8);
     this.sound.lanternRelight();
     this.say('lanternRelit');
+    this.say(this.shownId === 'inner' ? 'lanternGoOut' : 'lanternTree');
   }
 
   private showEnd(): void {
