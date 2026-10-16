@@ -27,12 +27,17 @@ export class Lantern {
   private readonly cage: Mesh;
   private readonly core: Mesh;
   private readonly halo: Mesh;
+  private readonly hanging: Mesh;
+  private readonly deliveredGlow: Mesh;
   private readonly coreMat: StandardMaterial;
   private readonly haloMat: StandardMaterial;
+  private readonly deliveredGlowMat: StandardMaterial;
   private readonly cWhite = color3(SHADES.lanternWhite);
   private readonly cEmber = color3(SHADES.lanternEmber);
   private readonly cWarm = color3(SHADES.lanternWarm);
   private readonly tmp = new Color3();
+  private isHanging = false;
+  private revealT = -1;
 
   constructor(scene: Scene, player: PlayerVisual) {
     const cfg = TUNING.lantern;
@@ -98,6 +103,46 @@ export class Lantern {
     this.halo.material = this.haloMat;
     this.halo.parent = this.root;
 
+    // A short cord and ring remain hidden while carried, then read as the lamp's tree hanger.
+    const cord = MeshBuilder.CreateCylinder('lantern.hangingCord', {
+      height: cfg.hangingCordLength,
+      diameter: 0.018,
+      tessellation: 6,
+    }, scene);
+    cord.position.y = h / 2 + 0.05 + cfg.hangingCordLength / 2;
+    const loop = MeshBuilder.CreateTorus('lantern.hangingLoop', { diameter: 0.11, thickness: 0.015, tessellation: 8 }, scene);
+    loop.rotation.x = Math.PI / 2;
+    loop.position.y = h / 2 + 0.05 + cfg.hangingCordLength;
+    const hangerMat = new StandardMaterial('lantern.hangerMat', scene);
+    hangerMat.disableLighting = true;
+    hangerMat.emissiveColor = color3(SHADES.timber);
+    hangerMat.diffuseColor = hangerMat.emissiveColor;
+    hangerMat.specularColor = new Color3(0, 0, 0);
+    this.hanging = Mesh.MergeMeshes([cord, loop], true, true) as Mesh;
+    this.hanging.name = 'lantern.hanging';
+    this.hanging.material = hangerMat;
+    this.hanging.parent = this.root;
+    this.hanging.setEnabled(false);
+
+    // A second soft, code-generated halo falls over the tree around the delivered lamp.
+    this.deliveredGlowMat = new StandardMaterial('lantern.deliveredGlowMat', scene);
+    this.deliveredGlowMat.disableLighting = true;
+    this.deliveredGlowMat.opacityTexture = tex;
+    this.deliveredGlowMat.emissiveColor = this.cWarm.clone();
+    this.deliveredGlowMat.diffuseColor = this.cWarm.clone();
+    this.deliveredGlowMat.specularColor = new Color3(0, 0, 0);
+    this.deliveredGlowMat.alphaMode = Constants.ALPHA_ADD;
+    this.deliveredGlowMat.backFaceCulling = false;
+    this.deliveredGlowMat.depthFunction = Constants.ALWAYS;
+    this.deliveredGlow = MeshBuilder.CreatePlane('lantern.deliveredGlow', { size: cfg.deliveredGlowSize / cfg.deliveredScale }, scene);
+    this.deliveredGlow.billboardMode = TransformNode.BILLBOARDMODE_ALL;
+    this.deliveredGlow.position.z = 0.08;
+    this.deliveredGlow.material = this.deliveredGlowMat;
+    this.deliveredGlow.parent = this.root;
+    this.deliveredGlow.isPickable = false;
+    this.deliveredGlow.alwaysSelectAsActiveMesh = true;
+    this.deliveredGlow.setEnabled(false);
+
     for (const m of [this.cage, this.core, this.halo]) {
       m.isPickable = false;
       m.alwaysSelectAsActiveMesh = true;
@@ -116,10 +161,17 @@ export class Lantern {
     this.target = 1;
   }
 
-  /** Take the lantern off the player and put it at a world position (e.g. a tree niche). */
-  detach(worldPos: Vector3): void {
+  /** Hang the recovered lantern on the Old Tree's branch, with a brief scale-up reveal. */
+  hangAt(worldPos: Vector3, instant = false): void {
     this.root.parent = null;
     this.root.position.copyFrom(worldPos);
+    this.root.rotation.setAll(0);
+    this.isHanging = true;
+    this.hanging.setEnabled(true);
+    this.deliveredGlow.setEnabled(true);
+    const cfg = TUNING.lantern;
+    this.root.scaling.setAll(instant ? cfg.deliveredScale : TUNING.player.visualScale);
+    this.revealT = instant ? -1 : 0;
   }
 
   setVisible(b: boolean): void {
@@ -128,6 +180,13 @@ export class Lantern {
 
   update(dt: number): void {
     this.time += dt;
+    if (this.revealT >= 0) {
+      this.revealT = Math.min(1, this.revealT + dt / TUNING.lantern.deliveryRevealS);
+      const eased = this.revealT * this.revealT * (3 - 2 * this.revealT);
+      const scale = TUNING.player.visualScale + (TUNING.lantern.deliveredScale - TUNING.player.visualScale) * eased;
+      this.root.scaling.setAll(scale);
+      if (this.revealT >= 1) this.revealT = -1;
+    }
     const step = TUNING.lantern.fadeSpeed * dt;
     this.light += Math.max(-step, Math.min(step, this.target - this.light));
     const w = dt * 0.8;
@@ -151,5 +210,8 @@ export class Lantern {
     this.haloMat.diffuseColor.copyFrom(this.tmp);
     this.haloMat.alpha = Math.min(1, 0.9 * k);
     this.halo.scaling.setAll((0.5 + 0.5 * t) * (1 + (cfg.warmHaloScale - 1) * this.warmMix));
+    this.deliveredGlowMat.emissiveColor.copyFrom(this.tmp);
+    this.deliveredGlowMat.diffuseColor.copyFrom(this.tmp);
+    this.deliveredGlowMat.alpha = this.isHanging ? 0.42 + 0.06 * Math.sin(this.time * 1.7) : 0;
   }
 }

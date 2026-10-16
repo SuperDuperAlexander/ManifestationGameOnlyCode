@@ -117,5 +117,7 @@
   "impCalm": "The fire is still there. Now it warms.",
   "lanternRelit": "My light is back. Warmer than before.",
   "endTitle": "The Lantern",
-  "endLine": "I carried my fire home."
+  "endLine": "I carried my fire home.",
+  "endStatus": "Chapter complete",
+  "endContinue": "Stay a while"
 }

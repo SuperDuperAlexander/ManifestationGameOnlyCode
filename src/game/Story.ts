@@ -467,8 +467,7 @@ export class Story {
     const d = this.d;
     this.state.set('delivered');
     this.state.reach(9);
-    d.outerLantern.detach(d.outer.treeNiche());
-    d.outerLantern.root.scaling.setAll(TUNING.player.visualScale);
+    d.outerLantern.hangAt(d.outer.treeLanternAnchor(), instant);
     d.innerLantern.setVisible(false);
     if (instant) {
       d.outer.setOldTreeBranchHealth(1);

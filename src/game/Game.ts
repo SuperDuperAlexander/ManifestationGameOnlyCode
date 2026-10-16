@@ -64,6 +64,7 @@ export class Game {
   private lookWithinButton: LookWithinButton | null = null;
   private impProgress: ImpBreathProgress | null = null;
   private readonly touch: boolean;
+  private completionWasOpen = false;
 
   /** Debug only: bubbles appear without the bump. */
   private debugBubbles = false;
@@ -141,6 +142,14 @@ export class Game {
         InputManager.resetAll();
         window.dispatchEvent(new Event('blur'));
         this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
+        this.story.endCard.setLabels(dl.line('endStatus'), dl.line('endContinue'));
+        this.story.endCard.onDismiss = () => {
+          InputManager.resetAll();
+          window.dispatchEvent(new Event('blur'));
+        };
+        if (this.story.state.flags.delivered) {
+          this.story.endCard.show(dl.line('endTitle'), dl.line('endLine'));
+        }
         this.storyReady = true;
         this.current.setActive(true);
         this.menu?.setAvailable(true);
@@ -181,6 +190,7 @@ export class Game {
 
     window.addEventListener('keydown', (e) => {
       if (this.menu?.isOpen) return;
+      if (this.storyReady && this.story.endCard.open) return;
       if (e.repeat) return;
       if (e.code === 'KeyQ') this.toggle();
       if (e.code === 'KeyE') this.press();
@@ -197,13 +207,13 @@ export class Game {
   }
 
   toggle(): void {
-    if (this.menu?.isOpen || this.transition.active || !this.storyReady || !this.story.canLookWithin()) return;
+    if (this.menu?.isOpen || (this.storyReady && this.story.endCard.open) || this.transition.active || !this.storyReady || !this.story.canLookWithin()) return;
     this.transition.start(this.current, this.current === this.outer ? this.inner : this.outer);
   }
 
   /** E / hand button / tap: interact with a glowing object, else push a wave. */
   private press(): void {
-    if (this.menu?.isOpen || this.transition.active) return;
+    if (this.menu?.isOpen || (this.storyReady && this.story.endCard.open) || this.transition.active) return;
     if (!this.storyReady || !this.story.interact()) this.pushQueued = true;
   }
 
@@ -259,7 +269,13 @@ export class Game {
   private frame(): void {
     const dt = Math.min(0.05, this.engine.getDeltaTime() / 1000);
     this.perf.update(dt);
-    const paused = this.menu?.isOpen ?? false;
+    const completionOpen = this.storyReady && this.story.endCard.open;
+    if (completionOpen && !this.completionWasOpen) {
+      InputManager.resetAll();
+      window.dispatchEvent(new Event('blur'));
+    }
+    this.completionWasOpen = completionOpen;
+    const paused = (this.menu?.isOpen ?? false) || completionOpen;
     let shown: World | null = paused ? this.current : this.transition.update(dt);
     if (!paused && !shown) {
       shown = this.current;

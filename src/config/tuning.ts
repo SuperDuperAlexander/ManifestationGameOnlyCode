@@ -566,6 +566,14 @@ export const TUNING = {
     /** Light units per second when fading. */
     fadeSpeed: 1.2,
     haloSize: 0.7, warmHaloScale: 1.35,
+    /** Delivered lamp scale: large enough to read clearly on the Old Tree. */
+    deliveredScale: 3.8,
+    /** Chain length from the dry branch to the lamp cage, in lamp-local metres. */
+    hangingCordLength: 0.16,
+    /** Soft billboard glow around the delivered lamp, in world metres. */
+    deliveredGlowSize: 2.6,
+    /** Gentle scale-up reveal when the player hangs the lantern. */
+    deliveryRevealS: 0.8,
     /** Flicker strength at low light (0..1). */
     flicker: 0.5,
   },

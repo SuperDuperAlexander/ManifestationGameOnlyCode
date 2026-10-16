@@ -144,6 +144,23 @@ export class Town implements World {
     return new Vector3(t.x, TOWN.niche.y, t.z - TOWN.niche.trunkFaceDz);
   }
 
+  /** High branch point where the recovered lantern hangs after delivery. */
+  treeLanternAnchor(): Vector3 {
+    const t = TOWN.oldTree;
+    const b = OLD_TREE.branches[OLD_TREE.dryBranch]!;
+    const f = b.start;
+    const q = TOWN.oldTree.lanternBranchFraction;
+    const along = Math.sin(b.tilt) * b.length * q;
+    const scale = TUNING.outer.treeHeight;
+    const ground = townHeight(t.x, t.z);
+    const hangingOffset = (TUNING.lantern.cageHeight * 0.5 + 0.05 + TUNING.lantern.hangingCordLength) * TUNING.lantern.deliveredScale;
+    return new Vector3(
+      t.x + (OLD_TREE.lean[0] * f * f + Math.cos(b.angle) * along) * scale,
+      ground + (OLD_TREE.trunkHeight * f + Math.cos(b.tilt) * b.length * q) * scale - hangingOffset,
+      t.z + (OLD_TREE.lean[1] * f * f + Math.sin(b.angle) * along) * scale,
+    );
+  }
+
   /** Health of the Old Tree's dry branch (0 dry, 1 healed). */
   setOldTreeBranchHealth(v: number): void {
     this.oldTree?.setBranchHealth(OLD_TREE.dryBranch, v);

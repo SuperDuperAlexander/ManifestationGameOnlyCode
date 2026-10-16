@@ -238,9 +238,9 @@ Reuse the existing valley (`src/valley/`): terrain with sandstone cliffs, pond, 
 
 ### 7.7 Delivery and end
 - Back outside, the town is calmer but **not** changed into something else: torches still burn (warmer, softer), some citizens are still grumpy, the alley still has shade. The stranger and the child wave.
-- The player walks to the Old Tree and places the lantern in a niche in its trunk (E / tap).
+- The player walks to the Old Tree and gives the lantern at its trunk (E / tap). The delivered lantern hangs large and clearly visible from a code-made support at the tree, casting a localized warm glow. The town keeps its shade and quiet corners. (Alexander, 2026-10-16.)
 - The Old Tree's dry branch heals and glows warm. Inside, the Inner Tree does the same at the same branch.
-- End card (calm, short). The player can keep walking afterwards and Look Within to visit the calm imp.
+- A distinct completion screen celebrates the finished chapter with a warm golden light reveal, inspired by the earlier gate ending. It clearly states that the chapter is complete and waits for the player to continue. Dismissing it returns to the completed world: the hanging lantern stays, the player can keep walking and Look Within to visit the calm imp. (Alexander, 2026-10-16.)
 
 ## 8. The mirror rules (inner ↔ outer)
 

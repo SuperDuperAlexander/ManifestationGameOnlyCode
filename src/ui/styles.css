@@ -539,6 +539,128 @@ body.touch .bg-label { inset: auto -64px -28px !important; width: 184px; }
   }
 }
 
+/* Completion screen: a warm, code-drawn arch holds the lantern as the world settles. */
+.end-card {
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(18px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+  color: var(--umber);
+  background: radial-gradient(ellipse at 50% 46%, color-mix(in srgb, var(--gold) 60%, var(--ui-paper)), color-mix(in srgb, var(--ui-veil) 94%, transparent) 57%, color-mix(in srgb, var(--ui-veil) 97%, transparent));
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.9s ease, visibility 0s linear 0.9s;
+}
+.end-card.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.9s ease, visibility 0s;
+}
+.ec-panel {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.84fr) minmax(280px, 1.16fr);
+  align-items: center;
+  width: min(880px, 100%);
+  min-height: 430px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--gold) 56%, var(--stone));
+  border-radius: 30px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--ui-paper) 98%, var(--ivory)), color-mix(in srgb, var(--ivory) 84%, var(--gold)));
+  box-shadow: 0 26px 80px color-mix(in srgb, var(--umber) 20%, transparent), inset 0 0 0 7px color-mix(in srgb, var(--ui-paper) 43%, transparent);
+  transform: translateY(18px) scale(0.985);
+  transition: transform 0.9s cubic-bezier(.18,.72,.25,1);
+}
+.end-card.show .ec-panel { transform: translateY(0) scale(1); }
+.ec-arch {
+  position: relative;
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  min-height: 360px;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--gold) 72%, var(--ui-paper)), color-mix(in srgb, var(--gold) 18%, transparent) 48%, transparent 76%);
+}
+.ec-arch::before {
+  content: '';
+  position: absolute;
+  inset: 54px 30px 25px;
+  border: 13px solid color-mix(in srgb, var(--stone) 74%, var(--ui-muted));
+  border-bottom: 0;
+  border-radius: 120px 120px 0 0;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--lantern-white) 90%, transparent), color-mix(in srgb, var(--gold) 48%, transparent) 66%, color-mix(in srgb, var(--gold) 12%, transparent));
+  box-shadow: inset 0 0 0 4px color-mix(in srgb, var(--ivory) 65%, transparent), 0 0 44px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.ec-arch-stone { position: absolute; z-index: 1; bottom: 23px; width: 34px; height: 50%; background: linear-gradient(90deg, var(--ui-muted), color-mix(in srgb, var(--stone) 55%, var(--ivory)) 55%, var(--stone)); }
+.ec-arch-left { left: 28px; clip-path: polygon(0 8%, 100% 0, 100% 100%, 0 100%); }
+.ec-arch-right { right: 28px; clip-path: polygon(0 0, 100% 8%, 100% 100%, 0 100%); }
+.ec-arch-glow { position: absolute; z-index: 2; width: 100px; height: 145px; bottom: 23px; border-radius: 55% 55% 0 0; background: radial-gradient(ellipse at 50% 74%, var(--lantern-white) 0%, var(--gold) 28%, color-mix(in srgb, var(--gold) 16%, transparent) 69%, transparent 72%); filter: drop-shadow(0 0 18px color-mix(in srgb, var(--gold) 88%, transparent)); animation: ec-glow 3.4s ease-in-out infinite alternate; }
+.ec-lantern { position: absolute; z-index: 3; left: 50%; top: 45%; width: 32px; height: 39px; border: 2px solid var(--timber-dark); border-radius: 7px 7px 9px 9px; background: linear-gradient(90deg, color-mix(in srgb, var(--gold) 22%, transparent), color-mix(in srgb, var(--lantern-white) 90%, transparent), color-mix(in srgb, var(--gold) 24%, transparent)); box-shadow: 0 0 20px var(--gold); transform: translate(-50%, -50%); }
+.ec-lantern::before { content: ''; position: absolute; left: 7px; right: 7px; top: -9px; height: 8px; border: 2px solid var(--timber-dark); border-bottom: 0; border-radius: 10px 10px 0 0; }
+.ec-lantern i { position: absolute; left: 50%; top: 50%; width: 8px; height: 18px; border-radius: 50% 50% 48% 48%; background: var(--lantern-white); box-shadow: 0 0 12px 4px var(--gold); transform: translate(-50%, -50%); }
+.ec-copy { padding: 54px clamp(28px, 6vw, 66px) 52px 26px; opacity: 0; transform: translateY(9px); transition: opacity 0.7s ease 0.28s, transform 0.7s ease 0.28s; }
+.end-card.show .ec-copy { opacity: 1; transform: translateY(0); }
+.ec-status { margin: 0 0 16px; color: var(--ui-muted); font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+.ec-title { margin: 0; color: var(--ui-deep); font: 400 clamp(42px, 6vw, 72px)/0.98 Georgia, 'Times New Roman', serif; letter-spacing: -0.055em; text-wrap: balance; }
+.ec-line { margin: 22px 0 30px; max-width: 440px; color: var(--umber); font: 19px/1.6 Georgia, 'Times New Roman', serif; text-wrap: pretty; }
+.ec-continue { min-height: 54px; min-width: 190px; padding: 13px 24px; border: 1px solid var(--ui-sage); border-radius: 999px; color: var(--ui-paper); background: var(--ui-deep); box-shadow: 0 8px 20px color-mix(in srgb, var(--ui-deep) 18%, transparent); font-size: 14px; font-weight: 700; cursor: pointer; touch-action: manipulation; transition: transform .18s ease, background .18s ease, box-shadow .18s ease; }
+.ec-continue::after { content: '→'; margin-left: 22px; font-size: 17px; }
+.ec-continue:hover { background: var(--ui-sage); box-shadow: 0 10px 24px color-mix(in srgb, var(--ui-deep) 24%, transparent); transform: translateY(-2px); }
+.ec-continue:active { transform: translateY(1px); }
+@keyframes ec-glow { to { opacity: .74; transform: scale(.96); } }
+body:has(.end-card.show) .controls-hint,
+body:has(.end-card.show) .menu-open,
+body:has(.end-card.show) .debug-overlay,
+body:has(.end-card.show) .dialogue-line,
+body:has(.end-card.show) .breath-guide,
+body:has(.end-card.show) .breath-button,
+body:has(.end-card.show) .hand-button,
+body:has(.end-card.show) .look-button,
+body:has(.end-card.show) .touch-zone,
+body:has(.end-card.show) .joystick,
+body:has(.end-card.show) .next-step-hint,
+body:has(.end-card.show) .next-step-marker { visibility: hidden; pointer-events: none; }
+@media (max-width: 620px) {
+  .ec-panel { grid-template-columns: 1fr; width: min(430px, 100%); min-height: 0; }
+  .ec-arch { min-height: clamp(130px, 25svh, 205px); }
+  .ec-arch::before { inset: 16px 22% 0; border-width: 9px; border-bottom: 0; border-radius: 100px 100px 0 0; }
+  .ec-arch-stone { bottom: 0; width: 22px; height: 55%; }
+  .ec-arch-left { left: calc(22% - 2px); }
+  .ec-arch-right { right: calc(22% - 2px); }
+  .ec-arch-glow { bottom: 0; height: 76%; width: 80px; }
+  .ec-lantern { top: 49%; transform: translate(-50%, -50%) scale(.82); }
+  .ec-copy { padding: 10px clamp(24px, 8vw, 38px) 26px; text-align: center; }
+  .ec-status { margin-bottom: 9px; font-size: 10px; }
+  .ec-title { font-size: clamp(38px, 10vw, 52px); }
+  .ec-line { margin: 12px auto 18px; font-size: 16px; }
+  .ec-continue { min-height: 50px; }
+}
+@media (max-height: 560px) and (min-width: 621px) {
+  .ec-panel { min-height: 0; max-height: calc(100svh - 32px); }
+  .ec-arch { min-height: 280px; }
+  .ec-copy { padding-top: 28px; padding-bottom: 28px; }
+  .ec-line { margin: 14px 0 20px; }
+}
+@media (max-height: 540px) and (max-width: 620px) {
+  .ec-panel { grid-template-columns: minmax(115px, .75fr) minmax(210px, 1.25fr); max-width: 620px; }
+  .ec-arch { min-height: 240px; }
+  .ec-arch::before { inset: 28px 18px 10px; border-width: 8px; }
+  .ec-arch-stone { bottom: 9px; width: 18px; }
+  .ec-arch-left { left: 16px; }
+  .ec-arch-right { right: 16px; }
+  .ec-arch-glow { bottom: 10px; height: 62%; width: 70px; }
+  .ec-copy { padding: 20px 20px 20px 8px; text-align: left; }
+  .ec-title { font-size: clamp(34px, 7vw, 50px); }
+  .ec-line { margin: 12px 0 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ec-arch-glow { animation: none; }
+  .end-card, .ec-panel, .ec-copy { transition-duration: .01ms; }
+}
+
 /* Contextual apple action */
 .action-group .push-action.collect-apple {
   border-color: color-mix(in srgb, var(--gold) 76%, var(--ui-deep));

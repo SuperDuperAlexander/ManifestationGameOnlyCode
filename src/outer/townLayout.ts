@@ -114,7 +114,7 @@ export const TOWN = {
   /** Lantern niche in the Old Tree trunk (south side, faces the fountain). */
   niche: { y: 1.2, trunkFaceDz: 0.88, w: 0.5, h: 0.7, d: 0.3 },
   squareCentre: { x: 0, z: 41 },
-  oldTree: { x: 0, z: 47, trunkRadius: 0.9, colliderRadius: 1.3 },
+  oldTree: { x: 0, z: 47, trunkRadius: 0.9, colliderRadius: 1.3, lanternBranchFraction: 0.72 },
   fountain: { x: 0, z: 37, outerRadius: 2.2, innerRadius: 1.6, height: 0.6 },
   stalls: [
     { x: -5.6, z: 38.4, w: 3, d: 1.6, canopy: 'ivory' as const },
