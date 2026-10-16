@@ -23,7 +23,7 @@
   --ink: #4e5566;
   --ui-deep: #344a3b;
   --ui-paper: #fbf7e9;
-  --ui-muted: #687261;
+  --ui-muted: #5f6a58;
   --ui-mist: #bdc6a4;
   --ui-sage: #718879;
   --ui-veil: #f5f0e5;
@@ -99,7 +99,7 @@ body:has(.start-screen:not(.gone)) .joystick { visibility: hidden; pointer-event
 .ss-title { margin: 10px 0 20px; max-width: 580px; font: 400 clamp(64px, 9vw, 112px)/0.88 Georgia, 'Times New Roman', serif; letter-spacing: -0.065em; text-wrap: balance; }
 .ss-title span, .ss-title em { display: block; }
 .ss-title em { color: var(--ui-sage); font-weight: 400; }
-.ss-sub { margin: 0; color: var(--ui-muted); font-size: 10px; font-weight: 700; line-height: 1.5; letter-spacing: 0.22em; text-transform: uppercase; }
+.ss-sub { margin: 0; color: var(--ui-muted); font-size: 12px; font-weight: 700; line-height: 1.5; letter-spacing: 0.22em; text-transform: uppercase; }
 .ss-description { margin: 0 0 28px; max-width: 390px; color: var(--ui-muted); font: 19px/1.6 Georgia, 'Times New Roman', serif; }
 .ss-actions { display: flex; align-items: center; gap: 12px; visibility: hidden; }
 .start-screen.ready .ss-actions { visibility: visible; }
@@ -109,7 +109,7 @@ body:has(.start-screen:not(.gone)) .joystick { visibility: hidden; pointer-event
 .ss-continue { display: none; color: var(--ui-deep); background: color-mix(in srgb, var(--ui-paper) 88%, transparent); }
 .start-screen.has-save .ss-continue { display: block; }
 .ss-btn:active { transform: translateY(2px); box-shadow: none; }
-.ss-prompt { margin: 16px 0 0; max-width: 370px; color: var(--ui-muted); font-size: 11px; line-height: 1.5; opacity: 0; }
+.ss-prompt { margin: 16px 0 0; max-width: 370px; color: var(--ui-muted); font-size: 12px; line-height: 1.5; opacity: 0; }
 .start-screen.ready .ss-prompt { opacity: 1; }
 .ss-loading { display: flex; gap: 7px; height: 7px; margin-top: 20px; }
 .ss-loading i { width: 6px; height: 6px; border-radius: 50%; background: var(--ui-sage); animation: ss-load 1.5s ease-in-out infinite; }
@@ -154,25 +154,19 @@ body:has(.start-screen:not(.gone)) .joystick { visibility: hidden; pointer-event
 .bg-guide { border: 2px solid var(--ivory); box-shadow: 0 0 8px rgba(235, 197, 122, 0.5); transition: border-color 0.4s; }
 .bg-fill { inset: 10px !important; background: radial-gradient(circle, var(--lantern-white), rgba(235, 197, 122, 0.58) 58%, transparent 72%); }
 .breath-guide.in-rhythm .bg-guide { border-color: var(--gold); }
-.bg-label { inset: auto -90px -28px -90px !important; min-height: 22px; padding: 3px 8px; border-radius: 6px !important; background: var(--paper); border: 1px solid var(--border); text-align: center; font-size: 11px; line-height: 1.3; color: var(--umber); }
+.bg-label { inset: auto -90px -28px -90px !important; min-height: 22px; padding: 3px 8px; border-radius: 6px !important; background: var(--paper); border: 1px solid var(--border); text-align: center; font-size: 12px; line-height: 1.3; color: var(--umber); }
 
-.controls-hint { position: absolute; right: var(--edge-right); bottom: var(--edge-bottom); display: flex; flex-direction: column; gap: 9px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 16px; background: var(--paper); box-shadow: var(--soft-shadow); color: var(--umber); font-size: 13px; opacity: 0; transition: opacity 0.8s ease; }
+.controls-hint { position: absolute; inset: auto var(--edge-right) var(--edge-bottom) var(--edge-left); z-index: 6; display: flex; flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--umber); font-size: 13px; opacity: 0; transition: opacity 0.8s ease; pointer-events: none; }
 .controls-hint.visible { opacity: 1; }
-.controls-hint { position: absolute; inset: auto var(--edge-right) var(--edge-bottom) var(--edge-left); z-index: 6; display: flex; flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 16px; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; pointer-events: none; }
 .controls-hint .move-note, .controls-hint .action-group { pointer-events: auto; }
-.breath-button, .look-button, .hand-button { position: relative; right: auto; bottom: auto; width: auto; height: auto; min-width: 48px; min-height: 48px; padding: 10px 15px; border-radius: 999px; background: color-mix(in srgb, var(--ui-paper) 93%, transparent); color: var(--ui-deep); touch-action: manipulation; }
-.breath-button { width: 150px; background: color-mix(in srgb, var(--ui-paper) 93%, transparent); text-align: left; touch-action: none; }
-.look-button { width: auto; }
-.hand-button { width: auto; }
-.breath-button .control-icon, .look-button .control-icon, .hand-button .control-icon { position: relative; width: 24px; height: 24px; }
+.breath-button, .look-button, .hand-button { min-width: 48px; min-height: 48px; }
+.breath-button { text-align: left; }
+.look-button .control-icon, .hand-button .control-icon { position: relative; width: 24px; height: 24px; }
 .breath-button .control-label, .look-button .control-label, .hand-button .control-label { font-size: 12px; white-space: nowrap; }
-.breath-button .control-hint, .look-button .control-hint, .hand-button .control-hint { color: var(--ui-muted); font-size: 9px; white-space: nowrap; }
-.breath-button.held { background: color-mix(in srgb, var(--gold) 82%, var(--ui-paper)); }
-.hand-button.push { background: color-mix(in srgb, var(--sandstone) 58%, var(--ui-paper)); }
-.hand-button.interact { background: color-mix(in srgb, var(--gold) 72%, var(--ui-paper)); }
+.breath-button .control-hint, .look-button .control-hint, .hand-button .control-hint { color: var(--ui-muted); font-size: 12px; white-space: nowrap; }
 .ch-row { display: flex; align-items: center; gap: 10px; min-height: 25px; }
 .ch-row.off { display: none; }
-.ch-key { min-width: 57px; padding: 4px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--ivory); box-shadow: 0 2px 0 rgba(125, 127, 90, 0.17); text-align: center; font-size: 11px; line-height: 1.3; font-weight: 700; white-space: nowrap; }
+.ch-key { min-width: 57px; padding: 4px 7px; border-radius: 6px; border: 1px solid var(--border); background: var(--ivory); box-shadow: 0 2px 0 rgba(125, 127, 90, 0.17); text-align: center; font-size: 12px; line-height: 1.3; font-weight: 700; white-space: nowrap; }
 .ch-label { white-space: nowrap; }
 .ch-icon { display: flex; align-items: center; width: 24px; height: 24px; color: var(--olive); }
 .ch-icon .control-icon { width: 23px; height: 23px; }
@@ -182,7 +176,7 @@ body:has(.start-screen:not(.gone)) .joystick { visibility: hidden; pointer-event
 .touch-zone { position: absolute; top: 0; bottom: 0; pointer-events: auto; touch-action: none; }
 .touch-left { left: 0; width: 50%; }
 .touch-right { right: 0; width: 50%; }
-.joystick { position: absolute; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 50%; background: rgba(244, 238, 223, 0.25); border: 2px solid rgba(244, 238, 223, 0.85); box-shadow: var(--soft-shadow); opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 1; }
+.joystick { position: absolute; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 50%; background: rgba(244, 238, 223, 0.25); border: 2px solid rgba(244, 238, 223, 0.5); box-shadow: var(--soft-shadow); opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 1; }
 .joystick.active { opacity: 1; }
 .js-knob { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; border: 1px solid var(--olive); border-radius: 50%; transform: translate(-50%, -50%); background: var(--ivory); box-shadow: var(--soft-shadow); }
 .breath-button, .hand-button, .look-button { position: absolute; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--umber); border: 1px solid var(--olive); border-radius: 50%; background: var(--paper); box-shadow: 0 3px 0 rgba(74, 52, 40, 0.14), var(--soft-shadow); pointer-events: auto; touch-action: none; z-index: 4; transition: transform 0.2s, background 0.4s, box-shadow 0.4s, opacity 0.4s; }
@@ -192,14 +186,14 @@ body:has(.start-screen:not(.gone)) .joystick { visibility: hidden; pointer-event
 .bb-core { position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle, var(--lantern-white), rgba(235, 197, 122, 0.35)); }
 .hand-button { right: calc(112px + var(--edge-right)); bottom: calc(24px + var(--edge-bottom)); width: 60px; height: 60px; }
 .hand-button svg { width: 34px; height: 34px; }
-.hand-button.dim { opacity: 0.75; }
+.hand-button.dim, body.touch .hand-button.dim { opacity: 0.75; border-style: dashed; filter: saturate(0.55); }
 .hand-button.push { background: var(--sandstone); }
 .hand-button.interact { background: var(--gold); box-shadow: 0 0 0 4px rgba(235, 197, 122, 0.25), var(--soft-shadow); }
 .hand-button.pressed, .look-button:active { transform: scale(0.93); }
 .look-button { right: calc(18px + var(--edge-right)); bottom: calc(134px + var(--edge-bottom)); width: 60px; height: 60px; background: var(--ivory); }
 .look-button .control-icon { width: 36px; height: 36px; }
 body.touch .breath-guide { left: auto; margin-left: 0; right: var(--edge-right); bottom: calc(24px + var(--edge-bottom)); width: 96px; height: 96px; z-index: 5; }
-body.touch .bg-track { background: transparent; box-shadow: none; }
+body.touch .bg-track { border: 2px solid rgba(244, 238, 223, 0.9); background: rgba(125, 127, 90, 0.10); box-shadow: 0 0 0 1px rgba(74, 52, 40, 0.18); }
 body.touch .bg-fill { opacity: 0.30; }
 body.touch .bg-label { inset: auto 0 -24px auto !important; width: 180px; }
 body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width: calc(100% - var(--edge-left) - var(--edge-right)); }
@@ -255,9 +249,10 @@ body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width:
   .ss-prompt { margin-top: 13px; }
   .ss-loading { margin-top: 14px; }
   .dialogue-line { padding: 11px 14px; font-size: 15px; }
+  body.touch .dialogue-line { font-size: 16px; }
   .controls-hint { padding: 10px; font-size: 11px; gap: 5px; }
   .ch-row { gap: 7px; min-height: 20px; }
-  .ch-key { min-width: 48px; font-size: 10px; }
+  .ch-key { min-width: 48px; font-size: 12px; }
   .ch-icon { width: 18px; height: 18px; }
   .ch-icon .control-icon { width: 18px; height: 18px; }
 }
@@ -273,32 +268,33 @@ body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width:
   .ss-actions { gap: 8px; }
   .ss-btn { min-height: 48px; padding: 12px 18px; }
   .ss-begin { min-width: 170px; }
-  .ss-prompt { margin-top: 9px; font-size: 10px; }
+  .ss-prompt { margin-top: 9px; font-size: 12px; }
   .ss-loading { margin-top: 10px; }
   .debug-overlay { font-size: 9px; line-height: 1.3; padding: 7px 9px; }
   .controls-hint { padding: 10px 12px; gap: 5px; font-size: 11px; }
   .ch-key { padding: 3px 5px; }
   .ch-row { min-height: 21px; }
-  .dialogue-line { bottom: calc(132px + var(--edge-bottom)); max-width: calc(100% - 290px); font-size: 14px; padding: 10px 14px; }
+  .dialogue-line { bottom: calc(132px + var(--edge-bottom)); max-width: calc(100% - 290px); font-size: 14px; line-height: 1.35; padding: 10px 14px; }
   body.touch .breath-button, body.touch .breath-guide { width: 80px; height: 80px; bottom: calc(19px + var(--edge-bottom)); }
   body.touch .breath-button .control-icon { width: 34px; height: 34px; }
   body.touch .hand-button { width: 52px; height: 52px; right: calc(92px + var(--edge-right)); bottom: calc(19px + var(--edge-bottom)); }
   body.touch .look-button { width: 52px; height: 52px; right: calc(14px + var(--edge-right)); bottom: calc(111px + var(--edge-bottom)); }
-  body.touch .dialogue-line { left: var(--edge-left); bottom: var(--edge-bottom); width: max-content; max-width: calc(100% - var(--edge-left) - var(--edge-right) - 160px); transform: translateY(8px); font-size: 14px; }
+  body.touch .dialogue-line { left: var(--edge-left); bottom: var(--edge-bottom); width: max-content; max-width: calc(100% - var(--edge-left) - var(--edge-right) - 160px); transform: translateY(8px); font-size: 16px; }
   body.touch .dialogue-line.show { transform: translateY(0); }
-  body.touch .bg-label { inset: auto 0 -19px auto !important; width: 156px; font-size: 10px; }
+  body.touch .bg-label { inset: auto 0 -19px auto !important; width: 156px; font-size: 12px; }
   .ec-title { font-size: 30px; }
   .ec-line { font-size: 16px; }
 }
 @media (max-width: 600px) and (max-height: 350px) {
   .ss-content { width: min(460px, 84vw); }
   .ss-title { font-size: 42px; }
-  .ss-sub { font-size: 8px; }
+  .ss-sub { font-size: 12px; }
   .ss-description { max-width: 280px; font-size: 13px; line-height: 1.35; margin-bottom: 8px; }
   .ss-actions { gap: 6px; }
   .ss-btn { min-height: 48px; padding: 10px 15px; font-size: 11px; }
   .ss-begin { min-width: 150px; }
-  .ss-prompt, .ss-loading { display: none; }
+  .ss-prompt { margin-top: 6px; }
+  .ss-loading { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .start-screen, .ss-btn, .dialogue-line, .speech-bubble, .controls-hint,
@@ -346,17 +342,17 @@ body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width:
 .menu-light i:nth-child(3) { inset: -24px; opacity: 0.42; animation-delay: -1.6s; }
 .menu-light span { position: relative; color: var(--ui-paper); font: 66px/1 Georgia, 'Times New Roman', serif; text-shadow: 0 0 42px color-mix(in srgb, var(--ui-paper) 90%, transparent); }
 @keyframes menu-breathe { 0%, 100% { transform: scale(0.76); opacity: 0.24; } 50% { transform: scale(1.16); opacity: 0.82; } }
-.menu-kicker { position: absolute; bottom: 20px; color: var(--ui-paper); font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; }
+.menu-kicker { position: absolute; bottom: 20px; color: var(--ui-paper); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; }
 .menu-copy { padding: 25px clamp(22px, 5vw, 36px) 30px; }
 .menu-copy h2 { margin: 0 0 11px; font: 400 clamp(27px, 5vw, 34px)/1.2 Georgia, 'Times New Roman', serif; }
 .menu-copy p { margin: 0 0 22px; color: var(--ui-muted); font-size: 14px; line-height: 1.75; }
 .menu-return { min-height: 48px; padding: 13px 20px; border: 0; border-radius: 999px; background: var(--ui-deep); color: var(--ui-paper); pointer-events: auto; touch-action: manipulation; }
 .menu-close { position: absolute; z-index: 2; top: 12px; right: 12px; display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid color-mix(in srgb, var(--ui-paper) 65%, transparent); border-radius: 50%; background: color-mix(in srgb, var(--ui-paper) 90%, transparent); color: var(--ui-deep); font-size: 24px; pointer-events: auto; touch-action: manipulation; }
 .menu-controls { display: grid; gap: 10px; margin-top: 16px; }
-.menu-controls h3 { margin: 0 0 2px; color: var(--ui-muted); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; }
-.menu-help-row { display: flex; align-items: center; gap: 12px; min-height: 34px; margin: 0; color: var(--ui-muted); font-size: 12px; line-height: 1.45; }
+.menu-controls h3 { margin: 0 0 2px; color: var(--ui-muted); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
+.menu-help-row { display: flex; align-items: center; gap: 12px; min-height: 34px; margin: 0; color: var(--ui-muted); font-size: 13px; line-height: 1.45; }
 .menu-breath-settings { display: grid; gap: 9px; margin-top: 20px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, var(--ui-sage) 36%, transparent); }
-.menu-breath-settings h3 { margin: 0 0 2px; color: var(--ui-muted); font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; }
+.menu-breath-settings h3 { margin: 0 0 2px; color: var(--ui-muted); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
 .breath-setting-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px 12px; min-height: 58px; color: var(--ui-muted); font-size: 12px; }
 .breath-setting-value { min-width: 76px; color: var(--ui-deep); font-size: 12px; font-weight: 600; text-align: right; }
 .breath-setting-slider { grid-column: 1 / -1; width: 100%; height: 44px; margin: -2px 0 0; padding: 0 3px; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; touch-action: pan-x; }
@@ -366,7 +362,7 @@ body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width:
 .breath-setting-slider::-webkit-slider-thumb { width: 24px; height: 24px; margin-top: -8px; appearance: none; -webkit-appearance: none; border: 3px solid var(--ui-deep); border-radius: 50%; background: var(--ui-paper); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 65%, transparent); }
 .breath-setting-slider::-moz-range-thumb { width: 18px; height: 18px; border: 3px solid var(--ui-deep); border-radius: 50%; background: var(--ui-paper); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 65%, transparent); }
 .breath-setting-slider:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; border-radius: 8px; }
-.menu-key { min-width: 54px; padding: 5px 8px; border: 1px solid color-mix(in srgb, var(--ui-sage) 36%, transparent); border-radius: 7px; background: color-mix(in srgb, var(--ui-paper) 85%, var(--ui-mist)); color: var(--ui-deep); font-size: 10px; font-weight: 700; text-align: center; white-space: nowrap; }
+.menu-key { min-width: 54px; padding: 5px 8px; border: 1px solid color-mix(in srgb, var(--ui-sage) 36%, transparent); border-radius: 7px; background: color-mix(in srgb, var(--ui-paper) 85%, var(--ui-mist)); color: var(--ui-deep); font-size: 12px; font-weight: 700; text-align: center; white-space: nowrap; }
 
 /* These classes match the reference action pills. */
 .move-note { max-width: min(280px, 42vw); padding: 10px 14px; border: 1px solid color-mix(in srgb, var(--ui-paper) 64%, transparent); border-radius: 10px; background: color-mix(in srgb, var(--ui-paper) 82%, transparent); color: var(--ui-deep); font-size: 11px; line-height: 1.5; }
@@ -379,9 +375,8 @@ body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width:
 .breathe-action::before { position: absolute; inset: 0; border-radius: inherit; background: color-mix(in srgb, var(--gold) 60%, transparent); content: ''; opacity: var(--breath-level, 0); pointer-events: none; }
 .control-label, .control-hint, .breath-icon { position: relative; z-index: 1; }
 .control-label { align-self: end; font-size: 12px; }
-.control-hint { grid-column: 2; color: var(--ui-muted); font-size: 9px; }
+.control-hint { grid-column: 2; color: var(--ui-muted); font-size: 12px; }
 .breath-icon { grid-row: span 2; align-self: center; color: var(--ui-sage); font-size: 24px; }
-.controls-hint.visible { opacity: 1; }
 
 @media (max-width: 700px) {
   .menu-open { min-height: 48px; padding: 10px 14px; }
@@ -411,11 +406,11 @@ body.touch .dialogue-line { bottom: calc(212px + var(--edge-bottom)); max-width:
 .look-action { display: flex; align-items: center; gap: 8px; width: auto; min-width: 48px; white-space: nowrap; }
 .action-group .action-label { font-size: 12px; }
 .action-group kbd { padding: 2px 5px; border: 1px solid color-mix(in srgb, var(--ui-sage) 36%, transparent); border-radius: 5px; color: var(--ui-muted); font: 10px 'Work Sans', system-ui, sans-serif; white-space: nowrap; }
-.breathe-action { grid-template-columns: 26px 1fr auto; align-items: center; width: 160px; min-height: 56px; }
+.breathe-action { grid-template-columns: 26px 1fr auto; align-items: center; width: 200px; min-height: 56px; }
 .breath-action .breath-icon { position: relative; z-index: 1; grid-row: 1 / span 2; grid-column: 1; align-self: center; color: var(--gold); }
 .breath-copy { position: relative; z-index: 1; display: grid; grid-column: 2 / span 2; gap: 1px; }
 .breath-verb { font-size: 11px; }
-.breath-hint { color: var(--ui-muted); font-size: 9px; }
+.breath-hint { color: var(--ui-muted); font-size: 11px; white-space: nowrap; }
 .breathe-action kbd { position: absolute; top: 5px; right: 8px; z-index: 1; padding: 1px 4px; border: 1px solid color-mix(in srgb, var(--ui-sage) 34%, transparent); border-radius: 4px; color: var(--ui-muted); font: 8px 'Work Sans', system-ui, sans-serif; }
 .breath-secondary { display: flex; align-items: center; gap: 7px; min-width: 48px; }
 .breath-secondary .control-icon { width: 22px; height: 22px; color: var(--gold); }
@@ -441,7 +436,8 @@ body.touch .breath-button, body.touch .look-button, body.touch .hand-button {
 body.touch .breath-button { display: grid; right: var(--edge-right); bottom: var(--edge-bottom); width: 130px; grid-template-columns: 22px 1fr; gap: 1px 7px; text-align: left; touch-action: none; }
 body.touch .breath-button .control-icon { grid-row: span 2; width: 22px; height: 22px; color: var(--gold); }
 body.touch .breath-button .control-label { font-size: 11px; }
-body.touch .breath-button .control-hint { grid-column: 2; color: var(--ui-muted); font-size: 8px; }
+body.touch .breath-button .control-hint { grid-column: 2; color: var(--ui-muted); font-size: 12px; line-height: 1.15; white-space: normal; padding-right: 6px; overflow-wrap: anywhere; }
+body.touch .breath-button { padding-right: 16px; }
 body.touch .look-button { right: calc(var(--edge-right) + 138px); bottom: var(--edge-bottom); width: 100px; gap: 7px; }
 body.touch .hand-button { right: calc(var(--edge-right) + 246px); bottom: var(--edge-bottom); width: 82px; gap: 2px; flex-direction: column; }
 body.touch .look-button .control-label, body.touch .hand-button .control-label { font-size: 10px; }
@@ -462,7 +458,7 @@ body.touch .bg-label { inset: auto -64px -28px !important; width: 184px; }
   .action-group { gap: 7px; }
   .action-group button { padding: 10px 11px; }
   .action-group .action-label { font-size: 10px; }
-  .breathe-action { width: 142px; grid-template-columns: 24px 1fr auto; }
+  .breathe-action { width: 172px; grid-template-columns: 24px 1fr auto; }
   .breath-secondary .breath-verb { font-size: 10px; }
 }
 @media (max-height: 520px) {
@@ -475,7 +471,7 @@ body.touch .bg-label { inset: auto -64px -28px !important; width: 184px; }
   .menu-copy { padding-top: 17px; padding-bottom: 18px; }
   .menu-copy p { margin-bottom: 12px; }
   .menu-controls { gap: 5px; margin-top: 10px; }
-  .menu-help-row { min-height: 28px; font-size: 11px; }
+  .menu-help-row { min-height: 28px; font-size: 13px; }
 }
 @media (max-width: 350px) and (max-height: 520px) {
   body.touch .breath-button { right: var(--edge-right); bottom: var(--edge-bottom); }
@@ -483,7 +479,8 @@ body.touch .bg-label { inset: auto -64px -28px !important; width: 184px; }
   body.touch .hand-button { right: calc(var(--edge-right) + 104px); bottom: calc(60px + var(--edge-bottom)); }
 }
 @media (max-height: 520px) {
-  body.touch .dialogue-line { left: 50%; bottom: calc(80px + var(--edge-bottom)); width: max-content; max-width: calc(100% - var(--edge-left) - var(--edge-right)); transform: translate(-50%, 8px); text-align: center; }
+  body.touch .dialogue-line { left: 50%; bottom: calc(80px + var(--edge-bottom)); width: max-content; max-width: calc(100% - var(--edge-left) - var(--edge-right)); transform: translate(-50%, 8px); text-align: center; font-size: 16px; line-height: 1.35; }
+  body.touch .dialogue-line .dl-text { white-space: normal; }
   body.touch .dialogue-line.show { transform: translate(-50%, 0); }
   body.touch .breath-guide { bottom: calc(174px + var(--edge-bottom)); width: 52px; height: 52px; margin-left: -26px; }
 }
@@ -816,7 +813,7 @@ body.touch .hand-button.thought-choice-active {
 body.touch .breath-button.thought-choice-active {
   left: calc(50% + 18px); right: auto; width: 132px; height: 64px; min-height: 64px; box-sizing: border-box;
 }
-body.touch .breath-button.thought-choice-active .control-hint { white-space: normal; font-size: 7px; line-height: 1.05; }
+body.touch .breath-button.thought-choice-active .control-hint { white-space: normal; font-size: 12px; line-height: 1.05; }
 body.touch:has(.hand-button.thought-choice-active) .look-button { bottom: calc(72px + var(--edge-bottom)); }
 @media (max-width: 350px) {
   .controls-hint.thought-choice-active .thought-push-choice,

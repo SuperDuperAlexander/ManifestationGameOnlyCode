@@ -48,6 +48,7 @@ export class StartScreen {
     this.el.classList.toggle('has-save', cont !== null);
     this.el.classList.add('ready');
     this.el.setAttribute('aria-busy', 'false');
+    this.beginBtn.focus({ preventScroll: true });
   }
 
   /** Resolves with the choice. Any key or tap means "begin". Then fades away. */

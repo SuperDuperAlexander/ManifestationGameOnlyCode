@@ -19,6 +19,12 @@ export class LookWithinButton {
       event.stopPropagation();
       onPress();
     });
+    this.el.addEventListener('keydown', (event) => {
+      if (event.code !== 'Space' && event.code !== 'Enter') return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (!event.repeat) onPress();
+    });
   }
 
   setLabel(label: string, accessibleLabel = label): void {

@@ -30,6 +30,8 @@ export class DialogueSystem {
   ) {
     this.el = document.createElement('div');
     this.el.className = 'dialogue-line';
+    this.el.setAttribute('role', 'status');
+    this.el.setAttribute('aria-live', 'polite');
     this.el.innerHTML = '<span class="dl-mark">✦</span><span class="dl-text"></span>';
     this.textEl = this.el.querySelector('.dl-text') as HTMLSpanElement;
     parent.appendChild(this.el);

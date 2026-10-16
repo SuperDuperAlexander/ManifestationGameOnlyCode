@@ -48,6 +48,24 @@ export class BreathButton {
     this.el.addEventListener('pointerup', end);
     this.el.addEventListener('pointercancel', end);
     this.el.addEventListener('lostpointercapture', end);
+    // Keyboard: Space or Enter holds the breath like a finger on the button.
+    this.el.addEventListener('keydown', (event) => {
+      if (event.code !== 'Space' && event.code !== 'Enter') return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (event.repeat || this.pointer !== null) return;
+      this.el.classList.add('held');
+      this.input.touchBreathHeld = true;
+      this.input.touchBreathUsed = true;
+      this.input.markInteracted();
+    });
+    this.el.addEventListener('keyup', (event) => {
+      if (event.code !== 'Space' && event.code !== 'Enter') return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.pointer === null) this.resetHeld();
+    });
+    this.el.addEventListener('blur', () => { if (this.pointer === null) this.resetHeld(); });
     window.addEventListener('blur', () => this.resetHeld());
   }
 
