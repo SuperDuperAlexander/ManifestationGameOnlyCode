@@ -1,0 +1,9 @@
+file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-action-cues.mjs:9
+const check = (ok, message) => { if (!ok) throw new Error(message); };
+                                                ^
+
+Error: long breath instruction overlaps the active choice cue
+    at check (file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-action-cues.mjs:9:49)
+    at file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-action-cues.mjs:46:3
+
+Node.js v22.13.1
