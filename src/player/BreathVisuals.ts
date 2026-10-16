@@ -52,7 +52,6 @@ export class BreathVisuals {
   private peak = 0;
   private time = 0;
   private readonly head: number[] = [0, 0, 0];
-  private readonly tail: number[] = [0, 0, 0];
   private readonly gold = Color3.FromHexString(PALETTE.gold);
   private readonly ivory = Color3.FromHexString(PALETTE.ivory);
   private readonly sand = Color3.FromHexString(PALETTE.sandstone);
@@ -66,7 +65,7 @@ export class BreathVisuals {
     this.slow = reduced ? R.reducedSlow : 1;
 
     this.ringMat = createPaperMaterial('breath.ringMat', scene, {
-      texture: procTexture(scene, 'ring'),
+      texture: procTexture(scene, 'softRing'),
       additive: true,
     });
     this.ring = MeshBuilder.CreateGround('breath.ring', { width: 2, height: 2 }, scene);
@@ -77,7 +76,7 @@ export class BreathVisuals {
 
     // Breath halo: same ring texture, own tint; tightens in, widens out.
     this.haloMat = createPaperMaterial('breath.haloMat', scene, {
-      texture: procTexture(scene, 'ring'),
+      texture: procTexture(scene, 'softRing'),
       additive: true,
     });
     this.halo = MeshBuilder.CreateGround('breath.halo', { width: 2, height: 2 }, scene);
@@ -121,24 +120,18 @@ export class BreathVisuals {
     this.rays.isVisible = false;
   }
 
-  /** Writes one streak (tail -> head) as a camera-facing quad. */
-  private writeRay(
-    q: number,
-    tx: number, ty: number, tz: number,
-    hx: number, hy: number, hz: number,
-    w: number, alpha: number, heat: number,
-    cam: Vector3,
+  /** Writes one round mote as a camera-facing quad. */
+  private writeMote(
+    q: number, x: number, y: number, z: number, size: number, alpha: number, heat: number,
+    rx: number, ry: number, rz: number, ux: number, uy: number, uz: number,
   ): void {
-    const dx = hx - tx, dy = hy - ty, dz = hz - tz;
-    const mx = (tx + hx) * 0.5 - cam.x, my = (ty + hy) * 0.5 - cam.y, mz = (tz + hz) * 0.5 - cam.z;
-    let sx = dy * mz - dz * my, sy = dz * mx - dx * mz, sz = dx * my - dy * mx;
-    const k = w / (Math.hypot(sx, sy, sz) || 1);
-    sx *= k; sy *= k; sz *= k;
+    const h = size * 0.5;
     const p = this.pos, o = q * 12;
-    p[o] = tx - sx; p[o + 1] = ty - sy; p[o + 2] = tz - sz;
-    p[o + 3] = tx + sx; p[o + 4] = ty + sy; p[o + 5] = tz + sz;
-    p[o + 6] = hx - sx; p[o + 7] = hy - sy; p[o + 8] = hz - sz;
-    p[o + 9] = hx + sx; p[o + 10] = hy + sy; p[o + 11] = hz + sz;
+    const ax = rx * h, ay = ry * h, az = rz * h, bx = ux * h, by = uy * h, bz = uz * h;
+    p[o] = x - ax - bx; p[o + 1] = y - ay - by; p[o + 2] = z - az - bz;
+    p[o + 3] = x + ax - bx; p[o + 4] = y + ay - by; p[o + 5] = z + az - bz;
+    p[o + 6] = x - ax + bx; p[o + 7] = y - ay + by; p[o + 8] = z - az + bz;
+    p[o + 9] = x + ax + bx; p[o + 10] = y + ay + by; p[o + 11] = z + az + bz;
     const r = this.gold.r + (this.ivory.r - this.gold.r) * heat;
     const g = this.gold.g + (this.ivory.g - this.gold.g) * heat;
     const b = this.gold.b + (this.ivory.b - this.gold.b) * heat;
@@ -154,11 +147,12 @@ export class BreathVisuals {
     const a0 = i * GOLDEN;
     const r0 = R.inStart[0] + (R.inStart[1] - R.inStart[0]) * frac(i * 0.618 + 0.13);
     const h0 = R.inHeight[0] + (R.inHeight[1] - R.inHeight[0]) * frac(i * 0.381 + 0.27);
-    const e = Math.pow(clamp01(t), R.accel);
+    const tt = clamp01(t);
+    const e = Math.pow(tt, R.accel) * 0.55 + ease(tt) * 0.45;
     const r = r0 * (1 - e) + 0.12;
     const a = a0 + R.swirlTurns * Math.PI * 2 * e;
     out[0] = cx + Math.cos(a) * r;
-    out[1] = gy + h0 + (cy - gy - h0) * e;
+    out[1] = gy + h0 + (cy - gy - h0) * e + Math.sin(this.time * 1.1 + i * 1.7) * R.floatAmp * (1 - e);
     out[2] = cz + Math.sin(a) * r;
   }
 
@@ -179,7 +173,7 @@ export class BreathVisuals {
     this.ring.isVisible = this.ringAlpha > 0.02;
     this.ring.position.set(playerPos.x, playerPos.y + 0.05, playerPos.z);
     this.ring.scaling.set(this.ringRadius, 1, this.ringRadius);
-    setPaperColor(this.ringMat, new Color4(1, 1, 1, this.ringAlpha * 0.6));
+    setPaperColor(this.ringMat, new Color4(1, 1, 1, this.ringAlpha * R.ringAlpha));
 
     if (breath.state !== this.lastState) {
       if (inhaling) this.inClock = 0;
@@ -243,20 +237,22 @@ export class BreathVisuals {
     this.rays.isVisible = show;
     if (!show) return;
 
-    const cam = this.scene.activeCamera?.globalPosition ?? playerPos;
+    const vm = this.scene.activeCamera?.getViewMatrix().m;
+    const rx = vm ? vm[0]! : 1, ry = vm ? vm[4]! : 0, rz = vm ? vm[8]! : 0;
+    const ux = vm ? vm[1]! : 0, uy = vm ? vm[5]! : 1, uz = vm ? vm[9]! : 0;
     const n = this.n;
     const travel = (R.inhaleTravelS * this.slow) / (0.7 + 0.6 * clamp01(level + 0.2));
-    const dtT = 0.06;
-    const { head, tail } = this;
+    const { head } = this;
     for (let i = 0; i < n; i++) {
       const t = frac(this.inClock / travel + i / n);
       this.place(i, t, head, cx, cy, cz, playerPos.y);
-      this.place(i, Math.max(0, t - dtT), tail, cx, cy, cz, playerPos.y);
-      const fadeIn = clamp01(t / 0.15);
-      const fadeOut = 1 - ease(clamp01((t - 0.7) / 0.3));
-      const alpha = this.inMix * R.brightness * (0.6 + 0.4 * level) * fadeIn * fadeOut * 0.7;
-      const size = R.width * (1 - 0.6 * ease(clamp01((t - 0.5) / 0.5)));
-      this.writeRay(i, tail[0]!, tail[1]!, tail[2]!, head[0]!, head[1]!, head[2]!, size, alpha, t * 0.7, cam);
+      const fadeIn = ease(clamp01(t / 0.2));
+      const fadeOut = 1 - ease(clamp01((t - 0.65) / 0.35));
+      const tw = 1 - R.twinkle * (0.5 + 0.5 * Math.sin(this.time * R.twinkleSpeed + i * 2.3));
+      const alpha = this.inMix * R.brightness * (0.6 + 0.4 * level) * fadeIn * fadeOut * tw;
+      const base = R.sizeMin + (R.sizeMax - R.sizeMin) * frac(i * 0.754 + 0.31);
+      const size = base * (1 - 0.6 * ease(clamp01((t - 0.5) / 0.5)));
+      this.writeMote(i, head[0]!, head[1]!, head[2]!, size, alpha, 0.15 + t * 0.4, rx, ry, rz, ux, uy, uz);
     }
     this.rays.updateVerticesData(VertexBuffer.PositionKind, this.pos);
     this.rays.updateVerticesData(VertexBuffer.ColorKind, this.col);

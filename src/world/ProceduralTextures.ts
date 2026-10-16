@@ -8,7 +8,7 @@ import { Random } from '../core/Random';
  * Soft textures painted in code with a 2D canvas: glows, blob shadows, fog puffs.
  * Made once per scene and shared.
  */
-export type ProcTexName = 'dot' | 'halo' | 'aura' | 'wing' | 'shadow' | 'ring' | 'puff' | 'cliff' | 'mist' | 'plank';
+export type ProcTexName = 'dot' | 'halo' | 'aura' | 'wing' | 'shadow' | 'ring' | 'softRing' | 'puff' | 'cliff' | 'mist' | 'plank';
 
 const cache = new WeakMap<Scene, Map<ProcTexName, DynamicTexture>>();
 
@@ -109,6 +109,21 @@ function paint(scene: Scene, name: ProcTexName): DynamicTexture {
         [0.55, 'rgba(62,58,36,0.3)'],
         [1, 'rgba(62,58,36,0)'],
       ]);
+      tex.update();
+      return tex;
+    }
+    case 'softRing': {
+      // Feathered breath ring: wide, faint, no bright line.
+      const [tex, ctx] = make(scene, name, 256, 256);
+      const g = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+      g.addColorStop(0, 'rgba(255,236,190,0)');
+      g.addColorStop(0.6, 'rgba(255,236,190,0.03)');
+      g.addColorStop(0.78, 'rgba(250,226,170,0.2)');
+      g.addColorStop(0.88, 'rgba(250,226,170,0.28)');
+      g.addColorStop(0.95, 'rgba(250,226,170,0.1)');
+      g.addColorStop(1, 'rgba(250,226,170,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 256, 256);
       tex.update();
       return tex;
     }

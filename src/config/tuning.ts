@@ -149,16 +149,18 @@ export const TUNING = {
       inStart: [2.0, 3.0], inHeight: [0.25, 1.6],
       chestHeight: 0.9,
       /** Turns a mote makes on its way in, and how much it accelerates (power on time). */
-      swirlTurns: 0.9, accel: 1.7,
-      /** Mote tail length (metres at start, shrinks on arrival) and width. */
-      fleckLength: 0.2, width: 0.07,
+      swirlTurns: 0.9, accel: 1.3,
+      /** Mote size range (metres, diameter), twinkle depth 0..1 and speed, vertical float. */
+      sizeMin: 0.16, sizeMax: 0.34, twinkle: 0.3, twinkleSpeed: 2.2, floatAmp: 0.12,
       /** Seconds for one mote to arrive. Slower under reduced motion (x reducedSlow). */
-      inhaleTravelS: 1.8, reducedSlow: 1.6,
-      brightness: 1.3, mixRate: 4,
+      inhaleTravelS: 2.4, reducedSlow: 1.6,
+      brightness: 0.7, mixRate: 4,
       /** Tightening / expanding halo ring on the ground-plane around the figure. */
-      haloInRadius: [3.0, 0.9], haloOutRadius: [0.9, 3.2], haloHeight: 0.35, haloAlpha: 0.32,
+      haloInRadius: [3.0, 0.9], haloOutRadius: [0.9, 3.2], haloHeight: 0.35, haloAlpha: 0.3,
+      /** Ground light-radius ring alpha scale. */
+      ringAlpha: 0.3,
       /** Chest glow: base size, extra size at full breath, peak pulse, alpha. */
-      chestSize: 0.7, chestGain: 0.5, chestPulse: 0.25, chestAlpha: 0.55,
+      chestSize: 0.7, chestGain: 0.5, chestPulse: 0.25, chestAlpha: 0.4,
     },
   },
 

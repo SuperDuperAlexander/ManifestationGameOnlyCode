@@ -4,8 +4,7 @@ import { Constants } from '@babylonjs/core/Engines/constants';
 import type { Scene } from '@babylonjs/core/scene';
 
 /**
- * Soft light-ray streaks: unlit, additive. uv.x runs across the streak, uv.y along it
- * (0 = tail, 1 = head). The vertex colour carries tint (rgb) and strength (a).
+ * Soft round light motes: unlit, additive, feathered edge. The vertex colour carries tint (rgb) and strength (a).
  */
 const VERTEX = /* glsl */ `
 precision highp float;
@@ -27,13 +26,11 @@ precision highp float;
 varying vec2 vUv;
 varying vec4 vCol;
 void main(void) {
-  float x = abs(vUv.x * 2.0 - 1.0);
-  float across = pow(1.0 - x, 2.0);
-  float core = pow(1.0 - x, 6.0);
-  float along = smoothstep(0.0, 0.75, vUv.y) * (1.0 - smoothstep(0.8, 1.0, vUv.y));
-  float a = (across * 0.8 + core * 1.0) * along * vCol.a;
-  vec3 rgb = mix(vCol.rgb, vec3(1.0, 0.97, 0.88), core * 0.6);
-  gl_FragColor = vec4(rgb * a, a);
+  vec2 d = vUv * 2.0 - 1.0;
+  float r = length(d);
+  float soft = 1.0 - smoothstep(0.0, 1.0, r);
+  float a = soft * soft * vCol.a;
+  gl_FragColor = vec4(vCol.rgb * a, a);
 }
 `;
 
