@@ -70,6 +70,23 @@ export class DialogueSystem {
     return this.current !== null || this.queue.length > 0;
   }
 
+  /** Remove an obsolete prompt from the queue, or dismiss it if it is visible. */
+  cancel(key: string): void {
+    const keep: Queued[] = [];
+    for (const item of this.queue) {
+      if (item.id === key) item.resolve();
+      else keep.push(item);
+    }
+    this.queue.splice(0, this.queue.length, ...keep);
+    if (this.current?.id === key) {
+      this.el.classList.remove('show');
+      this.current.resolve();
+      this.current = null;
+      this.timer = 0;
+      this.gap = 0;
+    }
+  }
+
   /** True if this key was already said with `once`. */
   hasSaid(key: string): boolean {
     return this.said.has(key);
@@ -94,7 +111,13 @@ export class DialogueSystem {
   private sayLines(id: string, texts: string[], interrupt: boolean): Promise<void> {
     if (interrupt) {
       for (const q of this.queue.splice(0)) q.resolve();
-      if (this.current) this.timer = Math.min(this.timer, 0.25);
+      if (this.current) {
+        this.el.classList.remove('show');
+        this.current.resolve();
+        this.current = null;
+      }
+      this.timer = 0;
+      this.gap = 0;
     }
     if (!texts.length) return Promise.resolve();
     const promises = texts.map(

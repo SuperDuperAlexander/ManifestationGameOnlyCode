@@ -281,6 +281,10 @@ export class Town implements World {
     return this.breath.state;
   }
 
+  hasMovementInput(): boolean {
+    return this.input.moveX !== 0 || this.input.moveY !== 0;
+  }
+
   shove(dx: number, dz: number): void {
     this.shoveLeft.x += dx;
     this.shoveLeft.z += dz;

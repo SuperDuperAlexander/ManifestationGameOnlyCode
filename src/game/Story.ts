@@ -55,6 +55,7 @@ export class Story {
   private hintT = 0;
   /** Seconds since the bump hit (Infinity = no ramp running). */
   private sinceBump = Infinity;
+  private movedSinceBegin = false;
 
   // Imp
   private impBreaths = 0;
@@ -134,6 +135,7 @@ export class Story {
   /** The world that is shown changed (middle of the Look Within transition). */
   onWorldShown(id: WorldId): void {
     this.shownId = id;
+    this.cancelOpeningHints();
     if (id === 'inner') {
       if (!this.innerVisited) {
         this.innerVisited = true;
@@ -182,11 +184,24 @@ export class Story {
     const d = this.d;
     const f = this.state.flags;
 
-    // The Square invites the first Look Within (no breath needed).
-    if (shown === 'outer' && !busy && !this.lookWithinOpen && d.outer.playerPosition().z >= TOWN.bump.triggerZ) {
+    const outerPosition = d.outer.playerPosition();
+    if (shown === 'outer' && this.begun && !this.movedSinceBegin && d.outer.hasMovementInput()) {
+      this.movedSinceBegin = true;
+      d.dialogue.cancel('hintMove');
+      d.dialogue.cancel('hintMoveTouch');
+    }
+    const breathing = shown === 'outer' && d.outer.breathState() !== 'idle';
+    if (breathing) {
+      d.dialogue.cancel('hintBreathe');
+      d.dialogue.cancel('hintBreatheTouch');
+    }
+
+    // Invite as soon as the player reaches the visible beacon, whether or not they breathed first.
+    if (shown === 'outer' && !busy && !this.lookWithinOpen && dist2(outerPosition.x, outerPosition.z, TOWN.squareCentre.x, TOWN.squareCentre.z) <= TUNING.story.squareArrivalRadius) {
       this.lookWithinOpen = true;
       this.state.reach(1);
-      this.hint('hintLookWithin');
+      this.cancelOpeningHints();
+      this.say(this.d.touch ? 'hintLookWithinTouch' : 'hintLookWithin', true);
       this.hintT = 0;
     }
 
@@ -201,7 +216,7 @@ export class Story {
         this.say('angryLookWithin');
       }
     } else this.angryT = 0;
-    if (shown === 'outer' && !busy && (needBreath || needLook)) {
+    if (shown === 'outer' && !busy && !breathing && (needBreath || needLook)) {
       this.hintT += dt;
       if (this.hintT >= TUNING.story.hintRepeatS && !d.dialogue.busy) {
         this.hintT = 0;
@@ -329,6 +344,10 @@ export class Story {
     const f = this.state.flags;
     if (id === 'outer' && !this.breathed) {
       this.breathed = true;
+      this.d.dialogue.cancel('hintBreathe');
+      this.d.dialogue.cancel('hintBreatheTouch');
+      this.d.dialogue.cancel('hintMove');
+      this.d.dialogue.cancel('hintMoveTouch');
       if (!this.lookWithinOpen) this.say('firstBreath', true);
       return;
     }
@@ -545,6 +564,12 @@ export class Story {
   /** A control hint; touch devices get the `<key>Touch` variant. */
   private hint(key: string): void {
     this.say(this.d.touch ? `${key}Touch` : key);
+  }
+
+  private cancelOpeningHints(): void {
+    for (const key of ['hintMove', 'hintMoveTouch', 'hintBreathe', 'hintBreatheTouch', 'hintLookWithin', 'hintLookWithinTouch']) {
+      this.d.dialogue.cancel(key);
+    }
   }
 
   // --- Restore from checkpoint ---

@@ -1,6 +1,6 @@
 # HANDOVER — Light Within
 
-Last update: 2026-10-15
+Last update: 2026-10-16
 Owner: Alexander
 Repo: https://github.com/SuperDuperAlexander/ManifestationGameOnlyCode
 Game title: **Light Within**. Current PoC (proof of concept = small complete test): **"The Lantern"**.
@@ -24,6 +24,7 @@ Game title: **Light Within**. Current PoC (proof of concept = small complete tes
   - **The fairy is removed completely.** An inner-voice text line guides instead.
 
 ## 2. Status
+- **Reactive opening guidance (2026-10-16).** Alexander found stale movement instructions and no response at the square marker. Movement input removes obsolete walk hints. Starting a breath removes its obsolete teaching prompt. Reaching the square area, including the gold marker, immediately invites Look Within and unlocks Q. World switches clear old opening hints. Breath remains optional; reminders and story completion rules stay intact. No dependency added. Build passes. Independent visible-dialogue checks pass for real movement input, the exact marker and square centre, Q return, and Continue. Full desktop lantern and phone-emulated lantern-alt stories pass with zero console problems and a peak of 57 draw calls. Images: screenshots/reactive-guidance/check/. A real phone remains unchecked.
 
 - **Clear story guidance (2026-10-15).** A persistent short task line shows the next step. A soft gold beacon and a small screen marker point to the square, alley, imp, or Old Tree. A screen-edge label helps when the place is out of view. Inside, the hint states how to return with Q or the diamond. Apple and breath hints give the correct keyboard/touch input. The target clears after help and after delivery. Task text is a draft in `en.json`. No dependency or story rule changed. Full `lantern` desktop and `lantern-alt` phone-emulation runs pass with zero console problems. Guidance desktop and phone-emulation checks pass for both orders, Continue, target clearing, and label bounds. Real Q return, E apple pickup/delivery, Space/Shift breath states, and portrait/landscape target bounds pass. Peak observed draw calls: 57. The phone check found a fractional-pixel label clip; full-width measurement and an 8-pixel inset fix it. Validation uses the isolated copy `D:/MyDrive/ALEXANDER/PROJEKTE/lw-guidance-review` because other breath/menu changes arrived during the first shared-source checks. Review: `http://127.0.0.1:5209/`. Images: `screenshots/guidance/` and `screenshots/story-guidance/check/`. A real phone check remains open.
 

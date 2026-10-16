@@ -583,6 +583,8 @@ export const TUNING = {
     beaconFadeSpeed: 1.5,
     beaconPulse: 0.12,
     beaconPulseSpeed: 1.6,
+    /** Arrival radius around the town-square centre that invites Look Within. */
+    squareArrivalRadius: 7,
     beaconVisibleAlpha: 0.01,
     beaconAlpha: 0.7,
     guidanceNearRadius: 7,
