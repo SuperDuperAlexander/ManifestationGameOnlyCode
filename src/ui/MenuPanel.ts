@@ -83,21 +83,39 @@ export class MenuPanel {
     settings.append(settingsHeading);
     const preferences = getBreathPreferences();
     for (const [phase, labelKey] of [['inhaleSeconds', 'inhaleDuration'], ['exhaleSeconds', 'exhaleDuration']] as const) {
-      const row = document.createElement('label');
+      const row = document.createElement('div');
       row.className = 'breath-setting-row';
       const label = document.createElement('span');
       label.textContent = text(labelKey);
-      const select = document.createElement('select');
-      select.setAttribute('aria-label', text(labelKey));
-      for (const seconds of BREATH_DURATION_CHOICES) {
-        const option = document.createElement('option');
-        option.value = String(seconds);
-        option.textContent = `${seconds} ${text(seconds === 1 ? 'second' : 'seconds')}`;
-        select.append(option);
-      }
-      select.value = String(preferences[phase]);
-      select.addEventListener('change', () => setBreathPreference(phase, Number(select.value)));
-      row.append(label, select);
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.className = 'breath-setting-slider';
+      slider.min = String(BREATH_DURATION_CHOICES[0]);
+      slider.max = String(BREATH_DURATION_CHOICES[BREATH_DURATION_CHOICES.length - 1]);
+      slider.step = '1';
+      slider.value = String(preferences[phase]);
+      slider.setAttribute('aria-label', text(labelKey));
+      slider.addEventListener('keydown', (event) => {
+        if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+          event.stopPropagation();
+        }
+      });
+      const value = document.createElement('output');
+      value.className = 'breath-setting-value';
+      value.setAttribute('aria-live', 'polite');
+      value.setAttribute('aria-atomic', 'true');
+      const update = () => {
+        const seconds = Number(slider.value);
+        const valueText = `${seconds} ${text(seconds === 1 ? 'second' : 'seconds')}`;
+        value.textContent = valueText;
+        slider.setAttribute('aria-valuetext', valueText);
+        const progress = ((seconds - Number(slider.min)) / (Number(slider.max) - Number(slider.min))) * 100;
+        slider.style.setProperty('--slider-progress', `${progress}%`);
+        setBreathPreference(phase, seconds);
+      };
+      slider.addEventListener('input', update);
+      update();
+      row.append(label, value, slider);
       settings.append(row);
     }
     const returnButton = this.dialog.querySelector<HTMLButtonElement>('.menu-return')!;

@@ -1,5 +1,20 @@
 # CLAUDE.md — Light Within
 
+You are the lead orchestrator for the current project.
+Do not write large code changes yourself. Plan and delegate work to subagents.
+First read the project structure, CLAUDE.md, and existing agent rules.
+Split work into small tasks and track them with the task list.
+Use Haiku 5.5 by default for simple tasks.
+Use Sonnet 5.5 for complex logic, architecture, and difficult bugs.
+Never use Opus subagents unless explicitly authorized.
+Run independent tasks in parallel when safe.
+After each task, delegate relevant tests to a cheap checker agent.
+Fix errors before continuing. Run the full build when needed and at the end.
+Preserve existing functionality. Make only necessary changes.
+Minimize token usage and costs without sacrificing quality.
+Report briefly: Done, Tests, Issues, Next.
+
+
 You build **Light Within**, a calm spiritual browser game in **Babylon.js**.
 Read this file fully before every task. Then read the files in section 2.
 

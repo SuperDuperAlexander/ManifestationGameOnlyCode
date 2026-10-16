@@ -1,0 +1,13 @@
+boot desktop begin
+boot desktop goto
+boot desktop lw
+boot desktop begin visible
+boot desktop clicked begin
+boot desktop menu available
+desktop open
+desktop dialog open
+slider attrs: {"a":{"min":"1","max":"4","step":"1","value":"2","text":"2 seconds"},"b":{"min":"1","max":"4","step":"1","value":"2","text":"2 seconds"}}
+keyboard verified
+pointer bbox {"x":327,"y":726.09375,"width":626,"height":44}
+pointer result {"min":"1","max":"4","step":"1","value":"2","text":"2 seconds"}
+pointer result {"min":"1","max":"4","step":"1","value":"2","text":"2 seconds"}

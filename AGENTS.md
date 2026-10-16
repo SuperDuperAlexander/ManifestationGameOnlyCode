@@ -1,5 +1,19 @@
 # CLAUDE.md — Light Within
 
+You are the lead orchestrator for the current project.
+Do not write large code changes yourself. Plan and delegate work to subagents.
+First read the project structure, CLAUDE.md, and existing agent rules.
+Split work into small tasks and track them with the task list.
+Use Haiku 5.5 (or ChatGPT Luna 6) by default for simple tasks.
+Use Sonnet 5.5 (or ChatGPT Luna 6) for complex logic, architecture, and difficult bugs.
+Never use Opus subagents unless explicitly authorized.
+Run independent tasks in parallel when safe.
+After each task, delegate relevant tests to a cheap checker agent.
+Fix errors before continuing. Run the full build when needed and at the end.
+Preserve existing functionality. Make only necessary changes.
+Minimize token usage and costs without sacrificing quality.
+Report briefly: Done, Tests, Issues, Next.
+
 You build **Light Within**, a calm spiritual browser game in **Babylon.js**.
 Read this file fully before every task. Then read the files in section 2.
 
@@ -17,7 +31,7 @@ The old valley level is archived in `legacy/valley-v1/` (git tag `archive/valley
 - Per report: what you did, did it work, what he does now.
 - If he must decide: **max 2 options**, the context to pick fast, and your recommendation.
 - Keep paths and commands exact.
-- Respect his voice on all spiritual texts. Mark your own texts as *drafts*.
+- Respect his voice on all spiritual texts. Mark your own texts as _drafts_.
 
 ## 2. Source files (read in this order)
 
@@ -83,14 +97,14 @@ If files conflict: `GAME_DESIGN.md` wins over everything else for design; this f
 
 ```ts
 export const PALETTE = {
-  sandstone: '#E8A77C',
-  olive:     '#7D7F5A',
-  sage:      '#A8B58A',
-  powder:    '#9FB8D6',
-  ivory:     '#F4EEDF',
-  gold:      '#EBC57A',
-  cloak:     '#B8432F',
-  stone:     '#A39E94',
+  sandstone: "#E8A77C",
+  olive: "#7D7F5A",
+  sage: "#A8B58A",
+  powder: "#9FB8D6",
+  ivory: "#F4EEDF",
+  gold: "#EBC57A",
+  cloak: "#B8432F",
+  stone: "#A39E94",
 };
 ```
 
