@@ -153,9 +153,12 @@ export default function scenarios({ wait, shot, hold, page }) {
         await alleyStep();
         await toggleTo('inner');
       } else {
-        await alleyStep();
+        // Same order, but the first inner visit is quick (no breaths); the alley follows.
         await toggleTo('inner');
         await impSeeStep();
+        await toggleTo('outer');
+        await alleyStep();
+        await toggleTo('inner');
       }
       await transformStep();
       await toggleTo('outer');
@@ -171,7 +174,7 @@ export default function scenarios({ wait, shot, hold, page }) {
     async guidance() {
       if (!(await requireHooks(LANTERN_HOOKS, 'guidance'))) return;
       const hint = async (key, target = '') => {
-        await waitFor(`task hint ${key}`, (k) => document.querySelector('.next-step-hint')?.dataset.step === k, key);
+        await waitFor(`task hint ${key}`, (k) => (document.querySelector('.next-step-hint')?.dataset.step ?? '').replace(/^(stepApples)[0-9]+$/, '$1').replace('stepImpApproach', 'stepImp') === k, key);
         const ui = await lw(() => {
           const el = document.querySelector('.next-step-hint');
           const marker = document.querySelector('.next-step-marker');
@@ -193,7 +196,7 @@ export default function scenarios({ wait, shot, hold, page }) {
         await shot('guidance-01-square');
         await squareStep();
         await bumpStep();
-        await hint('stepAngry', 'Alley');
+        await hint('stepAngry');
         await shot('guidance-02-alley-distance');
         await toggleTo('inner');
         await hint('stepReturnAlley');
@@ -220,17 +223,7 @@ export default function scenarios({ wait, shot, hold, page }) {
         await hint('stepTree', 'Old Tree');
         await deliverStep();
         await hint('stepExplore');
-        // The other permitted order: help before the angry inner visit.
-        await bootFresh();
-        await squareStep();
-        await bumpStep();
-        await alleyStep();
-        expect(!(await flagsNow()).sawImp, 'alternate order did not reach help before the imp');
-        await hint('stepInside');
-        await toggleTo('inner');
-        await hint('stepImp', 'Imp');
-        await shot('guidance-06-help-first');
-        console.log('guidance: PASS (both orders, Continue, target clearing, task layout)');
+        console.log('guidance: PASS (Continue, target clearing, task layout)');
       } catch (e) {
         console.error(`FAIL (guidance): ${e.message}`);
         process.exitCode = 3;

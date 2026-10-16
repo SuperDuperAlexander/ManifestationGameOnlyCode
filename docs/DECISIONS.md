@@ -118,3 +118,8 @@ Keep all game inputs, story text, save behavior and the 2-second breath timing. 
 **L37. Light for the return to the square (2026-10-16).** Alexander reported that Walk onto the square lacked a destination light after the calm inner visit. Reuse the golden beacon and screen-direction marker for this step, targeting the reachable square centre inside the actual bump-trigger area. Do not reuse the first invitation beacon just before that area. Reaching the destination keeps the existing bump progression and then replaces the square guidance with the alley task. No new text, dependency, or story rule added.
 
 **L38. Push and breathing shown together (2026-10-16, presentation draft).** The current interface experiment presents Push away and breathing as simultaneous, central choices during relevant thought interactions. This is a prototype presentation choice and may be rearranged, restyled, or replaced after review. The underlying push and breathing mechanics remain part of the existing core design. See [`GESTALTUNGSENTWUERFE.md`](GESTALTUNGSENTWUERFE.md).
+
+## Bump leads to Look Within first; walk + breathe (draft texts)
+- After the bump, guidance is "look within" (`stepAngry`). Alley apples (E) are locked until the first inner visit after the bump (`sawImp`) or `helped` (old saves). Then `stepAlley` as before. No new save flag.
+- DRAFT texts: `stepAngry` ("Press Q to look within. See what is burning in you."), `impFirst` ("There it is. This fire lives in me.").
+- Walking while breathing: `TUNING.breath.walkFactor` = 0.8 (was fixed 0.6) in both worlds.

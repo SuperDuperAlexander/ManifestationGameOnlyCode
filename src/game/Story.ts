@@ -183,7 +183,7 @@ export class Story {
     if (this.shownId !== 'outer') return 'push';
     const f = this.state.flags;
     const p = this.d.outer.playerPosition();
-    if (f.bumped && !f.helped && this.d.outer.alley.nearestPickable(p) !== null) return 'collectApple';
+    if (f.bumped && (f.sawImp || f.helped) && !f.helped && this.d.outer.alley.nearestPickable(p) !== null) return 'collectApple';
     if (f.bumped && !f.delivered) {
       const n = this.d.outer.treeNiche();
       if (dist2(p.x, p.z, n.x, n.z) < TUNING.story.nicheRadius) return 'interact';
@@ -320,12 +320,15 @@ export class Story {
       label = 'targetTree';
     } else if (f.helped) key = 'stepInside';
     else if (f.bumped) {
+      // First inner visit comes first: look within and meet the imp, then go to the alley.
       key = f.sawImp ? 'stepAlley' : 'stepAngry';
-      const p = d.outer.playerPosition();
-      const a = TOWN.alleyStory.basket;
-      if (dist2(p.x, p.z, a.x, a.z) < TUNING.story.guidanceNearRadius) key = 'stepApples';
-      target = new Vector3(a.x, d.outer.groundY(a.x, a.z), a.z);
-      label = 'targetAlley';
+      if (f.sawImp) {
+        const p = d.outer.playerPosition();
+        const a = TOWN.alleyStory.basket;
+        if (dist2(p.x, p.z, a.x, a.z) < TUNING.story.guidanceNearRadius) key = 'stepApples';
+        target = new Vector3(a.x, d.outer.groundY(a.x, a.z), a.z);
+        label = 'targetAlley';
+      }
     } else if (!this.lookWithinOpen) {
       key = 'stepSquare';
       target = new Vector3(TOWN.beacon.x, d.outer.groundY(TOWN.beacon.x, TOWN.beacon.z), TOWN.beacon.z);
@@ -337,7 +340,7 @@ export class Story {
     } else key = 'stepFirstInside';
 
     // Presentation only: a gentle glow on the Look Within control while the objective is "press Q".
-    const lookSteps = ['stepFirstInside', 'stepReturn', 'stepInside', 'stepReturnTree', 'stepReturnAlley'];
+    const lookSteps = ['stepFirstInside', 'stepAngry', 'stepReturn', 'stepInside', 'stepReturnTree', 'stepReturnAlley'];
     document.body.classList.toggle('look-pulse', !busy && lookSteps.includes(key));
 
     this.beacon.hide();
