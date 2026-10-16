@@ -322,7 +322,11 @@ export class Story {
       key = 'stepSquare';
       target = new Vector3(TOWN.beacon.x, d.outer.groundY(TOWN.beacon.x, TOWN.beacon.z), TOWN.beacon.z);
       label = 'targetSquare';
-    } else key = this.innerVisited ? 'stepSquareReturn' : 'stepFirstInside';
+    } else if (this.innerVisited) {
+      key = 'stepSquareReturn';
+      target = new Vector3(TOWN.squareCentre.x, d.outer.groundY(TOWN.squareCentre.x, TOWN.squareCentre.z), TOWN.squareCentre.z);
+      label = 'targetSquare';
+    } else key = 'stepFirstInside';
 
     this.beacon.hide();
     this.innerBeacon.hide();
