@@ -65,11 +65,18 @@ export class BubbleField implements ThoughtField, BubbleHooks {
 
   /** A bubble is ready to be pushed (test hook). */
   get pushable(): boolean {
-    return this.bubbles.some((b) => b.pushable);
+    return this.pushCandidates().length > 0;
+  }
+
+  private pushCandidates(): ThoughtBubble[] { return this.bubbles.filter((b) => b.pushable); }
+
+  /** Identities of actionable thoughts; empty during push relief. */
+  get pushCueToken(): string {
+    return this.pushCandidates().map((b) => b.pushCueId).join(',');
   }
 
   push(): boolean {
-    const b = this.bubbles.find((x) => x.pushable);
+    const b = this.pushCandidates()[0];
     if (!b) return false;
     const p = this.world.playerPosition();
     b.push(b.x - p.x, b.z - p.z);

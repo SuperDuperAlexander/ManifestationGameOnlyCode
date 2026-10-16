@@ -17,6 +17,8 @@ const FADE_IN = 1.2;
 
 /** One Thought Wave (GAME_DESIGN 7.3). Logic and look; the mesh is owned by the WaveField. */
 export class ThoughtWave {
+  private static nextPushCueId = 1;
+  pushCueId = ThoughtWave.nextPushCueId++;
   state: WaveState = 'gone';
   x = 0;
   y = 0;
@@ -39,12 +41,14 @@ export class ThoughtWave {
     return this.state !== 'gone';
   }
 
+
   /** True while the wave can still be pushed or can still touch the player. */
   get approaching(): boolean {
     return this.state === 'drifting' || this.state === 'returning';
   }
 
   spawn(x: number, y: number, z: number, targetX: number, targetZ: number, scale: number, speed: number, state: WaveState, fromImp = false): void {
+    this.pushCueId = ThoughtWave.nextPushCueId++;
     this.x = x;
     this.y = y;
     this.z = z;

@@ -436,7 +436,7 @@ body.touch .breath-button .control-icon { grid-row: span 2; width: 22px; height:
 body.touch .breath-button .control-label { font-size: 11px; }
 body.touch .breath-button .control-hint { grid-column: 2; color: var(--ui-muted); font-size: 8px; }
 body.touch .look-button { right: calc(var(--edge-right) + 138px); bottom: var(--edge-bottom); width: 100px; gap: 7px; }
-body.touch .hand-button { right: calc(var(--edge-right) + 246px); bottom: var(--edge-bottom); width: 82px; gap: 7px; }
+body.touch .hand-button { right: calc(var(--edge-right) + 246px); bottom: var(--edge-bottom); width: 82px; gap: 2px; flex-direction: column; }
 body.touch .look-button .control-label, body.touch .hand-button .control-label { font-size: 10px; }
 body.touch .look-button .control-label, body.touch .hand-button .control-label, body.touch .breath-button .control-label { align-self: center; line-height: 1.2; }
 body.touch .look-button .control-icon, body.touch .hand-button .control-icon { width: 20px; height: 20px; }
@@ -679,6 +679,27 @@ body.touch .hand-button.collect {
   border-color: color-mix(in srgb, var(--gold) 76%, var(--ui-deep));
   background: color-mix(in srgb, var(--gold) 82%, var(--ui-paper));
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 34%, transparent), var(--soft-shadow);
+}
+
+/* Context action cues */
+.action-group .push-action.push-ready-pop,
+.hand-button.push-ready-pop {
+  transform-origin: 100% 100%;
+  border-color: color-mix(in srgb, var(--gold) 82%, var(--ui-deep));
+  background: color-mix(in srgb, var(--gold) 82%, var(--sandstone));
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--gold) 42%, transparent), 0 5px 24px color-mix(in srgb, var(--sandstone) 58%, transparent);
+  animation: push-ready-pop 620ms cubic-bezier(.2, .85, .3, 1.25) both;
+}
+@keyframes push-ready-pop {
+  0% { transform: scale(1); }
+  38% { transform: scale(1.28); }
+  70% { transform: scale(.98); }
+  100% { transform: scale(1); }
+}
+.action-group .push-action.push-ready-pop kbd { transform: scale(1.16); background: var(--ui-deep); color: var(--ui-paper); }
+@media (prefers-reduced-motion: reduce) {
+  .action-group .push-action.push-ready-pop,
+  .hand-button.push-ready-pop { animation: none; outline: 3px solid var(--gold); outline-offset: 3px; }
 }
 
 /* Imp breath progress */

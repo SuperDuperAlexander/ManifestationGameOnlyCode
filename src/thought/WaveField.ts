@@ -102,19 +102,23 @@ export class WaveField implements WaveHooks {
     return n;
   }
 
+  private pushCandidates(): ThoughtWave[] {
+    const p = this.world.playerPosition();
+    return this.waves.filter((w) => w.approaching && Math.hypot(w.x - p.x, w.z - p.z) - w.width * TUNING.waves.reachFactor < TUNING.waves.pushRange);
+  }
+
+  /** Stable identities for the same range-checked candidates accepted by push(). */
+  get pushCueToken(): string {
+    return this.pushCandidates().map((w) => w.pushCueId).join(',');
+  }
+
   /** E pressed: the nearest approaching wave in range bursts away and will return stronger. */
   push(): boolean {
     const p = this.world.playerPosition();
-    let best: ThoughtWave | null = null;
-    let bd = Infinity;
-    for (const w of this.waves) {
-      if (!w.approaching) continue;
-      const d = Math.hypot(w.x - p.x, w.z - p.z) - w.width * TUNING.waves.reachFactor;
-      if (d < TUNING.waves.pushRange && d < bd) {
-        bd = d;
-        best = w;
-      }
-    }
+    const best = this.pushCandidates().sort((a, b) =>
+      (Math.hypot(a.x - p.x, a.z - p.z) - a.width * TUNING.waves.reachFactor)
+      - (Math.hypot(b.x - p.x, b.z - p.z) - b.width * TUNING.waves.reachFactor),
+    )[0] ?? null;
     if (!best) return false;
     best.push();
     this.anger.pushed();

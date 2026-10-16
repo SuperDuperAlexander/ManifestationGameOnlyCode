@@ -147,6 +147,17 @@ export class ControlsHint {
 
   hide(): void { this.el.classList.remove('visible'); }
   setPushVisible(visible: boolean): void { this.pushAction.classList.toggle('off', !visible); }
+  cuePushOpportunity(token: string): void {
+    if (!token) {
+      this.pushButton.classList.remove('push-ready-pop');
+      return;
+    }
+    if (this.pushContext !== 'push' || this.pushAction.classList.contains('off')) return;
+    this.pushButton.classList.remove('push-ready-pop');
+    void this.pushButton.offsetWidth;
+    this.pushButton.classList.add('push-ready-pop');
+    this.pushButton.onanimationend = () => this.pushButton.classList.remove('push-ready-pop');
+  }
   setActionContext(context: 'push' | 'collectApple' | 'interact'): void {
     if (context === this.pushContext) return;
     this.pushContext = context;
@@ -158,6 +169,7 @@ export class ControlsHint {
     this.pushButton.setAttribute('aria-label', `${label} (E)`);
     this.pushButton.classList.toggle('collect-apple', context === 'collectApple');
     this.pushButton.classList.toggle('tree-interact', context === 'interact');
+    if (context !== 'push') this.pushButton.classList.remove('push-ready-pop');
   }
   setLookWithinVisible(visible: boolean): void { this.lookAction.classList.toggle('off', !visible); }
   setLookWithinLabel(text: string): void {

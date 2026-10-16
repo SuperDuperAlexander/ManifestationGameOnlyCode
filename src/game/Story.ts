@@ -194,11 +194,13 @@ export class Story {
     const f = this.state.flags;
     const p = this.d.inner.playerPosition();
     const i = this.d.inner.imp.root.position;
+    const near = dist2(p.x, p.z, i.x, i.z) <= TUNING.story.impBreathRadius;
+    const complete = f.impCalm;
     return {
-      visible: this.shownId === 'inner' && f.helped && !f.lanternRelit,
+      visible: this.shownId === 'inner' && f.helped && !f.lanternRelit && (near || complete),
       count: f.impCalm ? TUNING.imp.breathsToCalm : Math.min(this.impBreaths, TUNING.imp.breathsToCalm),
-      near: dist2(p.x, p.z, i.x, i.z) <= TUNING.story.impBreathRadius,
-      complete: f.impCalm,
+      near,
+      complete,
     };
   }
 
@@ -298,7 +300,9 @@ export class Story {
       else if (f.impCalm) key = 'stepFlame';
       else if (!f.helped) key = 'stepReturnAlley';
       else {
-        key = 'stepImp';
+        const p = d.inner.playerPosition();
+        const i = d.inner.imp.root.position;
+        key = !f.impCalm && dist2(p.x, p.z, i.x, i.z) > TUNING.story.impBreathRadius ? 'stepImpApproach' : 'stepImp';
         target = d.inner.imp.root.position.clone();
         label = 'targetImp';
       }

@@ -69,6 +69,8 @@ export function createBubbleKit(scene: Scene): BubbleKit {
 
 /** One comic Thought Bubble (GAME_DESIGN 7.3): spheres rise from the head, then a puffy cloud with text forms. */
 export class ThoughtBubble {
+  private static nextPushCueId = 1;
+  pushCueId = ThoughtBubble.nextPushCueId++;
   state: BubbleState = 'gone';
   x = 0;
   y = 0;
@@ -190,6 +192,7 @@ export class ThoughtBubble {
   }
 
   spawn(text: string, size: number, cx: number, cy: number, cz: number): void {
+    this.pushCueId = ThoughtBubble.nextPushCueId++;
     this.size = size;
     this.x = cx;
     this.y = cy;

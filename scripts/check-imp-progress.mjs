@@ -45,13 +45,15 @@ try {
   await helped.waitForFunction(() => !document.querySelector('.start-screen'));
   await helped.evaluate(() => window.__lw.toggle());
   await waitForWorld(helped);
-  await helped.waitForFunction(() => window.__lw.impBreathProgress().visible);
   const imp = await helped.evaluate(() => window.__lw.impPos());
   await helped.evaluate((p) => window.__lw.teleport(p.x + 2, p.z - 17), imp);
-  await helped.waitForFunction(() => document.querySelector('.imp-breath-status')?.textContent === 'Come close to the imp to breathe together.');
+  await helped.waitForFunction(() => !window.__lw.impBreathProgress().visible && document.querySelector('.imp-breath-progress')?.hidden === true);
+  await helped.waitForFunction(() => document.querySelector('.next-step-hint')?.textContent.includes('Go closer to the imp. Look at it. Feel the anger.'));
   await helped.evaluate(() => window.__lw.debugBreath());
   check((await readProgress(helped)).count === 0, 'far-away breath incorrectly advanced progress');
+  check(await helped.locator('.imp-breath-progress').isHidden(), 'far-away guidance still displayed the numeric progress panel');
   await helped.evaluate((p) => window.__lw.teleport(p.x + 2, p.z - 7), imp);
+  await helped.waitForFunction(() => window.__lw.impBreathProgress().visible);
   await helped.waitForFunction(() => document.querySelector('.imp-breath-status')?.textContent === 'Stay close and breathe together.');
   check(await helped.locator('.imp-breath-count').textContent() === '0/3', 'initial counter is not 0/3');
   check(await helped.locator('.imp-breath-mark.filled').count() === 0, 'initial marks are already filled');
@@ -101,9 +103,11 @@ try {
   await touch.waitForFunction(() => !document.querySelector('.start-screen'));
   await touch.evaluate(() => window.__lw.toggle());
   await waitForWorld(touch);
-  await touch.waitForFunction(() => window.__lw.impBreathProgress().visible);
   const touchImp = await touch.evaluate(() => window.__lw.impPos());
+  await touch.evaluate((p) => window.__lw.teleport(p.x + 2, p.z - 17), touchImp);
+  await touch.waitForFunction(() => !window.__lw.impBreathProgress().visible && document.querySelector('.imp-breath-progress')?.hidden === true);
   await touch.evaluate((p) => window.__lw.teleport(p.x + 2, p.z - 7), touchImp);
+  await touch.waitForFunction(() => window.__lw.impBreathProgress().visible);
   await touch.waitForFunction(() => document.querySelector('.imp-breath-count')?.textContent === '0/3');
   const fits = async () => touch.locator('.imp-breath-progress').evaluate((el) => {
     const r = el.getBoundingClientRect();

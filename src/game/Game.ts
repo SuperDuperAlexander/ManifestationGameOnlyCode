@@ -60,6 +60,7 @@ export class Game {
   private readonly guide: BreathGuide;
   private controls: ControlsHint | null = null;
   private controlsState = '';
+  private lastPushCueToken = '';
   private menu: MenuPanel | null = null;
   private lookWithinButton: LookWithinButton | null = null;
   private impProgress: ImpBreathProgress | null = null;
@@ -105,7 +106,7 @@ export class Game {
       });
       this.updateLookWithinLabels();
       BreathButton.setTexts(this.dialogue.line('controlsBreathe'), this.dialogue.line('controlsHoldRelease'));
-      HandButton.setTexts(this.dialogue.line('controlsPush'), this.dialogue.line('controlsInteract'), this.dialogue.line('controlsCollectApple'));
+      HandButton.setTexts(this.dialogue.line('controlsPush'), this.dialogue.line('controlsInteract'), this.dialogue.line('controlsCollectApple'), this.dialogue.line('controlsTapAction'));
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
       const raw = this.dialogue.data('thoughts');
@@ -283,6 +284,12 @@ export class Game {
     }
     shown ??= this.current;
     const field = this.fields.get(shown.id);
+    if (paused) {
+      this.controls?.setPushVisible(false);
+      this.controls?.cuePushOpportunity('');
+      this.hand?.setMode('dim');
+      this.lastPushCueToken = '';
+    }
     if (!paused) {
       if (field && shown === this.current && !this.transition.active) {
         if (this.pushQueued) field.push();
@@ -298,11 +305,12 @@ export class Game {
       if (this.hand) {
         const near = shown === this.current && !this.transition.active;
         const context = this.storyReady ? this.story.interactionContext() : 'push';
+        const pushToken = near && !paused && context === 'push' ? this.pushCueToken(field) : '';
         const mode = near && context === 'collectApple'
           ? 'collect'
           : near && context === 'interact'
             ? 'interact'
-            : near && (field?.count ?? 0) > 0
+            : pushToken !== ''
               ? 'push'
               : 'dim';
         this.hand.setMode(mode);
@@ -314,7 +322,21 @@ export class Game {
         this.controls?.setActionContext(this.story.interactionContext());
       }
       this.guide.update(dt, shown.breathSystem());
-      const push = (this.storyReady && this.story.state.flags.bumped) || this.debugBubbles;
+      const context = this.storyReady ? this.story.interactionContext() : 'push';
+      const pushToken = !paused && shown === this.current && !this.transition.active && context === 'push' ? this.pushCueToken(field) : '';
+      const push = !this.transition.active && (context !== 'push' || pushToken !== '');
+      if (this.controls) {
+        this.controls.setActionContext(context);
+        this.controls.setPushVisible(push);
+        if (!pushToken) {
+          this.controls.cuePushOpportunity('');
+          this.hand?.cuePushOpportunity('');
+        } else if (this.hasNewPushOpportunity(this.lastPushCueToken, pushToken)) {
+          this.controls.cuePushOpportunity(pushToken);
+          this.hand?.cuePushOpportunity(pushToken);
+        }
+      }
+      this.lastPushCueToken = pushToken;
       const look = this.storyReady && this.story.canLookWithin();
       const state = `${push}|${look}|${this.current.id}`;
       if (this.controls && state !== this.controlsState) {
@@ -339,6 +361,19 @@ export class Game {
     }
   }
 
+  private pushCueToken(field: ThoughtField | undefined): string {
+    if (field instanceof BubbleField) return field.pushCueToken;
+    if (field instanceof WaveField) return field.pushCueToken;
+    return '';
+  }
+
+  private hasNewPushOpportunity(previous: string, current: string): boolean {
+    if (!current) return false;
+    if (!previous) return true;
+    const oldIds = new Set(previous.split(','));
+    return current.split(',').some((id) => !oldIds.has(id));
+  }
+
   private installHooks(): void {
     const w = window as unknown as { __lw: unknown };
     w.__lw = {
@@ -355,8 +390,9 @@ export class Game {
       bubbles: () => this.fields.get(this.current.id)?.count ?? 0,
       pushable: () => {
         const f = this.fields.get(this.current.id);
-        return f instanceof BubbleField ? f.pushable : (f?.count ?? 0) > 0;
+        return this.pushCueToken(f) !== '';
       },
+      pushCueToken: () => this.pushCueToken(this.fields.get(this.current.id)),
       bumps: () => this.outer.bumps,
       townAgitation: () => this.outer.meanAgitation(),
       townAnger: () => this.anger.value * (this.storyReady ? this.story.townGate : 1),
