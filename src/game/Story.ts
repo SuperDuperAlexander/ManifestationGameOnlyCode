@@ -190,6 +190,18 @@ export class Story {
     return { x: p.x, z: p.z };
   }
 
+  impBreathProgress(): { visible: boolean; count: number; near: boolean; complete: boolean } {
+    const f = this.state.flags;
+    const p = this.d.inner.playerPosition();
+    const i = this.d.inner.imp.root.position;
+    return {
+      visible: this.shownId === 'inner' && f.helped && !f.lanternRelit,
+      count: f.impCalm ? TUNING.imp.breathsToCalm : Math.min(this.impBreaths, TUNING.imp.breathsToCalm),
+      near: dist2(p.x, p.z, i.x, i.z) <= TUNING.story.impBreathRadius,
+      complete: f.impCalm,
+    };
+  }
+
   // --- Per frame ---
 
   update(dt: number, shown: WorldId, busy: boolean): void {

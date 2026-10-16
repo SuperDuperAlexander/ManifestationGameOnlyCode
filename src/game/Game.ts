@@ -27,6 +27,7 @@ import { ControlsHint } from '../ui/ControlsHint';
 import { StartScreen } from '../ui/StartScreen';
 import { HitTint } from '../ui/HitTint';
 import { MenuPanel } from '../ui/MenuPanel';
+import { ImpBreathProgress } from '../ui/ImpBreathProgress';
 import { Lantern } from './Lantern';
 import { Story } from './Story';
 import { StoryState } from './StoryState';
@@ -61,6 +62,7 @@ export class Game {
   private controlsState = '';
   private menu: MenuPanel | null = null;
   private lookWithinButton: LookWithinButton | null = null;
+  private impProgress: ImpBreathProgress | null = null;
   private readonly touch: boolean;
 
   /** Debug only: bubbles appear without the bump. */
@@ -118,6 +120,7 @@ export class Game {
         breatheIn: dl.line('guideIn'),
         breatheOut: dl.line('guideOut'),
       };
+      this.impProgress = new ImpBreathProgress(ui, (key) => dl.line(key), TUNING.imp.breathsToCalm);
       const hasSave = StoryState.savedBeat() > 0;
       start.setTexts(dl.line('startTitle'), dl.line('startSubtitle'), dl.line('startPrompt'), dl.line('startBegin'), hasSave ? dl.line('startContinue') : null, dl.line('taskLantern'));
       this.menu = new MenuPanel(ui, (key) => dl.line(key), (open) => {
@@ -290,6 +293,7 @@ export class Game {
       }
       if (this.storyReady) {
         this.story.update(dt, shown.id, this.transition.active);
+        this.impProgress?.update(this.story.impBreathProgress());
         this.guide.wanted = this.story.needsBreathHelp();
         this.controls?.setActionContext(this.story.interactionContext());
       }
@@ -358,6 +362,7 @@ export class Game {
       bumpTrigger: () => this.story.bumpTrigger(),
       oldTreeNiche: () => this.story.oldTreeNiche(),
       impPos: () => this.story.impPos(),
+      impBreathProgress: () => this.story.impBreathProgress(),
       endCardVisible: () => this.story.endCard.visible,
       line: () => this.lastLine,
       interactionContext: () => this.story.interactionContext(),
