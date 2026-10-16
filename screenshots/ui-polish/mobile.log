@@ -1,0 +1,11 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5173/?debug&skipintro&touch --mobile --scenario touchui --out screenshots/ui-polish/mobile
+
+screenshot: screenshots\ui-polish\mobile\touch-portrait.png
+screenshot: screenshots\ui-polish\mobile\touch-landscape.png
+touchui: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0
+mobile exit=0

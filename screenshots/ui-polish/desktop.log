@@ -1,0 +1,17 @@
+
+> light-within@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5173/?debug&skipintro --scenario lookwithin --out screenshots/ui-polish/desktop
+
+screenshot: screenshots\ui-polish\desktop\outer-start.png
+outer player position P: {"x":0,"y":1.7243329665685647,"z":41}
+draw calls outer: 45
+screenshot: screenshots\ui-polish\desktop\inner.png
+draw calls inner: 31
+screenshot: screenshots\ui-polish\desktop\outer-back.png
+outer player position back: {"x":0,"y":1.7243329665685647,"z":41}
+position drift: 0.000 m (limit 0.05)
+lookwithin: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0
+desktop exit=0
