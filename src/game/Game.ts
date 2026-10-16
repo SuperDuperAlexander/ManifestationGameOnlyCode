@@ -102,7 +102,7 @@ export class Game {
       });
       this.updateLookWithinLabels();
       BreathButton.setTexts(this.dialogue.line('controlsBreathe'), this.dialogue.line('controlsHoldRelease'));
-      HandButton.setTexts(this.dialogue.line('controlsPush'), this.dialogue.line('controlsInteract'));
+      HandButton.setTexts(this.dialogue.line('controlsPush'), this.dialogue.line('controlsInteract'), this.dialogue.line('controlsCollectApple'));
       const text = this.dialogue.line('waveText');
       for (const f of this.fields.values()) f.setText(text);
       const raw = this.dialogue.data('thoughts');
@@ -278,11 +278,20 @@ export class Game {
       this.hitTint.update(dt);
       if (this.hand) {
         const near = shown === this.current && !this.transition.active;
-        this.hand.setMode(near && this.glowTargets().length > 0 ? 'interact' : near && (field?.count ?? 0) > 0 ? 'push' : 'dim');
+        const context = this.storyReady ? this.story.interactionContext() : 'push';
+        const mode = near && context === 'collectApple'
+          ? 'collect'
+          : near && context === 'interact'
+            ? 'interact'
+            : near && (field?.count ?? 0) > 0
+              ? 'push'
+              : 'dim';
+        this.hand.setMode(mode);
       }
       if (this.storyReady) {
         this.story.update(dt, shown.id, this.transition.active);
         this.guide.wanted = this.story.needsBreathHelp();
+        this.controls?.setActionContext(this.story.interactionContext());
       }
       this.guide.update(dt, shown.breathSystem());
       const push = (this.storyReady && this.story.state.flags.bumped) || this.debugBubbles;
@@ -351,6 +360,8 @@ export class Game {
       impPos: () => this.story.impPos(),
       endCardVisible: () => this.story.endCard.visible,
       line: () => this.lastLine,
+      interactionContext: () => this.story.interactionContext(),
+      applesLeft: () => this.outer.alley.applesLeft(),
       clearSave: () => StoryState.clear(),
       drawCalls: () => this.overlays.get(this.current.id)?.stats().drawCalls ?? 0,
     };

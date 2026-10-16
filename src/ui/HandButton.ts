@@ -1,16 +1,18 @@
 import { createControlIcon } from './ControlIcons';
 
-export type HandMode = 'dim' | 'push' | 'interact';
+export type HandMode = 'dim' | 'push' | 'interact' | 'collect';
 
 /** Touch action button. Its label follows the nearby action. */
 export class HandButton {
   private static readonly instances = new Set<HandButton>();
   private static pushText = '';
   private static interactText = '';
+  private static collectText = '';
   readonly el: HTMLDivElement;
   private mode: HandMode = 'dim';
   private readonly label: HTMLSpanElement;
   private readonly hint: HTMLSpanElement;
+  private icon: SVGSVGElement;
 
   constructor(parent: HTMLElement, onPress: () => void) {
     this.el = document.createElement('div');
@@ -21,7 +23,8 @@ export class HandButton {
     this.label.className = 'control-label';
     this.hint = document.createElement('span');
     this.hint.className = 'control-hint';
-    this.el.append(createControlIcon('push'), this.label, this.hint);
+    this.icon = createControlIcon('push');
+    this.el.append(this.icon, this.label, this.hint);
     parent.appendChild(this.el);
     HandButton.instances.add(this);
     this.applyLabel();
@@ -40,14 +43,15 @@ export class HandButton {
     window.addEventListener('blur', up);
   }
 
-  static setTexts(push: string, interact: string): void {
+  static setTexts(push: string, interact: string, collect: string): void {
     HandButton.pushText = push;
     HandButton.interactText = interact;
+    HandButton.collectText = collect;
     for (const instance of HandButton.instances) instance.applyLabel();
   }
 
   private applyLabel(): void {
-    const text = this.mode === 'interact' ? HandButton.interactText : HandButton.pushText;
+    const text = this.mode === 'collect' ? HandButton.collectText : this.mode === 'interact' ? HandButton.interactText : HandButton.pushText;
     this.label.textContent = text;
     this.el.setAttribute('aria-label', text);
   }
@@ -58,6 +62,10 @@ export class HandButton {
     this.el.classList.toggle('dim', mode === 'dim');
     this.el.classList.toggle('push', mode === 'push');
     this.el.classList.toggle('interact', mode === 'interact');
+    this.el.classList.toggle('collect', mode === 'collect');
+    const icon = mode === 'collect' ? 'collect' : 'push';
+    this.icon.replaceWith(createControlIcon(icon));
+    this.icon = this.el.querySelector('svg')!;
     this.applyLabel();
   }
 }

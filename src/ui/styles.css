@@ -538,3 +538,23 @@ body.touch .bg-label { inset: auto -64px -28px !important; width: 184px; }
     padding: 8px 12px;
   }
 }
+
+/* Contextual apple action */
+.action-group .push-action.collect-apple {
+  border-color: color-mix(in srgb, var(--gold) 76%, var(--ui-deep));
+  background: color-mix(in srgb, var(--gold) 82%, var(--ui-paper));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 34%, transparent), 0 5px 22px color-mix(in srgb, var(--gold) 30%, transparent);
+  font-weight: 600;
+}
+.action-group .push-action.collect-apple .control-icon { color: var(--ui-deep); }
+body.touch .hand-button.collect { width: 124px; }
+.hand-button.collect {
+  border-color: color-mix(in srgb, var(--gold) 76%, var(--ui-deep));
+  background: color-mix(in srgb, var(--gold) 82%, var(--ui-paper));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 34%, transparent), var(--soft-shadow);
+}
+body.touch .hand-button.collect {
+  border-color: color-mix(in srgb, var(--gold) 76%, var(--ui-deep));
+  background: color-mix(in srgb, var(--gold) 82%, var(--ui-paper));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 34%, transparent), var(--soft-shadow);
+}

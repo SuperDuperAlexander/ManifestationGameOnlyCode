@@ -11,10 +11,11 @@ export class ControlsHint {
   private readonly moveNote: HTMLDivElement;
   private readonly touch: boolean;
   private readonly heldKeys = new Set<string>();
+  private pushContext: 'push' | 'collectApple' | 'interact' = 'push';
 
   constructor(
     parent: HTMLElement,
-    texts: (key: string) => string,
+    private readonly texts: (key: string) => string,
     actions?: { push: () => void; lookWithin: () => void },
   ) {
     this.touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
@@ -146,6 +147,18 @@ export class ControlsHint {
 
   hide(): void { this.el.classList.remove('visible'); }
   setPushVisible(visible: boolean): void { this.pushAction.classList.toggle('off', !visible); }
+  setActionContext(context: 'push' | 'collectApple' | 'interact'): void {
+    if (context === this.pushContext) return;
+    this.pushContext = context;
+    const label = this.texts(context === 'collectApple' ? 'controlsCollectApple' : context === 'interact' ? 'controlsInteract' : 'controlsPush');
+    const icon = context === 'collectApple' ? 'collect' : 'push';
+    const iconEl = this.pushButton.querySelector('svg');
+    iconEl?.replaceWith(createControlIcon(icon));
+    this.pushButton.querySelector('.action-label')!.textContent = label;
+    this.pushButton.setAttribute('aria-label', `${label} (E)`);
+    this.pushButton.classList.toggle('collect-apple', context === 'collectApple');
+    this.pushButton.classList.toggle('tree-interact', context === 'interact');
+  }
   setLookWithinVisible(visible: boolean): void { this.lookAction.classList.toggle('off', !visible); }
   setLookWithinLabel(text: string): void {
     this.lookButton.querySelector('.action-label')!.textContent = text;

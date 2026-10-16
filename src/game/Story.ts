@@ -172,6 +172,19 @@ export class Story {
     return { x: n.x, z: n.z - 1.6 };
   }
 
+  /** The current E action, using the same range and priority rules as interact(). */
+  interactionContext(): 'push' | 'collectApple' | 'interact' {
+    if (this.shownId !== 'outer') return 'push';
+    const f = this.state.flags;
+    const p = this.d.outer.playerPosition();
+    if (f.bumped && !f.helped && this.d.outer.alley.nearestPickable(p) !== null) return 'collectApple';
+    if (f.bumped && !f.delivered) {
+      const n = this.d.outer.treeNiche();
+      if (dist2(p.x, p.z, n.x, n.z) < TUNING.story.nicheRadius) return 'interact';
+    }
+    return 'push';
+  }
+
   impPos(): { x: number; z: number } {
     const p = this.d.inner.imp.root.position;
     return { x: p.x, z: p.z };
@@ -315,7 +328,8 @@ export class Story {
     const d = this.d;
     const f = this.state.flags;
     const p = d.outer.playerPosition();
-    if (f.bumped && !f.helped) {
+    const context = this.interactionContext();
+    if (context === 'collectApple') {
       const i = d.outer.alley.nearestPickable(p);
       if (i !== null) {
         d.outer.alley.pickApple(i);
@@ -323,7 +337,7 @@ export class Story {
         return true;
       }
     }
-    if (!f.delivered && f.bumped) {
+    if (context === 'interact' && !f.delivered && f.bumped) {
       const n = d.outer.treeNiche();
       if (dist2(p.x, p.z, n.x, n.z) < TUNING.story.nicheRadius) {
         if (f.lanternRelit && d.outerLantern.light >= TUNING.story.treeNeedsLight) this.deliver();
