@@ -126,6 +126,8 @@ export const TUNING = {
     /** Breath level change per second while inhaling / exhaling (1 = full in 1 s). */
     inhaleRate: 1 / 2,
     exhaleRate: 1 / 2,
+    /** Walk speed factor while breathing (walking and breathing work together). */
+    walkFactor: 0.8,
     /** Breath level falls back to 0 this fast when idle. */
     idleDecay: 0.35,
     /** A phase shorter than this is ignored for scoring. */
@@ -138,21 +140,25 @@ export const TUNING = {
     lightRadiusGain: 3.6,
     /** Exhaled light reaches fog within this distance. */
     reach: 7.5,
-    /** Soft light flecks drift toward the chest in both phases (BreathVisuals). */
+    /** Breath look (BreathVisuals): a gentle vortex of light motes comes TO the chest. */
     rays: {
-      /** Flecks per breath phase. */
-      count: 10,
-      /** Inhale: start distance from the figure (min, max) and height (min, max), metres. */
-      inStart: [3, 4.2], inHeight: [0.2, 2.4],
-      /** Exhale starts a little closer and curls gently as it reaches the chest. */
-      exhaleStart: [2.6, 3.8], exhaleCurl: 0.12,
+      /** Motes in the vortex (pooled, one draw call). Reduced motion uses reducedFactor. */
+      count: 56,
+      reducedFactor: 0.5,
+      /** Start ring radius (min, max) and height above ground (min, max), metres. */
+      inStart: [2.0, 3.0], inHeight: [0.25, 1.6],
       chestHeight: 0.9,
-      /** Short fleck length and width, in metres. */
-      fleckLength: 0.28, width: 0.12,
-      /** Visual travel time per fleck. Exhale is slower and softer than inhale. */
-      inhaleTravelS: 1.45, exhaleTravelS: 1.9,
-      /** Overall brightness 0..1 and how fast the in/out mix fades (per second). */
-      brightness: 1.6, mixRate: 5,
+      /** Turns a mote makes on its way in, and how much it accelerates (power on time). */
+      swirlTurns: 0.9, accel: 1.7,
+      /** Mote tail length (metres at start, shrinks on arrival) and width. */
+      fleckLength: 0.2, width: 0.07,
+      /** Seconds for one mote to arrive. Slower under reduced motion (x reducedSlow). */
+      inhaleTravelS: 1.8, reducedSlow: 1.6,
+      brightness: 1.3, mixRate: 4,
+      /** Tightening / expanding halo ring on the ground-plane around the figure. */
+      haloInRadius: [3.0, 0.9], haloOutRadius: [0.9, 3.2], haloHeight: 0.35, haloAlpha: 0.32,
+      /** Chest glow: base size, extra size at full breath, peak pulse, alpha. */
+      chestSize: 0.7, chestGain: 0.5, chestPulse: 0.25, chestAlpha: 0.55,
     },
   },
 
@@ -402,6 +408,10 @@ export const TUNING = {
   },
 
   /** Inner World (GAME_DESIGN 5.2): the small valley inside. Layout positions: src/inner/innerLayout.ts. */
+  touch: {
+    /** Joystick travel radius in px. */
+    joystickRadius: 56,
+  },
   inner: {
     /** Half size of the valley floor, east-west and north-south. */
     floorRadiusX: 24,

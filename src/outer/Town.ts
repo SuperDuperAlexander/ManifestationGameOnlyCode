@@ -22,6 +22,7 @@ import { HOUSE_PADS, LANE_SEGMENTS, STREAM_START_X, buildTownTerrain, houseRoofA
 import { buildStream, buildWaterfall } from '../inner/ValleyWater';
 import type { ValleyTerrain } from '../inner/ValleyTerrain';
 import { Joystick } from '../ui/Joystick';
+import { TouchRouter } from '../ui/TouchRouter';
 import { BreathButton } from '../ui/BreathButton';
 import { isTouchDevice } from '../core/Performance';
 import type { World } from '../game/World';
@@ -87,18 +88,15 @@ export class Town implements World {
     this.controller.teleport(TOWN.start.x, TOWN.start.z);
     this.placeVisual(0);
 
-    // Touch controls (left half walks). Keyboard works through the InputManager.
-    let right: HTMLElement | null = null;
+    // Touch controls (one zone: first finger walks, second turns the camera).
+    let touchZone: HTMLElement | null = null;
+    let stick: Joystick | null = null;
     if (this.touch) {
-      right = document.createElement('div');
-      right.className = 'touch-zone touch-right';
-      ui.appendChild(right);
-      this.zones.push(right);
-      const left = document.createElement('div');
-      left.className = 'touch-zone touch-left';
-      ui.appendChild(left);
-      this.zones.push(left);
-      new Joystick(ui, this.input, left);
+      touchZone = document.createElement('div');
+      touchZone.className = 'touch-zone';
+      ui.appendChild(touchZone);
+      this.zones.push(touchZone);
+      stick = new Joystick(ui, this.input);
       new BreathButton(ui, this.input);
     }
     this.input.attach();
@@ -112,7 +110,8 @@ export class Town implements World {
     this.bump = new BumpSequence(this.scene, () => this.controller.position);
     this.alley = new Alley(this.scene, this.bump.stranger);
 
-    this.cam = new FollowCamera(this.scene, { height: (x, z) => this.camGround(x, z) }, canvas, right);
+    this.cam = new FollowCamera(this.scene, { height: (x, z) => this.camGround(x, z) }, canvas, this.touch);
+    if (touchZone && stick) new TouchRouter(touchZone, stick, this.cam);
     this.cam.snapTo(this.visual.root.position, 0);
     engine.onResizeObservable.add(() => this.cam.onResize());
     canvas.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -187,7 +186,7 @@ export class Town implements World {
     this.breath.update(dt, { inhale: this.input.inhaleHeld, exhale: this.input.exhaleHeld, releaseExhales: this.touch });
     this.slowTime = Math.max(0, this.slowTime - dt);
     const slow = this.slowTime > 0 ? this.slowFactor : 1;
-    this.controller.speedFactor = (this.breath.state === 'idle' ? 1 : 0.6) * slow;
+    this.controller.speedFactor = (this.breath.state === 'idle' ? 1 : TUNING.breath.walkFactor) * slow;
     this.controller.update(dt);
     this.applyShove(dt);
     this.placeVisual(dt);

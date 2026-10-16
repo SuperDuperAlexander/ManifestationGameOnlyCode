@@ -11,7 +11,7 @@ export interface GroundHeight {
 
 /**
  * Third-person camera behind the player, like in Zelda or Messenger.
- * - Drag (mouse anywhere, or a finger on the right half of a touch screen) turns it.
+ * - Drag (mouse anywhere, or a second finger on a touch screen) turns it.
  * - The mouse wheel moves it closer or further.
  * - When nobody drags, it slowly swings back behind the walking player.
  * - When a hill or rock wall is between it and the player, it moves closer
@@ -43,8 +43,8 @@ export class FollowCamera {
     private readonly scene: Scene,
     private readonly terrain: GroundHeight,
     canvas: HTMLCanvasElement,
-    /** Touch screens: only this element (right half) turns the camera. */
-    touchZone: HTMLElement | null,
+    /** True when a TouchRouter drives touch drags (canvas then only takes the mouse). */
+    touchRouted: boolean,
   ) {
     const c = TUNING.inner.camera;
     this.camera = new FreeCamera('valley.camera', new Vector3(0, 5, -10), scene);
@@ -54,28 +54,24 @@ export class FollowCamera {
     this.camera.fovMode = Camera.FOVMODE_VERTICAL_FIXED;
     this.onResize();
 
-    const dragTarget = touchZone ?? canvas;
-    dragTarget.addEventListener('pointerdown', (e) => {
+    // Mouse (and touch when no touch router is used) drags on the canvas.
+    canvas.addEventListener('pointerdown', (e) => {
       if (this.dragId !== null) return;
-      if (touchZone && e.pointerType === 'mouse') return;
+      if (touchRouted && e.pointerType !== 'mouse') return;
       this.dragId = e.pointerId;
       this.lastX = e.clientX;
       this.lastY = e.clientY;
-      dragTarget.setPointerCapture(e.pointerId);
+      canvas.setPointerCapture(e.pointerId);
     });
-    dragTarget.addEventListener('pointermove', (e) => {
+    canvas.addEventListener('pointermove', (e) => {
       if (e.pointerId !== this.dragId) return;
-      const dx = e.clientX - this.lastX;
-      const dy = e.clientY - this.lastY;
-      this.lastX = e.clientX;
-      this.lastY = e.clientY;
-      this.turn(dx, dy);
+      this.dragMove(e.clientX, e.clientY);
     });
     const end = (e: PointerEvent): void => {
       if (e.pointerId === this.dragId) this.dragId = null;
     };
-    dragTarget.addEventListener('pointerup', end);
-    dragTarget.addEventListener('pointercancel', end);
+    canvas.addEventListener('pointerup', end);
+    canvas.addEventListener('pointercancel', end);
     canvas.addEventListener(
       'wheel',
       (e) => {
@@ -85,6 +81,20 @@ export class FollowCamera {
       { passive: false },
     );
   }
+
+  /** Camera finger (from TouchRouter). */
+  dragStart(x: number, y: number): void {
+    this.lastX = x;
+    this.lastY = y;
+  }
+
+  dragMove(x: number, y: number): void {
+    this.turn(x - this.lastX, y - this.lastY);
+    this.lastX = x;
+    this.lastY = y;
+  }
+
+  dragEnd(): void {}
 
   /** Lifts the look target toward `point` and pulls back, by `weight` 0..1 (e.g. near the big Anger Imp). */
   setFocus(point: Vector3 | null, weight: number, extraDist: number, blend: number): void {

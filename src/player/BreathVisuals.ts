@@ -16,33 +16,55 @@ import type { BreathSystem } from './BreathSystem';
 const GOLDEN = 2.39996323;
 const ease = (t: number): number => t * t * (3 - 2 * t);
 const frac = (x: number): number => x - Math.floor(x);
+const clamp01 = (x: number): number => (x < 0 ? 0 : x > 1 ? 1 : x);
+
+const reducedMotion = (): boolean =>
+  typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 /**
  * What breathing looks like around the player:
- * - both breath phases draw soft golden light flecks toward the chest,
- * - exhale flecks curl gently as they arrive; a light ring rests on the ground.
- * All rays are one pooled mesh (one draw call); positions are rewritten each frame.
+ * - inhale: soft gold/ivory motes spiral in from a ring and arrive at the chest (a vortex
+ *   that comes TO you); a faint halo on the ground tightens with them,
+ * - peak: a gentle warm glow at the chest,
+ * - exhale: the same halo softly widens and dissolves; nothing flies away.
+ * Motes are one pooled mesh (1 draw call); halo ring and chest glow add 1 each (+2 total).
  */
 export class BreathVisuals {
   private readonly ring: Mesh;
   private readonly ringMat: PaperMaterial;
+  private readonly halo: Mesh;
+  private readonly haloMat: PaperMaterial;
+  private readonly chest: Mesh;
+  private readonly chestMat: PaperMaterial;
   private readonly rays: Mesh;
   private readonly pos: Float32Array;
   private readonly col: Float32Array;
-  private readonly n = TUNING.breath.rays.count;
+  private readonly n: number;
+  private readonly slow: number;
   private inMix = 0;
-  private outMix = 0;
   private inClock = 0;
-  private outClock = 0;
   private lastState = 'idle';
   private ringAlpha = 0;
   private ringRadius = 1;
+  private haloA = 0;
+  private haloR = 3;
+  private chestA = 0;
+  private peak = 0;
+  private time = 0;
+  private readonly head: number[] = [0, 0, 0];
+  private readonly tail: number[] = [0, 0, 0];
   private readonly gold = Color3.FromHexString(PALETTE.gold);
   private readonly ivory = Color3.FromHexString(PALETTE.ivory);
+  private readonly sand = Color3.FromHexString(PALETTE.sandstone);
   /** Smoothed glow for the figure, 0..1. */
   glow = 0;
 
   constructor(private readonly scene: Scene) {
+    const R = TUNING.breath.rays;
+    const reduced = reducedMotion();
+    this.n = Math.max(8, Math.round(R.count * (reduced ? R.reducedFactor : 1)));
+    this.slow = reduced ? R.reducedSlow : 1;
+
     this.ringMat = createPaperMaterial('breath.ringMat', scene, {
       texture: procTexture(scene, 'ring'),
       additive: true,
@@ -53,8 +75,30 @@ export class BreathVisuals {
     this.ring.alwaysSelectAsActiveMesh = true;
     this.ring.isVisible = false;
 
-    // Rays: 2 groups (inhale, exhale) x n flecks x 4 vertices.
-    const quads = this.n * 2;
+    // Breath halo: same ring texture, own tint; tightens in, widens out.
+    this.haloMat = createPaperMaterial('breath.haloMat', scene, {
+      texture: procTexture(scene, 'ring'),
+      additive: true,
+    });
+    this.halo = MeshBuilder.CreateGround('breath.halo', { width: 2, height: 2 }, scene);
+    this.halo.material = this.haloMat;
+    this.halo.isPickable = false;
+    this.halo.alwaysSelectAsActiveMesh = true;
+    this.halo.isVisible = false;
+
+    // Chest glow: soft billboard.
+    this.chestMat = createPaperMaterial('breath.chestMat', scene, {
+      texture: procTexture(scene, 'halo'),
+      additive: true,
+    });
+    this.chest = MeshBuilder.CreatePlane('breath.chest', { size: 1 }, scene);
+    this.chest.billboardMode = Mesh.BILLBOARDMODE_ALL;
+    this.chest.material = this.chestMat;
+    this.chest.isPickable = false;
+    this.chest.alwaysSelectAsActiveMesh = true;
+    this.chest.isVisible = false;
+
+    const quads = this.n;
     this.pos = new Float32Array(quads * 12);
     this.col = new Float32Array(quads * 16);
     const uvs: number[] = [];
@@ -104,16 +148,32 @@ export class BreathVisuals {
     }
   }
 
+  /** Position of mote i at progress t (0 = on the outer ring, 1 = at the chest). */
+  private place(i: number, t: number, out: number[], cx: number, cy: number, cz: number, gy: number): void {
+    const R = TUNING.breath.rays;
+    const a0 = i * GOLDEN;
+    const r0 = R.inStart[0] + (R.inStart[1] - R.inStart[0]) * frac(i * 0.618 + 0.13);
+    const h0 = R.inHeight[0] + (R.inHeight[1] - R.inHeight[0]) * frac(i * 0.381 + 0.27);
+    const e = Math.pow(clamp01(t), R.accel);
+    const r = r0 * (1 - e) + 0.12;
+    const a = a0 + R.swirlTurns * Math.PI * 2 * e;
+    out[0] = cx + Math.cos(a) * r;
+    out[1] = gy + h0 + (cy - gy - h0) * e;
+    out[2] = cz + Math.sin(a) * r;
+  }
+
   update(dt: number, breath: BreathSystem, playerPos: Vector3): void {
     const R = TUNING.breath.rays;
+    this.time += dt;
     const inhaling = breath.state === 'inhale';
     const exhaling = breath.state === 'exhale' && breath.breathLevel > 0.001;
+    const level = breath.breathLevel;
     // Glow: rises with the in-breath, softens while breathing out.
-    const glowTarget = inhaling ? 0.35 + breath.breathLevel * 0.65 : breath.breathLevel * 0.45;
+    const glowTarget = inhaling ? 0.35 + level * 0.65 : level * 0.45;
     this.glow += (glowTarget - this.glow) * damp(6, dt);
 
     // Ring on the ground: its size is the light radius.
-    const ringTarget = breath.state === 'idle' ? breath.breathLevel * 0.5 : 0.35 + breath.breathLevel * 0.65;
+    const ringTarget = breath.state === 'idle' ? level * 0.5 : 0.35 + level * 0.65;
     this.ringAlpha += (ringTarget - this.ringAlpha) * damp(5, dt);
     this.ringRadius += (breath.lightRadius - this.ringRadius) * damp(5, dt);
     this.ring.isVisible = this.ringAlpha > 0.02;
@@ -121,64 +181,82 @@ export class BreathVisuals {
     this.ring.scaling.set(this.ringRadius, 1, this.ringRadius);
     setPaperColor(this.ringMat, new Color4(1, 1, 1, this.ringAlpha * 0.6));
 
-    // Rays.
     if (breath.state !== this.lastState) {
       if (inhaling) this.inClock = 0;
-      if (breath.state === 'exhale') this.outClock = 0;
       this.lastState = breath.state;
     }
     const m = damp(R.mixRate, dt);
     this.inMix += ((inhaling ? 1 : 0) - this.inMix) * m;
-    this.outMix += ((exhaling ? 1 : 0) - this.outMix) * m;
     if (inhaling) this.inClock += dt;
-    if (exhaling) this.outClock += dt;
-    const show = this.inMix > 0.01 || this.outMix > 0.01;
+
+    const cx = playerPos.x, cy = playerPos.y + R.chestHeight, cz = playerPos.z;
+
+    // Halo: tightens toward the figure on the in-breath, widens and dissolves on the out-breath.
+    let haloTargetA = 0;
+    let haloTargetR = this.haloR;
+    if (inhaling) {
+      haloTargetR = R.haloInRadius[0] + (R.haloInRadius[1] - R.haloInRadius[0]) * ease(level);
+      haloTargetA = R.haloAlpha * (0.4 + 0.6 * level);
+    } else if (exhaling) {
+      const p = 1 - level; // 0 at the start of the out-breath, 1 when it is spent
+      haloTargetR = R.haloOutRadius[0] + (R.haloOutRadius[1] - R.haloOutRadius[0]) * ease(p);
+      haloTargetA = R.haloAlpha * Math.sin(Math.PI * clamp01(0.15 + p * 0.85)) * Math.max(level, 0.15);
+    }
+    this.haloR += (haloTargetR - this.haloR) * damp(inhaling ? 6 : 4, dt);
+    this.haloA += (haloTargetA - this.haloA) * damp(4, dt);
+    this.halo.isVisible = this.haloA > 0.01;
+    if (this.halo.isVisible) {
+      this.halo.position.set(cx, playerPos.y + R.haloHeight, cz);
+      this.halo.scaling.set(this.haloR, 1, this.haloR);
+      const hx = inhaling ? 0.2 : 0.55; // gold on the way in, ivory-warm on the way out
+      setPaperColor(this.haloMat, new Color4(
+        this.gold.r + (this.ivory.r - this.gold.r) * hx,
+        this.gold.g + (this.ivory.g - this.gold.g) * hx,
+        this.gold.b + (this.ivory.b - this.gold.b) * hx,
+        this.haloA,
+      ));
+    }
+
+    // Chest glow: swells with the breath, a small soft pulse near the peak.
+    const peakTarget = clamp01((level - 0.8) / 0.2);
+    this.peak += (peakTarget - this.peak) * damp(5, dt);
+    const chestTarget = inhaling || exhaling ? 0.3 + 0.7 * level : level * 0.5;
+    this.chestA += (chestTarget - this.chestA) * damp(5, dt);
+    this.chest.isVisible = this.chestA > 0.02;
+    if (this.chest.isVisible) {
+      const sway = 1 + 0.05 * Math.sin(this.time * 2.2);
+      const size = (R.chestSize + R.chestGain * level + R.chestPulse * ease(this.peak)) * sway;
+      this.chest.position.set(cx, cy, cz);
+      this.chest.scaling.set(size, size, size);
+      const c = this.sand;
+      const mix = 0.5 + 0.5 * this.peak;
+      setPaperColor(this.chestMat, new Color4(
+        c.r + (this.gold.r - c.r) * mix,
+        c.g + (this.gold.g - c.g) * mix,
+        c.b + (this.gold.b - c.b) * mix,
+        this.chestA * R.chestAlpha,
+      ));
+    }
+
+    // Motes: spiral inward, accelerating, shrinking and fading as they arrive.
+    const show = this.inMix > 0.01;
     this.rays.isVisible = show;
     if (!show) return;
 
     const cam = this.scene.activeCamera?.globalPosition ?? playerPos;
-    const cx = playerPos.x, cy = playerPos.y + R.chestHeight, cz = playerPos.z;
-    const lvl = 0.6 + 0.4 * breath.breathLevel;
     const n = this.n;
+    const travel = (R.inhaleTravelS * this.slow) / (0.7 + 0.6 * clamp01(level + 0.2));
+    const dtT = 0.06;
+    const { head, tail } = this;
     for (let i = 0; i < n; i++) {
-      // Inhale: direct, steady flecks moving toward the chest.
-      {
-        const t = frac(this.inClock / R.inhaleTravelS + i / n);
-        const a = i * GOLDEN;
-        const dist = R.inStart[0] + (R.inStart[1] - R.inStart[0]) * frac(i * 0.618 + 0.13);
-        const h = R.inHeight[0] + (R.inHeight[1] - R.inHeight[0]) * frac(i * 0.381 + 0.27);
-        const e = ease(t);
-        const sx = cx + Math.cos(a) * dist, sy = playerPos.y + h, sz = cz + Math.sin(a) * dist;
-        const hx = sx + (cx - sx) * e, hy = sy + (cy - sy) * e, hz = sz + (cz - sz) * e;
-        // The tail trails back toward where the ray came from.
-        const back = (R.fleckLength * (1 - 0.15 * e)) / dist;
-        const tx = hx + (sx - cx) * back, ty = hy + (sy - cy) * back, tz = hz + (sz - cz) * back;
-        const fade = Math.sin(Math.PI * t);
-        const alpha = this.inMix * R.brightness * lvl * fade * fade;
-        this.writeRay(i, tx, ty, tz, hx, hy, hz, R.width * (0.85 + 0.15 * (1 - e)), alpha, e * 0.8, cam);
-      }
-      // Exhale: slower flecks curl softly inward and fade at the chest.
-      {
-        const t = frac(this.outClock / R.exhaleTravelS + i / n);
-        const a = (i + 0.5) * GOLDEN;
-        const dist = R.exhaleStart[0] + (R.exhaleStart[1] - R.exhaleStart[0]) * frac(i * 0.618 + 0.31);
-        const h = R.inHeight[0] + (R.inHeight[1] - R.inHeight[0]) * frac(i * 0.381 + 0.61);
-        const e = ease(t);
-        const sx = cx + Math.cos(a) * dist, sy = playerPos.y + h, sz = cz + Math.sin(a) * dist;
-        const curl = Math.sin(Math.PI * e) * R.exhaleCurl;
-        const hx = sx + (cx - sx) * e - Math.sin(a) * curl;
-        const hy = sy + (cy - sy) * e;
-        const hz = sz + (cz - sz) * e + Math.cos(a) * curl;
-        const back = (R.fleckLength * 0.8) / dist;
-        const tx = hx + (sx - cx) * back, ty = hy + (sy - cy) * back, tz = hz + (sz - cz) * back;
-        const fade = Math.sin(Math.PI * t);
-        const alpha = this.outMix * R.brightness * lvl * fade * fade;
-        this.writeRay(
-          n + i,
-          tx, ty, tz, hx, hy, hz,
-          R.width * 0.9, alpha, 0.45 + e * 0.35, cam,
-        );
-      }
+      const t = frac(this.inClock / travel + i / n);
+      this.place(i, t, head, cx, cy, cz, playerPos.y);
+      this.place(i, Math.max(0, t - dtT), tail, cx, cy, cz, playerPos.y);
+      const fadeIn = clamp01(t / 0.15);
+      const fadeOut = 1 - ease(clamp01((t - 0.7) / 0.3));
+      const alpha = this.inMix * R.brightness * (0.6 + 0.4 * level) * fadeIn * fadeOut * 0.7;
+      const size = R.width * (1 - 0.6 * ease(clamp01((t - 0.5) / 0.5)));
+      this.writeRay(i, tail[0]!, tail[1]!, tail[2]!, head[0]!, head[1]!, head[2]!, size, alpha, t * 0.7, cam);
     }
     this.rays.updateVerticesData(VertexBuffer.PositionKind, this.pos);
     this.rays.updateVerticesData(VertexBuffer.ColorKind, this.col);
@@ -189,5 +267,9 @@ export class BreathVisuals {
     this.rays.dispose();
     this.ring.dispose();
     this.ringMat.dispose(false, false);
+    this.halo.dispose();
+    this.haloMat.dispose(false, false);
+    this.chest.dispose();
+    this.chestMat.dispose(false, false);
   }
 }

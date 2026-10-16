@@ -13,6 +13,7 @@ import { PlayerVisual } from '../player/PlayerVisual';
 import { BreathSystem } from '../player/BreathSystem';
 import { BreathVisuals } from '../player/BreathVisuals';
 import { Joystick } from '../ui/Joystick';
+import { TouchRouter } from '../ui/TouchRouter';
 import { BreathButton } from '../ui/BreathButton';
 import { WORLD_UNIFORMS, createPaperMaterial } from '../shaders/paperShader';
 import type { World, WorldId } from '../game/World';
@@ -130,14 +131,13 @@ export class InnerValley implements World, WalkGround {
     this.root.className = 'inner-ui';
     this.root.style.display = 'none';
     ui.appendChild(this.root);
-    let right: HTMLElement | null = null;
+    let touchZone: HTMLElement | null = null;
+    let stick: Joystick | null = null;
     if (this.touch) {
-      const left = document.createElement('div');
-      left.className = 'touch-zone touch-left';
-      right = document.createElement('div');
-      right.className = 'touch-zone touch-right';
-      this.root.append(left, right);
-      new Joystick(this.root, this.input, left);
+      touchZone = document.createElement('div');
+      touchZone.className = 'touch-zone';
+      this.root.append(touchZone);
+      stick = new Joystick(this.root, this.input);
       new BreathButton(this.root, this.input);
     }
     this.input.attach();
@@ -148,7 +148,8 @@ export class InnerValley implements World, WalkGround {
     this.walker.place(s.x, s.z, s.heading);
     this.walker.canMove = false;
     this.visual = new PlayerVisual(scene);
-    this.cam = new FollowCamera(scene, this.terrain, canvas, right);
+    this.cam = new FollowCamera(scene, this.terrain, canvas, this.touch);
+    if (touchZone && stick) new TouchRouter(touchZone, stick, this.cam);
     this.cam.snapTo(this.walker.position, s.heading);
     this.breathVisuals = new BreathVisuals(scene);
     // The Anger Imp stands in its clearing, hidden until reveal() (reveal rule: after the bump).
@@ -422,7 +423,7 @@ export class InnerValley implements World, WalkGround {
     this.input.update();
     this.breath.update(dt, { inhale: this.input.inhaleHeld, exhale: this.input.exhaleHeld, releaseExhales: this.touch });
     this.slowTime = Math.max(0, this.slowTime - dt);
-    this.walker.speedFactor = (this.breath.state === 'idle' ? 1 : 0.6) * (this.slowTime > 0 ? this.slowFactor : 1);
+    this.walker.speedFactor = (this.breath.state === 'idle' ? 1 : TUNING.breath.walkFactor) * (this.slowTime > 0 ? this.slowFactor : 1);
     this.walker.update(dt, this.cam.yaw);
     this.applyShove(dt);
     const p = this.walker.position;
