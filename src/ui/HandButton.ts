@@ -9,6 +9,7 @@ export class HandButton {
   private static interactText = '';
   private static collectText = '';
   private static tapText = '';
+  private static thoughtChoiceActive = false;
   readonly el: HTMLDivElement;
   private mode: HandMode = 'dim';
   private readonly label: HTMLSpanElement;
@@ -28,6 +29,7 @@ export class HandButton {
     this.el.append(this.icon, this.label, this.hint);
     parent.appendChild(this.el);
     HandButton.instances.add(this);
+    this.el.classList.toggle('thought-choice-active', HandButton.thoughtChoiceActive);
     this.applyLabel();
     this.el.addEventListener('pointerdown', (event) => {
       event.preventDefault();
@@ -59,6 +61,24 @@ export class HandButton {
     for (const instance of HandButton.instances) instance.applyLabel();
   }
 
+  static setThoughtChoiceActive(active: boolean): void {
+    HandButton.thoughtChoiceActive = active;
+    for (const instance of HandButton.instances) {
+      instance.el.classList.toggle('thought-choice-active', active && instance.mode === 'push');
+      if (!active) instance.el.classList.remove('thought-choice-pop');
+    }
+  }
+
+  static cueThoughtChoice(): void {
+    for (const instance of HandButton.instances) {
+      if (instance.mode !== 'push') continue;
+      instance.el.classList.remove('thought-choice-pop');
+      void instance.el.offsetWidth;
+      instance.el.classList.add('thought-choice-pop');
+      instance.el.onanimationend = () => instance.el.classList.remove('thought-choice-pop');
+    }
+  }
+
   private applyLabel(): void {
     const text = this.mode === 'collect' ? HandButton.collectText : this.mode === 'interact' ? HandButton.interactText : HandButton.pushText;
     this.label.textContent = text;
@@ -71,7 +91,10 @@ export class HandButton {
   setMode(mode: HandMode): void {
     if (mode === this.mode) return;
     this.mode = mode;
-    if (mode !== 'push') this.el.classList.remove('push-ready-pop');
+    if (mode !== 'push') {
+      this.el.classList.remove('push-ready-pop', 'thought-choice-pop');
+      this.el.classList.remove('thought-choice-active');
+    } else if (HandButton.thoughtChoiceActive) this.el.classList.add('thought-choice-active');
     this.el.classList.toggle('dim', mode === 'dim');
     this.el.classList.toggle('push', mode === 'push');
     this.el.classList.toggle('interact', mode === 'interact');

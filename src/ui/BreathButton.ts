@@ -6,6 +6,7 @@ export class BreathButton {
   private static readonly instances = new Set<BreathButton>();
   private static labelText = '';
   private static hintText = '';
+  private static thoughtChoiceActive = false;
   readonly el: HTMLDivElement;
   private pointer: number | null = null;
   private readonly label: HTMLSpanElement;
@@ -24,6 +25,7 @@ export class BreathButton {
     this.el.append(this.label, this.hint);
     parent.appendChild(this.el);
     BreathButton.instances.add(this);
+    this.el.classList.toggle('thought-choice-active', BreathButton.thoughtChoiceActive);
     this.applyTexts();
 
     this.el.addEventListener('pointerdown', (event) => {
@@ -53,6 +55,23 @@ export class BreathButton {
     BreathButton.labelText = text;
     BreathButton.hintText = hint;
     for (const instance of BreathButton.instances) instance.applyTexts();
+  }
+
+  static setThoughtChoiceActive(active: boolean): void {
+    BreathButton.thoughtChoiceActive = active;
+    for (const instance of BreathButton.instances) {
+      instance.el.classList.toggle('thought-choice-active', active);
+      if (!active) instance.el.classList.remove('thought-choice-pop');
+    }
+  }
+
+  static cueThoughtChoice(): void {
+    for (const instance of BreathButton.instances) {
+      instance.el.classList.remove('thought-choice-pop');
+      void instance.el.offsetWidth;
+      instance.el.classList.add('thought-choice-pop');
+      instance.el.onanimationend = () => instance.el.classList.remove('thought-choice-pop');
+    }
   }
 
   private applyTexts(): void {

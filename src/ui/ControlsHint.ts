@@ -9,6 +9,8 @@ export class ControlsHint {
   private readonly pushAction: HTMLDivElement;
   private readonly lookAction: HTMLDivElement;
   private readonly moveNote: HTMLDivElement;
+  private readonly inhaleButton: HTMLButtonElement;
+  private readonly exhaleButton: HTMLButtonElement;
   private readonly touch: boolean;
   private readonly heldKeys = new Set<string>();
   private pushContext: 'push' | 'collectApple' | 'interact' = 'push';
@@ -48,6 +50,7 @@ export class ControlsHint {
     this.lookAction.appendChild(this.lookButton);
 
     const breathe = document.createElement('button');
+    this.inhaleButton = breathe;
     breathe.type = 'button';
     breathe.className = 'breathe-action';
     breathe.setAttribute('aria-label', `${texts('controlsBreatheIn')}. ${texts('guideHoldInDesktop')}.`);
@@ -66,6 +69,7 @@ export class ControlsHint {
     breathe.append(breathCopy, key);
 
     const secondary = document.createElement('button');
+    this.exhaleButton = secondary;
     secondary.type = 'button';
     secondary.className = 'breath-secondary';
     secondary.setAttribute('aria-label', texts('controlsBreatheOut'));
@@ -80,7 +84,23 @@ export class ControlsHint {
     this.lookButton.addEventListener('click', () => actions?.lookWithin());
     this.bindHold(breathe, 'Space');
     this.bindHold(secondary, 'ShiftLeft');
-    group.append(this.pushAction, this.lookAction, breathe, secondary);
+    const pushChoice = document.createElement('div');
+    pushChoice.className = 'thought-push-choice';
+    pushChoice.setAttribute('role', 'group');
+    pushChoice.setAttribute('aria-label', texts('controlsPush'));
+    pushChoice.append(this.pushAction);
+    const breathChoice = document.createElement('div');
+    breathChoice.className = 'thought-breathe-choice';
+    breathChoice.setAttribute('role', 'group');
+    breathChoice.setAttribute('aria-label', texts('controlsBreathe'));
+    const breathTitle = document.createElement('span');
+    breathTitle.className = 'thought-choice-title';
+    breathTitle.textContent = texts('controlsBreathe');
+    const breathActions = document.createElement('div');
+    breathActions.className = 'thought-breathe-actions';
+    breathActions.append(breathe, secondary);
+    breathChoice.append(breathTitle, breathActions);
+    group.append(pushChoice, breathChoice, this.lookAction);
     this.el.append(this.moveNote, group);
     parent.appendChild(this.el);
   }
@@ -147,6 +167,18 @@ export class ControlsHint {
 
   hide(): void { this.el.classList.remove('visible'); }
   setPushVisible(visible: boolean): void { this.pushAction.classList.toggle('off', !visible); }
+  setThoughtChoiceActive(active: boolean): void {
+    this.el.classList.toggle('thought-choice-active', active);
+    if (!active) for (const button of [this.pushButton, this.inhaleButton, this.exhaleButton]) button.classList.remove('thought-choice-pop');
+  }
+  cueThoughtChoice(): void {
+    for (const button of [this.pushButton, this.inhaleButton, this.exhaleButton]) {
+      button.classList.remove('thought-choice-pop');
+      void button.offsetWidth;
+      button.classList.add('thought-choice-pop');
+      button.onanimationend = () => button.classList.remove('thought-choice-pop');
+    }
+  }
   cuePushOpportunity(token: string): void {
     if (!token) {
       this.pushButton.classList.remove('push-ready-pop');

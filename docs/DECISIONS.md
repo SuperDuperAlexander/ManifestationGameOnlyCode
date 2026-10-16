@@ -1,6 +1,8 @@
-# Decisions — "The Lantern" (restart 2026-10-11)
+# Decisions and prototype notes — "The Lantern" (restart 2026-10-11)
 
-Each entry: what was decided, why, and how to change it.
+**Status note (2026-10-16):** This file keeps the development history. Entries L22 onward that describe recent interface, guidance, controls, timing, or visual presentation record a current implementation experiment; they are editable ideas, not fixed design rules or blanket approvals. The original core story and spiritual foundations remain recorded as before. See [`GESTALTUNGSENTWUERFE.md`](GESTALTUNGSENTWUERFE.md) for the consolidated draft list.
+
+Each entry records its source and prototype context where known. Earlier owner decisions remain historical facts; recent presentation choices can be revised with Alexander.
 
 **Breath light feedback (2026-10-15).** Alexander asked for light particles to flow inward during both breath phases, with a small visual difference and no outward shots. Reuse the pooled light mesh with short gold/ivory flecks. Inhale follows a direct inward path; exhale follows a slower, gently curved inward path. Keep the two-second phases and all gameplay. Tune the look in `TUNING.breath.rays`.
 
@@ -112,3 +114,5 @@ Keep all game inputs, story text, save behavior and the 2-second breath timing. 
 **L36. Context-first imp and push cues (2026-10-16).** Alexander clarified that the final breath counter should appear only close enough to breathe with the imp. Far away, first invite the player to approach, look, and feel the anger; near the imp, show the breathing instructions and actual count. Leaving range hides the number without changing gameplay progress; completion remains visible through the flame transition. Alexander also requested a conspicuous pop on Push away for each genuinely available thought interaction in either world. Synchronize the cue with the same push eligibility as E, respect apple/tree interaction priority, and suppress it during transitions or modal screens. Keep pushing's strengthening effect, breathing as the alternative, and no new timer or penalty. New English guidance is a draft reflecting Alexander's wording. No dependency added.
 
 **L37. Light for the return to the square (2026-10-16).** Alexander reported that Walk onto the square lacked a destination light after the calm inner visit. Reuse the golden beacon and screen-direction marker for this step, targeting the reachable square centre inside the actual bump-trigger area. Do not reuse the first invitation beacon just before that area. Reaching the destination keeps the existing bump progression and then replaces the square guidance with the alley task. No new text, dependency, or story rule added.
+
+**L38. Push and breathing shown together (2026-10-16, presentation draft).** The current interface experiment presents Push away and breathing as simultaneous, central choices during relevant thought interactions. This is a prototype presentation choice and may be rearranged, restyled, or replaced after review. The underlying push and breathing mechanics remain part of the existing core design. See [`GESTALTUNGSENTWUERFE.md`](GESTALTUNGSENTWUERFE.md).

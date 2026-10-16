@@ -238,9 +238,9 @@ Reuse the existing valley (`src/valley/`): terrain with sandstone cliffs, pond, 
 
 ### 7.7 Delivery and end
 - Back outside, the town is calmer but **not** changed into something else: torches still burn (warmer, softer), some citizens are still grumpy, the alley still has shade. The stranger and the child wave.
-- The player walks to the Old Tree and gives the lantern at its trunk (E / tap). The delivered lantern hangs large and clearly visible from a code-made support at the tree, casting a localized warm glow. The town keeps its shade and quiet corners. (Alexander, 2026-10-16.)
+- The player walks to the Old Tree and gives the lantern at its trunk (E / tap). **Current presentation draft:** the delivered lantern hangs large and visible from a code-made support at the tree, with a localized warm glow. The town keeps its shade and quiet corners. This lamp size, support, and glow are prototype choices for review, not fixed visual rules. (Prototype note, 2026-10-16; see `docs/GESTALTUNGSENTWUERFE.md`.)
 - The Old Tree's dry branch heals and glows warm. Inside, the Inner Tree does the same at the same branch.
-- A distinct completion screen celebrates the finished chapter with a warm golden light reveal, inspired by the earlier gate ending. It clearly states that the chapter is complete and waits for the player to continue. Dismissing it returns to the completed world: the hanging lantern stays, the player can keep walking and Look Within to visit the calm imp. (Alexander, 2026-10-16.)
+- **Current completion presentation draft:** a separate completion screen uses a warm golden light reveal, inspired by the earlier gate ending, and offers a deliberate way to continue. Its layout, wording, and reveal remain open to revision. The underlying chapter completion and return to exploration remain the story outcome; this screen treatment is not a fixed rule. (Prototype note, 2026-10-16; see `docs/GESTALTUNGSENTWUERFE.md`.)
 
 ## 8. The mirror rules (inner ↔ outer)
 

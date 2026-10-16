@@ -287,7 +287,10 @@ export class Game {
     if (paused) {
       this.controls?.setPushVisible(false);
       this.controls?.cuePushOpportunity('');
+      this.controls?.setThoughtChoiceActive(false);
       this.hand?.setMode('dim');
+      HandButton.setThoughtChoiceActive(false);
+      BreathButton.setThoughtChoiceActive(false);
       this.lastPushCueToken = '';
     }
     if (!paused) {
@@ -328,12 +331,16 @@ export class Game {
       if (this.controls) {
         this.controls.setActionContext(context);
         this.controls.setPushVisible(push);
+        const choiceActive = pushToken !== '';
+        this.controls.setThoughtChoiceActive(choiceActive);
+        HandButton.setThoughtChoiceActive(choiceActive);
+        BreathButton.setThoughtChoiceActive(choiceActive);
         if (!pushToken) {
           this.controls.cuePushOpportunity('');
-          this.hand?.cuePushOpportunity('');
         } else if (this.hasNewPushOpportunity(this.lastPushCueToken, pushToken)) {
-          this.controls.cuePushOpportunity(pushToken);
-          this.hand?.cuePushOpportunity(pushToken);
+          this.controls.cueThoughtChoice();
+          HandButton.cueThoughtChoice();
+          BreathButton.cueThoughtChoice();
         }
       }
       this.lastPushCueToken = pushToken;

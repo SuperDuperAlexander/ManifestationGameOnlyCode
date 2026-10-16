@@ -746,3 +746,82 @@ body.touch .hand-button.collect {
   body.touch .imp-breath-marks { margin: 4px 0 3px; }
   body.touch .imp-breath-status { margin-top: 1px; }
 }
+
+/* Thought choice draft */
+.thought-breathe-choice { display: flex; align-items: center; gap: 8px; }
+.thought-choice-title { display: none; }
+.controls-hint.thought-choice-active .action-group {
+  position: absolute; left: 50%; bottom: 0; display: flex; align-items: stretch; gap: 10px; transform: translateX(-50%);
+}
+body:not(.touch):has(.controls-hint.thought-choice-active) .breath-guide { bottom: calc(132px + var(--edge-bottom)); }
+.controls-hint.thought-choice-active .thought-push-choice,
+.controls-hint.thought-choice-active .thought-breathe-choice {
+  box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; width: 252px; min-height: 88px; padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, var(--gold) 66%, var(--ui-sage)); border-radius: 18px;
+  background: color-mix(in srgb, var(--ui-paper) 94%, var(--gold));
+  box-shadow: 0 5px 22px color-mix(in srgb, var(--ui-deep) 15%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--ui-paper) 55%, transparent);
+}
+.controls-hint.thought-choice-active .thought-push-choice { align-items: stretch; }
+.controls-hint.thought-choice-active .thought-push-choice .push-shell { width: 100%; }
+.controls-hint.thought-choice-active .thought-push-choice .push-action {
+  box-sizing: border-box; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 68px; gap: 9px;
+  border-color: color-mix(in srgb, var(--gold) 52%, var(--ui-deep)); background: color-mix(in srgb, var(--ui-paper) 82%, var(--gold));
+}
+.controls-hint.thought-choice-active .thought-choice-title {
+  display: block; margin-bottom: 5px; color: var(--ui-muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; line-height: 1; text-align: center; text-transform: uppercase;
+}
+.thought-breathe-actions { display: flex; flex: 1; align-items: stretch; gap: 6px; }
+.controls-hint.thought-choice-active .thought-breathe-actions > button {
+  box-sizing: border-box; display: flex; flex: 1 1 0; align-items: center; justify-content: center; width: auto; min-width: 0; min-height: 55px; padding: 5px 7px; gap: 5px;
+  border-color: color-mix(in srgb, var(--gold) 52%, var(--ui-deep)); background: color-mix(in srgb, var(--ui-paper) 82%, var(--gold));
+}
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-copy { display: grid; grid-column: auto; gap: 0; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-verb { font-size: 10px; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-hint { display: none; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breathe-action { grid-template-columns: 21px 1fr; grid-template-rows: 1fr auto; gap: 1px 4px; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breathe-action .breath-icon { grid-row: 1 / span 2; grid-column: 1; width: 20px; height: 20px; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breathe-action .breath-copy { grid-row: 1; grid-column: 2; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breathe-action kbd {
+  position: static; grid-row: 2; grid-column: 2; justify-self: start; padding: 0 4px; font-size: 8px; line-height: 1.2;
+}
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-secondary { min-width: 0; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-secondary .control-icon { width: 20px; height: 20px; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-secondary kbd { padding: 1px 4px; font-size: 8px; }
+.controls-hint.thought-choice-active .thought-push-choice .push-action { font-size: 13px; }
+.thought-choice-pop { transform-origin: center; animation: thought-choice-pop 620ms cubic-bezier(.2, .85, .3, 1.2) both; z-index: 7; }
+@keyframes thought-choice-pop {
+  0% { transform: scale(1); }
+  38% { transform: scale(1.12); }
+  70% { transform: scale(.99); }
+  100% { transform: scale(1); }
+}
+body.touch .hand-button.thought-choice-active,
+body.touch .breath-button.thought-choice-active {
+  border-color: color-mix(in srgb, var(--gold) 65%, var(--ui-deep));
+  background: color-mix(in srgb, var(--ui-paper) 78%, var(--gold));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 38%, transparent), 0 6px 22px color-mix(in srgb, var(--ui-deep) 18%, transparent);
+}
+body.touch .hand-button.thought-choice-active.thought-choice-pop,
+body.touch .breath-button.thought-choice-active.thought-choice-pop { animation: thought-choice-pop 620ms cubic-bezier(.2, .85, .3, 1.2) both; }
+body.touch .hand-button.thought-choice-active {
+  left: calc(50% - 136px); right: auto; width: 132px; height: 64px; min-height: 64px; box-sizing: border-box;
+}
+body.touch .breath-button.thought-choice-active {
+  left: calc(50% + 18px); right: auto; width: 132px; height: 64px; min-height: 64px; box-sizing: border-box;
+}
+body.touch .breath-button.thought-choice-active .control-hint { white-space: normal; font-size: 7px; line-height: 1.05; }
+body.touch:has(.hand-button.thought-choice-active) .look-button { bottom: calc(72px + var(--edge-bottom)); }
+@media (max-width: 350px) {
+  .controls-hint.thought-choice-active .thought-push-choice,
+  .controls-hint.thought-choice-active .thought-breathe-choice { width: min(220px, 45vw); }
+}
+@media (max-height: 520px) and (min-width: 601px) {
+  .controls-hint.thought-choice-active .thought-push-choice,
+  .controls-hint.thought-choice-active .thought-breathe-choice { min-height: 78px; }
+  .controls-hint.thought-choice-active .thought-breathe-actions > button { min-height: 46px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thought-choice-pop,
+  body.touch .hand-button.thought-choice-active.thought-choice-pop,
+  body.touch .breath-button.thought-choice-active.thought-choice-pop { animation: none; outline: 3px solid var(--gold); outline-offset: 3px; }
+}
