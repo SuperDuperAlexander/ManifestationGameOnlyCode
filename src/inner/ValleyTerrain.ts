@@ -278,16 +278,16 @@ function terrace(v: number, step: number): number {
   return step * (i + 0.12 * f + 0.88 * smoothstep(0.6, 1, f));
 }
 
-const GRASS_DARK = rgb('#7C904E');
-const GRASS_MID = rgb('#93A65A');
-const GRASS_LIGHT = rgb('#B2BE6E');
-const GRASS_HIGH = rgb('#B8B87A');
-const SAND = rgb('#EAD8AE');
-const SAND_EDGE = rgb('#D6C18F');
-const BANK = rgb('#D9CDA8');
-const ROCK_LOW = rgb('#C39585');
-const ROCK_MID = rgb('#DDA27A');
-const ROCK_TOP = rgb('#E8B48C');
-const ROCK_WARM = rgb('#E0B596');
-const CHASM_MID = rgb('#B7939A');
-const CHASM_DEEP = rgb('#A7B6CF');
+const GRASS_DARK = rgb('#1F5A74');
+const GRASS_MID = rgb('#2E7088');
+const GRASS_LIGHT = rgb('#5CA4B4');
+const GRASS_HIGH = rgb('#98A8CC');
+const SAND = rgb('#EFCFB8');
+const SAND_EDGE = rgb('#DDB8B0');
+const BANK = rgb('#D2BCB8');
+const ROCK_LOW = rgb('#8A70AA');
+const ROCK_MID = rgb('#BE94C2');
+const ROCK_TOP = rgb('#EEC4DE');
+const ROCK_WARM = rgb('#DDB0D4');
+const CHASM_MID = rgb('#9C88C4');
+const CHASM_DEEP = rgb('#8890D0');

@@ -271,7 +271,7 @@ export const TUNING = {
       bushes: 40,
       rocks: 70,
       grassTufts: 3200,
-      flowers: 520,
+      flowers: 560,
     },
     /** World mood: -1 dark and grey, 0 normal, +1 bright and golden. */
     mood: {
@@ -452,7 +452,21 @@ export const TUNING = {
       bushes: 18,
       rocks: 30,
       grassTufts: 1600,
-      flowers: 260,
+      flowers: 120,
+    },
+    /** Floating light motes (one pooled particle system, follows the player). */
+    motes: { count: 150, radius: 12, height: 4.5, size: 0.5, rise: 0.25 },
+    /** Bioluminescent glow (bloom, orbs, sparkles, footsteps, tree light lines). */
+    glow: {
+      bloom: { threshold: 0.9, weight: 0.5, kernel: 48, scale: 0.5, kernelMobile: 24, scaleMobile: 0.35 },
+      orbs: { count: 9, size: 3.2, radius: 18, height: 5 },
+      sparkles: { count: 30, size: 0.18 },
+      footstep: { distance: 1.1, life: 2.8, size: 1.2 },
+      ribbon: { turns: 2.2, radius: 0.2, from: 0.1, to: 0.96 },
+      /** Reduced motion: particle counts and speed are scaled by this. */
+      reducedShare: 0.4,
+      /** Soft light rays behind the tree: count, strength. */
+      rays: { count: 5, alpha: 0.35 },
     },
     /** World mood: bright and calm (-1 dark .. +1 golden). */
     mood: 0.35,

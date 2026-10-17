@@ -5,7 +5,7 @@ import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
-import { PALETTE } from '../config/palette';
+import { PALETTE, SHADES } from '../config/palette';
 import { TUNING } from '../config/tuning';
 import { InputManager } from '../core/InputManager';
 import { isTouchDevice } from '../core/Performance';
@@ -20,6 +20,7 @@ import type { World, WorldId } from '../game/World';
 import { VALLEY_UNIFORMS, createValleyMaterial } from './valleyShader';
 import { ValleyTerrain } from './ValleyTerrain';
 import { ValleyProps, type Collider } from './ValleyProps';
+import { InnerGlow } from './InnerGlow';
 import { ValleySky, buildFarMountains } from './ValleySky';
 import { buildRiver, buildStream, buildWaterfall } from './ValleyWater';
 import { ValleyWalker, type WalkGround } from './ValleyWalker';
@@ -47,8 +48,8 @@ interface RootSeg {
   br: number;
 }
 
-const FOG_NORMAL = Color3.FromHexString(PALETTE.ivory);
-const FOG_BRIGHT = Color3.FromHexString(PALETTE.gold);
+const FOG_NORMAL = Color3.FromHexString(SHADES.innerHaze);
+const FOG_BRIGHT = Color3.FromHexString(SHADES.innerSkyGlow);
 
 /**
  * The Inner World: a small calm valley (GAME_DESIGN 5.2) with the Source (pond + waterfall),
@@ -81,6 +82,7 @@ export class InnerValley implements World, WalkGround {
   private rootHealthValue = 0;
   private stream!: Mesh;
   private drops!: ParticleSystem;
+  private glow!: InnerGlow;
   private dropAt = new Vector3();
   private flow = 0;
   imp!: AngerImp;
@@ -111,9 +113,10 @@ export class InnerValley implements World, WalkGround {
     const solid = createValleyMaterial('inner.solid', scene);
     const ground = createValleyMaterial('inner.ground', scene, { ground: true });
     const plants = createValleyMaterial('inner.plants', scene, { wind: true, painted: true });
-    const grass = createValleyMaterial('inner.grass', scene, { wind: true, backFaceCulling: false });
+    const grass = createValleyMaterial('inner.grass', scene, { wind: true, tips: true, backFaceCulling: false });
     const far = createValleyMaterial('inner.far', scene, { unlit: true, fog: 0, backFaceCulling: false });
     const water = createValleyMaterial('inner.water', scene, { water: true, backFaceCulling: false });
+    const glow = createValleyMaterial('inner.glow', scene, { wind: true, unlit: true, glow: true, glowTint: true, backFaceCulling: false });
     const falls = createValleyMaterial('inner.falls', scene, { falls: true, backFaceCulling: false });
 
     new ValleySky(scene);
@@ -121,7 +124,7 @@ export class InnerValley implements World, WalkGround {
     this.terrain = new ValleyTerrain(scene, ground);
     buildRiver(scene, this.terrain, water);
     buildWaterfall(scene, this.terrain, falls, LAYOUT.waterfall);
-    const props = new ValleyProps(scene, this.terrain, { plants, solid, grass });
+    const props = new ValleyProps(scene, this.terrain, { plants, solid, grass, glow });
     this.terrain.paintShadows(props.shadows);
     this.buildEntrance();
     this.buildInnerTree(solid, plants, water, props.colliders);
@@ -149,6 +152,8 @@ export class InnerValley implements World, WalkGround {
     this.walker.canMove = false;
     this.visual = new PlayerVisual(scene);
     this.cam = new FollowCamera(scene, this.terrain, canvas, this.touch);
+    const ribbon = createValleyMaterial('inner.ribbon', scene, { unlit: true, glow: true, mood: 0, fog: 0.3 });
+    this.glow = new InnerGlow(scene, this.cam.camera, this.touch, this.tree.root.position, ribbon, OLD_TREE.roots.map((_, i) => this.tree.rootSamples(i)));
     if (touchZone && stick) new TouchRouter(touchZone, stick, this.cam);
     this.cam.snapTo(this.walker.position, s.heading);
     this.breathVisuals = new BreathVisuals(scene);
@@ -207,16 +212,19 @@ export class InnerValley implements World, WalkGround {
   }
 
   /** The giant Inner Tree: same silhouette as the Old Tree, huge roots above ground (GAME_DESIGN 5.2). */
-  private buildInnerTree(solid: ShaderMaterial, plants: ShaderMaterial, water: ShaderMaterial, colliders: Collider[]): void {
+  private buildInnerTree(_solid: ShaderMaterial, _plants: ShaderMaterial, water: ShaderMaterial, colliders: Collider[]): void {
     const T = TUNING.tree;
     const at = LAYOUT.tree;
     const scale = T.innerScale;
     const base = new Vector3(at.x, this.terrain.height(at.x, at.z) - 0.1, at.z);
     const burned = LAYOUT.burnedRoot;
+    // Inner-only wood: pink-mauve (the outer tree keeps its own colours).
+    const woodMat = createValleyMaterial('inner.wood', this.scene, { tint: [1.4, 1.2, 1.3] });
+    const leafMat = createValleyMaterial('inner.leaf', this.scene, { wind: true, painted: true, tint: [0.9, 1.0, 2.3] });
     this.tree = buildTree(this.scene, OLD_TREE, scale, {
       position: base,
-      woodMaterial: solid,
-      leafMaterial: plants,
+      woodMaterial: woodMat,
+      leafMaterial: leafMat,
       dynamicBranches: [OLD_TREE.dryBranch],
       dynamicRoots: [burned],
       branchHealth: 0,
@@ -439,6 +447,7 @@ export class InnerValley implements World, WalkGround {
     });
     this.updateImpWander(dt, p);
     this.imp.lookAt(p);
+    this.glow.update(p, this.breath.breathLevel, dt);
     this.imp.update(dt);
     this.impBlock.radius = this.imp.bodyRadius();
     this.cam.update(dt, p, this.walker.heading, this.walker.speedRatio);

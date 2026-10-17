@@ -260,6 +260,24 @@ export default function scenarios({ wait, shot, hold, page }) {
       await shot('inner');
       const dc2 = await lw(() => window.__lw.drawCalls());
       console.log('draw calls inner:', dc2);
+      // Clean view for judging the look: no UI, camera dragged to show tree, pond and sky.
+      await page.evaluate(() => {
+        const cv = document.querySelector('canvas');
+        const hide = (el) => {
+          if (el === cv || el.contains(cv)) { for (const c of el.children) hide(c); return; }
+          el.style.display = 'none';
+        };
+        for (const c of document.body.children) hide(c);
+      });
+      await page.mouse.move(640, 360);
+      await page.mouse.down();
+      await page.mouse.move(760, 330, { steps: 8 });
+      await page.mouse.up();
+      await wait(1200);
+      await shot('inner-view');
+      await page.evaluate(() => {
+        for (const el of document.querySelectorAll('body *')) el.style.display = '';
+      });
 
       await page.keyboard.press('KeyQ');
       await waitWorld('outer');

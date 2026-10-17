@@ -8,7 +8,7 @@ import { Random } from '../core/Random';
  * Soft textures painted in code with a 2D canvas: glows, blob shadows, fog puffs.
  * Made once per scene and shared.
  */
-export type ProcTexName = 'dot' | 'halo' | 'aura' | 'wing' | 'shadow' | 'ring' | 'softRing' | 'puff' | 'cliff' | 'mist' | 'plank';
+export type ProcTexName = 'dot' | 'halo' | 'aura' | 'wing' | 'shadow' | 'ring' | 'softRing' | 'puff' | 'cliff' | 'mist' | 'plank' | 'soft';
 
 const cache = new WeakMap<Scene, Map<ProcTexName, DynamicTexture>>();
 
@@ -44,6 +44,17 @@ function radial(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number
 
 function paint(scene: Scene, name: ProcTexName): DynamicTexture {
   switch (name) {
+    case 'soft': {
+      // Neutral round soft glow (white): takes any particle colour.
+      const [tex, ctx] = make(scene, name, 64, 64);
+      radial(ctx, 32, 32, 32, [
+        [0, 'rgba(255,255,255,1)'],
+        [0.3, 'rgba(255,255,255,0.55)'],
+        [1, 'rgba(255,255,255,0)'],
+      ]);
+      tex.update();
+      return tex;
+    }
     case 'dot': {
       // Particle: warm white core, gold falloff.
       const [tex, ctx] = make(scene, name, 64, 64);

@@ -315,6 +315,7 @@ Key names keep the old `wave…` prefix from the Thought Wave version. The keys 
 - Everything in code with Babylon.js: primitives, procedural meshes, thin instances, particles, shaders. **No image files and no GLB models in the game** for this PoC.
 - The three images in `assets/` are references for shape, colour and mood only.
 - Anger shows as **heat**: warmer and redder haze, shimmer, higher flames, steam. Never dark horror.
+- The inner world uses a mystical violet twilight mood (violet sky, lavender haze, glowing crystals and motes), clearly distinct from the warm town. Still soft and loving; anger heat stays warm orange.
 - The calm ending is **not** golden everywhere. Shade, quiet corners and torches stay.
 
 ## 12. Out of scope for this PoC

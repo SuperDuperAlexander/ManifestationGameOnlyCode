@@ -1,3 +1,4 @@
+import { SHADES } from '../config/palette';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { MeshBuilder } from '@babylonjs/core/Meshes/meshBuilder';
 import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
@@ -81,7 +82,7 @@ export class ValleyProps {
   constructor(
     scene: Scene,
     private readonly terrain: ValleyTerrain,
-    materials: { plants: ShaderMaterial; solid: ShaderMaterial; grass: ShaderMaterial },
+    materials: { plants: ShaderMaterial; solid: ShaderMaterial; grass: ShaderMaterial; glow: ShaderMaterial },
   ) {
     const c: { -readonly [K in keyof typeof TUNING.inner.counts]: number } = { ...TUNING.inner.counts };
     if (isTouchDevice() || new URLSearchParams(location.search).has('touch')) {
@@ -93,7 +94,7 @@ export class ValleyProps {
     this.add(bush(scene), this.placeBushes(c.bushes), materials.plants);
     this.add(rock(scene, 7), this.placeRocks(c.rocks), materials.solid);
     this.add(grassTuft(scene, this.rnd), this.placeGrass(c.grassTufts), materials.grass);
-    this.add(flower(scene), this.placeFlowers(c.flowers), materials.grass);
+    this.add(flower(scene), this.placeFlowers(c.flowers), materials.glow);
   }
 
   private add(template: Mesh, items: Placement[], material: ShaderMaterial): void {
@@ -281,12 +282,12 @@ export class ValleyProps {
     // Small clusters of white flowers, like in the painted meadow.
     while (out.length < count) {
       const p = this.find((x, z) => {
-        if (noise2(x * 0.12 - 3, z * 0.12 + 8) < 0.55) return false;
+        if (noise2(x * 0.12 - 3, z * 0.12 + 8) < 0.42 && !(t.pathDistance(x, z) < LAYOUT.pathWidth + 2.5 && this.rnd.next() < 0.5)) return false;
         if (t.rimDistance(x, z) > 0.95 || t.pathDistance(x, z) < LAYOUT.pathWidth * 0.8) return false;
         return t.riverDistance(x, z) > LAYOUT.river.halfWidth + 1 && !t.isChasm(x, z) && t.slope(x, z) < 0.4;
       }, 30);
       if (!p) break;
-      const n = 3 + Math.floor(this.rnd.next() * 5);
+      const n = 1 + Math.floor(this.rnd.next() * 3);
       for (let k = 0; k < n && out.length < count; k++) {
         const x = p[0] + this.rnd.jitter(0.9);
         const z = p[1] + this.rnd.jitter(0.9);
@@ -351,7 +352,7 @@ export function roundTree(scene: Scene): Mesh {
   add(new Vector3(0.6, 4.55, 0.3), 1.05);
   add(new Vector3(-0.8, 3.5, -0.6), 1.1);
   const crown = Mesh.MergeMeshes(clumps, true)!;
-  paintGradient(crown, '#6D7B52', '#B3B67A', 2.2);
+  paintGradient(crown, SHADES.innerFoliage, SHADES.innerFoliageLit, 2.2);
   const tree = Mesh.MergeMeshes([trunkMesh, crown], true)!;
   tree.name = 'valley.roundTree';
   return tree;
@@ -374,7 +375,7 @@ export function cypress(scene: Scene): Mesh {
   ];
   const body = MeshBuilder.CreateLathe('cyp.body', { shape, tessellation: 10 }, scene);
   roundNormals(body, new Vector3(0, 3.0, 0), 0.35);
-  paintGradient(body, '#55623E', '#8F9C62', 1.0);
+  paintGradient(body, '#5A62B4', '#A4AEEC', 1.0);
   const tree = Mesh.MergeMeshes([trunk, body], true)!;
   tree.name = 'valley.cypress';
   return tree;
@@ -398,7 +399,7 @@ export function bush(scene: Scene): Mesh {
     parts.push(b);
   }
   const m = Mesh.MergeMeshes(parts, true)!;
-  paintGradient(m, '#66744C', '#A5AD72', 0.3);
+  paintGradient(m, '#626ABC', '#B0B8F2', 0.3);
   m.name = 'valley.bush';
   return m;
 }
@@ -423,7 +424,7 @@ export function rock(scene: Scene, seed: number): Mesh {
   VertexData.ComputeNormals(pos, idx, normals);
   m.updateVerticesData(VertexBuffer.NormalKind, normals);
   roundNormals(m, new Vector3(0, 0.1, 0), 0.5);
-  paintGradient(m, '#8E8A90', '#D0C7BC');
+  paintGradient(m, '#8C70A8', '#E4C0DE');
   return m;
 }
 
@@ -433,8 +434,8 @@ export function grassTuft(scene: Scene, rnd: Random): Mesh {
   const colors: number[] = [];
   const indices: number[] = [];
   const normals: number[] = [];
-  const base = rgb('#6F8447');
-  const tip = rgb('#B6C173');
+  const base = rgb(SHADES.innerGrass);
+  const tip = rgb(SHADES.innerGrassTip);
   const blades = 8;
   for (let b = 0; b < blades; b++) {
     const a = (b / blades) * Math.PI * 2 + rnd.jitter(0.4);
@@ -464,22 +465,24 @@ export function grassTuft(scene: Scene, rnd: Random): Mesh {
 
 /** A small white flower on a thin stem. */
 export function flower(scene: Scene): Mesh {
-  const stem = MeshBuilder.CreateCylinder('fl.stem', { height: 0.24, diameter: 0.02, tessellation: 3 }, scene);
-  stem.position.y = 0.12;
-  stem.bakeCurrentTransformIntoVertices();
-  paintFlat(stem, '#7F8A55', 0.4);
-  const petals = MeshBuilder.CreateDisc('fl.petals', { radius: 0.12, tessellation: 6 }, scene);
-  petals.rotation.x = Math.PI / 2;
-  petals.position.y = 0.24;
-  petals.bakeCurrentTransformIntoVertices();
-  paintFlat(petals, '#FBF6EA', 1);
-  const heart = MeshBuilder.CreateDisc('fl.heart', { radius: 0.042, tessellation: 6 }, scene);
-  heart.rotation.x = Math.PI / 2;
-  heart.position.y = 0.245;
-  heart.bakeCurrentTransformIntoVertices();
-  paintFlat(heart, '#EBC57A', 1);
-  const m = Mesh.MergeMeshes([stem, petals, heart], true)!;
-  // Normals up: the flower takes the light like the ground around it.
+  // A cluster of 5 faceted crystals in pink, violet and turquoise, leaning outward.
+  const cols = [SHADES.innerCrystal, SHADES.innerCrystalPink, SHADES.innerCrystalBlue, SHADES.innerCrystal, SHADES.innerCrystalPink];
+  const parts: Mesh[] = [];
+  for (let k = 0; k < 5; k++) {
+    const h = k === 0 ? 0.55 : 0.28 + (k % 3) * 0.08;
+    const c = MeshBuilder.CreateCylinder('fl.c' + k, { height: h, diameterTop: 0, diameterBottom: k === 0 ? 0.17 : 0.11, tessellation: 5 }, scene);
+    c.position.y = h / 2;
+    c.bakeCurrentTransformIntoVertices();
+    const a = k * 1.7 + 0.4;
+    const lean = k === 0 ? 0 : 0.35;
+    c.rotation.z = Math.cos(a) * lean;
+    c.rotation.x = Math.sin(a) * lean;
+    c.position.set(k === 0 ? 0 : Math.cos(a) * 0.12, 0, k === 0 ? 0 : Math.sin(a) * 0.12);
+    c.bakeCurrentTransformIntoVertices();
+    paintFlat(c, cols[k]!, 0.1);
+    parts.push(c);
+  }
+  const m = Mesh.MergeMeshes(parts, true)!;
   const count = m.getTotalVertices();
   const normals = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) normals[i * 3 + 1] = 1;

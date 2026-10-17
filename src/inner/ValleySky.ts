@@ -7,6 +7,7 @@ import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Scene } from '@babylonjs/core/scene';
 import { fbm, noise2 } from './noise';
 import { mixRgb, rgb } from './colors';
+import { SHADES } from '../config/palette';
 import { VALLEY_UNIFORMS } from './valleyShader';
 
 /**
@@ -34,6 +35,7 @@ uniform vec3 uZenith;
 uniform vec3 uSunDir;
 uniform float uTime;
 uniform float uMood;
+uniform vec3 uGlow;
 varying vec3 vDir;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -45,16 +47,27 @@ void main(void) {
   vec3 d = normalize(vDir);
   float up = d.y;
   vec3 c = mix(uHorizon, uZenith, smoothstep(0.0, 0.6, up));
-  // Warm glow around the sun, and the soft sun disc.
+  // Soft pink-magenta glow around the light, and a gentle pearl disc.
   float s = max(dot(d, uSunDir), 0.0);
-  c += vec3(0.20, 0.13, 0.04) * pow(s, 5.0) + vec3(0.25, 0.2, 0.1) * pow(s, 60.0);
-  c = mix(c, vec3(1.0, 0.98, 0.92), smoothstep(0.9965, 0.9985, s));
+  c += uGlow * (pow(s, 4.0) * 0.25 + pow(s, 40.0) * 0.2);
+  c = mix(c, vec3(1.0, 0.94, 0.98), smoothstep(0.9965, 0.9985, s));
+  // A few twinkling stars and a faint spiral nebula high up.
+  vec2 sp = d.xz / (up + 0.35) * 38.0;
+  vec2 cell = floor(sp);
+  float h = hash(cell);
+  vec2 off = vec2(hash(cell + 3.1), hash(cell + 7.7));
+  float star = step(0.88, h) * smoothstep(0.16, 0.0, length(fract(sp) - off)) * (0.65 + 0.35 * sin(uTime * 1.3 + h * 40.0));
+  c += vec3(1.0, 0.96, 1.0) * star * smoothstep(0.25, 0.6, up);
+  vec2 q = d.xz / (up + 0.35) - vec2(0.35, -0.55);
+  float ang = atan(q.y, q.x) + length(q) * 4.0 - uTime * 0.01;
+  float neb = pow(0.5 + 0.5 * cos(ang * 2.0), 3.0) * exp(-length(q) * 1.8) * smoothstep(0.1, 0.4, up);
+  c += vec3(0.75, 0.45, 0.95) * neb * 0.9;
   // Soft cream clouds, drifting slowly. Only above the horizon.
   vec2 p = d.xz / (up + 0.25) * 1.6 + vec2(uTime * 0.006, uTime * 0.002);
   float n = noise(p * 1.1) * 0.62 + noise(p * 2.6 + 3.1) * 0.38;
   float cloud = smoothstep(0.56, 0.78, n) * smoothstep(0.03, 0.18, up) * (1.0 - smoothstep(0.45, 0.85, up));
-  vec3 cloudCol = mix(vec3(0.98, 0.95, 0.89), vec3(1.0, 0.93, 0.82), pow(s, 3.0));
-  c = mix(c, cloudCol, cloud * 0.8);
+  vec3 cloudCol = mix(vec3(0.86, 0.78, 0.96), vec3(1.0, 0.82, 0.92), pow(s, 3.0));
+  c = mix(c, cloudCol, cloud * 0.5);
   // Mood: a grey, heavy sky with force; a warm, golden one with light.
   float lum = dot(c, vec3(0.3, 0.59, 0.11));
   if (uMood < 0.0) c = mix(c, vec3(lum) * vec3(0.55, 0.57, 0.68), -uMood);
@@ -82,12 +95,13 @@ export class ValleySky {
       'valley.skyMat',
       scene,
       { vertex: 'valleySky', fragment: 'valleySky' },
-      { attributes: ['position'], uniforms: ['worldViewProjection', 'uHorizon', 'uZenith', 'uSunDir', 'uTime', 'uMood'] },
+      { attributes: ['position'], uniforms: ['worldViewProjection', 'uHorizon', 'uZenith', 'uSunDir', 'uTime', 'uMood', 'uGlow'] },
     );
     this.mat.disableDepthWrite = true;
     this.mat.backFaceCulling = false;
     const horizon = VALLEY_UNIFORMS.fogColor;
-    const zenith = rgb('#9DB9DA');
+    const zenith = rgb(SHADES.innerSkyTop);
+    const glow = rgb(SHADES.innerSkyGlow);
     this.mat.onBindObservable.add(() => {
       const e = this.mat.getEffect();
       if (!e) return;
@@ -96,6 +110,7 @@ export class ValleySky {
       e.setVector3('uSunDir', SUN_DIR);
       e.setFloat('uTime', VALLEY_UNIFORMS.time);
       e.setFloat('uMood', VALLEY_UNIFORMS.mood);
+      e.setFloat3('uGlow', glow[0] * 0.5, glow[1] * 0.5, glow[2] * 0.5);
     });
     this.dome.material = this.mat;
   }
@@ -106,11 +121,11 @@ export class ValleySky {
  * each ring hazier than the one before, and every ring fades into the haze at its foot.
  */
 export function buildFarMountains(scene: Scene): Mesh {
-  const haze = rgb('#EAE3D5');
+  const haze = rgb(SHADES.innerHaze);
   const rings = [
-    { radius: 150, base: 8, amp: 46, freq: 5, color: '#B7A99F', top: '#C6B6A6', seed: 1 },
-    { radius: 230, base: 30, amp: 60, freq: 4, color: '#B6BBCB', top: '#C3C6D2', seed: 2 },
-    { radius: 330, base: 55, amp: 70, freq: 3, color: '#C9D2DE', top: '#D3DAE3', seed: 3 },
+    { radius: 150, base: 8, amp: 46, freq: 5, color: SHADES.innerFarNear, top: '#AE98D8', seed: 1 },
+    { radius: 230, base: 30, amp: 60, freq: 4, color: '#A894D4', top: '#B8A6E0', seed: 2 },
+    { radius: 330, base: 55, amp: 70, freq: 3, color: SHADES.innerFarFar, top: '#C8B6EA', seed: 3 },
   ];
   const positions: number[] = [];
   const colors: number[] = [];

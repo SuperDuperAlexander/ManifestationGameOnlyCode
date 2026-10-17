@@ -15,6 +15,30 @@ export type PaletteKey = keyof typeof PALETTE;
 
 /** A few extra shades derived from the palette. Used for code-made things only. */
 export const SHADES = {
+  /** Inner world (violet twilight, Alexander 2026-10-17): sky top, a deep soft blue-violet. */
+  innerSkyTop: '#8668D0',
+  /** Inner world: soft pink-magenta glow at the horizon and around the light. */
+  innerSkyGlow: '#E8A0CC',
+  /** Inner world: lavender haze (distance fog and clear colour). */
+  innerHaze: '#D6B4EC',
+  /** Inner world: blue-violet tree crowns and bushes (shade side / lit side). */
+  innerFoliage: '#6670C0',
+  innerFoliageLit: '#B0BCF4',
+  /** Inner world: grass, blue-green tinted violet (base / tip). */
+  innerGrass: '#1E4F68',
+  innerGrassTip: '#86D0DC',
+  /** Inner world: glowing crystal flowers, pale violet and pale blue. */
+  innerCrystal: '#A868FF',
+  innerCrystalBlue: '#38C4F0',
+  /** Inner world: pink crystals. */
+  innerCrystalPink: '#F068C0',
+  /** Inner world: pond and stream glow, cyan-blue. */
+  innerWater: '#5FD0EA',
+  /** Inner world: floating light motes. */
+  innerMote: '#F3E6FF',
+  /** Inner world: far mountains, violet (near / far). */
+  innerFarNear: '#9C84C8',
+  innerFarFar: '#C4B0E4',
   /** Soft ink for text: a deep, warm grey-blue. Never pure black. */
   ink: '#4E5566',
   /** The cloak's shadow side. */
