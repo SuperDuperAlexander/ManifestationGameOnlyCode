@@ -22,11 +22,12 @@ export const SHADES = {
   /** Inner world: lavender haze (distance fog and clear colour). */
   innerHaze: '#D6B4EC',
   /** Inner world: blue-violet tree crowns and bushes (shade side / lit side). */
+  innerSpark: '#FFD878',
   innerFoliage: '#6670C0',
   innerFoliageLit: '#B0BCF4',
   /** Inner world: grass, blue-green tinted violet (base / tip). */
-  innerGrass: '#1E4F68',
-  innerGrassTip: '#86D0DC',
+  innerGrass: '#123E58',
+  innerGrassTip: '#6CB4D0',
   /** Inner world: glowing crystal flowers, pale violet and pale blue. */
   innerCrystal: '#A868FF',
   innerCrystalBlue: '#38C4F0',

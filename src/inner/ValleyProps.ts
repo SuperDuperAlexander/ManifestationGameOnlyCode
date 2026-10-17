@@ -78,6 +78,7 @@ export class ValleyProps {
   readonly meshes: Mesh[] = [];
   private readonly rnd = new Random('light-within-valley-2');
   private readonly trees: { x: number; z: number }[] = [];
+  private readonly rockSpots: { x: number; z: number; r: number }[] = [];
 
   constructor(
     scene: Scene,
@@ -89,7 +90,7 @@ export class ValleyProps {
       c.grassTufts = Math.round(c.grassTufts * TUNING.performance.mobileGrassShare);
       c.flowers = Math.round(c.flowers * TUNING.performance.mobileFlowerShare);
     }
-    this.add(roundTree(scene), this.placeRoundTrees(c.roundTrees), materials.plants);
+    this.add(roundTree(scene, true), this.placeRoundTrees(c.roundTrees), materials.plants);
     this.add(cypress(scene), this.placeCypresses(c.cypresses), materials.plants);
     this.add(bush(scene), this.placeBushes(c.bushes), materials.plants);
     this.add(rock(scene, 7), this.placeRocks(c.rocks), materials.solid);
@@ -245,6 +246,7 @@ export class ValleyProps {
         tiltZ: this.rnd.jitter(0.12),
         tint: this.tint(0.06, 0.05),
       });
+      this.rockSpots.push({ x, z, r: scale });
       if (scale > 0.55) this.colliders.push({ x, z, radius: scale * 0.8 });
       this.shadows.push({ x, z, radius: scale * 1.3, strength: 0.28 });
     }
@@ -258,17 +260,19 @@ export class ValleyProps {
       const p = this.find((x, z) => {
         // Clumps first (cheap): dense in some places, bare in others.
         if (noise2(x * 0.18 + 7, z * 0.18) < 0.32 + this.rnd.next() * 0.3) return false;
-        if (t.rimDistance(x, z) > 1.05 || t.pathDistance(x, z) < LAYOUT.pathWidth * 0.6) return false;
+        if (t.rimDistance(x, z) > 1.05 || t.pathDistance(x, z) < LAYOUT.pathWidth * 1.15) return false;
         if (t.riverDistance(x, z) < LAYOUT.river.halfWidth + 0.6 || t.isChasm(x, z)) return false;
         return t.slope(x, z) < 0.6;
       }, 20);
       if (!p) continue;
       const [x, z] = p;
+      const edge = Math.min(1, (t.pathDistance(x, z) - LAYOUT.pathWidth * 1.15) / 1.5);
+      if (edge < 1 && this.rnd.next() > 0.35 + edge * 0.65) continue;
       out.push({
         x,
         y: t.height(x, z) - 0.03,
         z,
-        scale: this.rnd.range(0.7, 1.3),
+        scale: this.rnd.range(0.7, 1.3) * (0.7 + 0.3 * edge),
         rotY: this.rnd.range(0, 6.28),
         tint: this.tint(0.1, 0.05),
       });
@@ -303,7 +307,47 @@ export class ValleyProps {
         });
       }
     }
+    this.placeBigCrystals(out, TUNING.inner.counts.bigCrystals * (this.touchLite() ? 0.6 : 1));
     return out;
+  }
+
+  private touchLite(): boolean {
+    return isTouchDevice() || new URLSearchParams(location.search).has('touch');
+  }
+
+  /** Bigger crystal clusters around rocks, the tree roots and the camera path. */
+  private placeBigCrystals(out: Placement[], count: number): void {
+    const t = this.terrain;
+    const tr = LAYOUT.tree;
+    const add = (x: number, z: number, scale: number): void => {
+      if (t.riverDistance(x, z) < LAYOUT.river.halfWidth + 0.5 || t.isChasm(x, z) || t.slope(x, z) > 0.7) return;
+      out.push({
+        x,
+        y: t.height(x, z) - 0.03,
+        z,
+        scale,
+        rotY: this.rnd.range(0, 6.28),
+        tiltX: this.rnd.jitter(0.15),
+        tiltZ: this.rnd.jitter(0.15),
+        tint: this.tint(0.1, 0.05),
+      });
+    };
+    for (let i = 0; i < count; i++) {
+      const k = i % 3;
+      if (k === 0 && this.rockSpots.length) {
+        const r = this.rockSpots[Math.floor(this.rnd.next() * this.rockSpots.length)]!;
+        const a = this.rnd.range(0, 6.28);
+        const d = r.r * 0.8 + this.rnd.range(0.2, 0.7);
+        add(r.x + Math.cos(a) * d, r.z + Math.sin(a) * d, this.rnd.range(1.0, 1.9));
+      } else if (k === 1) {
+        const a = this.rnd.range(0, 6.28);
+        const d = this.rnd.range(3, 10);
+        add(tr.x + Math.cos(a) * d, tr.z + Math.sin(a) * d, this.rnd.range(1.1, 2.3));
+      } else {
+        const p = this.find((x, z) => t.pathDistance(x, z) > LAYOUT.pathWidth + 0.8 && t.pathDistance(x, z) < LAYOUT.pathWidth + 5 && t.rimDistance(x, z) < 0.95, 30);
+        if (p) add(p[0], p[1], this.rnd.range(0.9, 2.0));
+      }
+    }
   }
 }
 
@@ -312,7 +356,7 @@ export class ValleyProps {
  * and a crown of soft clumps. Each clump is shaded on its own, so the crown
  * reads as layered cut-paper clouds. About 5 m tall.
  */
-export function roundTree(scene: Scene): Mesh {
+export function roundTree(scene: Scene, puffy = false): Mesh {
   const wood: Mesh[] = [];
   const trunk = MeshBuilder.CreateCylinder('tree.trunk', { height: 2.4, diameterTop: 0.3, diameterBottom: 0.5, tessellation: 7 }, scene);
   trunk.position.y = 1.2;
@@ -351,11 +395,60 @@ export function roundTree(scene: Scene): Mesh {
   add(new Vector3(0, 4.0, 0), 1.45);
   add(new Vector3(0.6, 4.55, 0.3), 1.05);
   add(new Vector3(-0.8, 3.5, -0.6), 1.1);
+  if (puffy) {
+    // Inner world: many extra overlapping blobs, a big cloud-like crown.
+    const rnd = new Random('puffy-crown');
+    const centres = [...tips.map((t) => t.add(new Vector3(0, 0.35, 0))), new Vector3(0, 4.0, 0), new Vector3(0.6, 4.55, 0.3), new Vector3(-0.8, 3.5, -0.6)];
+    for (let i = 0; i < 26; i++) {
+      const c = centres[i % centres.length]!;
+      const p = c.add(new Vector3(rnd.jitter(1.2), rnd.jitter(0.7) + 0.35, rnd.jitter(1.2)));
+      add(p, rnd.range(0.65, 1.15));
+    }
+  }
   const crown = Mesh.MergeMeshes(clumps, true)!;
   paintGradient(crown, SHADES.innerFoliage, SHADES.innerFoliageLit, 2.2);
-  const tree = Mesh.MergeMeshes([trunkMesh, crown], true)!;
+  const parts = [trunkMesh, crown];
+  if (puffy) {
+    const rnd = new Random('puffy-sparks');
+    for (let i = 0; i < 16; i++) {
+      const sp = MeshBuilder.CreateSphere('tree.spark', { diameter: rnd.range(0.12, 0.2), segments: 3 }, scene);
+      sp.position.set(rnd.jitter(2.2), rnd.range(3.0, 5.4), rnd.jitter(2.2));
+      sp.bakeCurrentTransformIntoVertices();
+      paintFlat(sp, SHADES.innerSpark, 0.3);
+      parts.push(sp);
+    }
+  }
+  const tree = Mesh.MergeMeshes(parts, true)!;
   tree.name = 'valley.roundTree';
   return tree;
+}
+
+/** Inner world: a unit cloud of overlapping blobs with gold sparks, instanced around the giant tree's crown. */
+export function puffCloud(scene: Scene): Mesh {
+  const rnd = new Random('puff-cloud');
+  const parts: Mesh[] = [];
+  for (let i = 0; i < 9; i++) {
+    const p = new Vector3(rnd.jitter(0.9), rnd.range(-0.1, 0.5), rnd.jitter(0.9));
+    const c = MeshBuilder.CreateSphere('puff.blob', { diameter: rnd.range(0.9, 1.4), segments: 6 }, scene);
+    c.scaling.y = 0.75;
+    c.position.copyFrom(p);
+    c.bakeCurrentTransformIntoVertices();
+    roundNormals(c, p, 0.85);
+    parts.push(c);
+  }
+  const cloud = Mesh.MergeMeshes(parts, true)!;
+  paintGradient(cloud, SHADES.innerFoliage, SHADES.innerFoliageLit);
+  const sparks: Mesh[] = [cloud];
+  for (let i = 0; i < 5; i++) {
+    const sp = MeshBuilder.CreateSphere('puff.spark', { diameter: rnd.range(0.07, 0.12), segments: 3 }, scene);
+    sp.position.set(rnd.jitter(0.8), rnd.range(0.1, 0.6), rnd.jitter(0.8));
+    sp.bakeCurrentTransformIntoVertices();
+    paintFlat(sp, SHADES.innerSpark, 0);
+    sparks.push(sp);
+  }
+  const m = Mesh.MergeMeshes(sparks, true)!;
+  m.name = 'valley.puffCloud';
+  return m;
 }
 
 /** Cypress: a tall soft flame of dark green. About 5.8 m tall. */
@@ -436,20 +529,22 @@ export function grassTuft(scene: Scene, rnd: Random): Mesh {
   const normals: number[] = [];
   const base = rgb(SHADES.innerGrass);
   const tip = rgb(SHADES.innerGrassTip);
-  const blades = 8;
+  const blades = 13;
   for (let b = 0; b < blades; b++) {
     const a = (b / blades) * Math.PI * 2 + rnd.jitter(0.4);
-    const r = rnd.range(0, 0.1);
+    const r = rnd.range(0, 0.14);
     const x = Math.cos(a) * r;
     const z = Math.sin(a) * r;
-    const h = rnd.range(0.22, 0.42);
+    const h = rnd.range(0.3, 0.62);
     const lean = rnd.range(0.08, 0.18);
-    const w = 0.045;
+    const w = 0.05;
     const sx = -Math.sin(a) * w;
     const sz = Math.cos(a) * w;
     const n = positions.length / 3;
     positions.push(x - sx, 0, z - sz, x + sx, 0, z + sz, x + Math.cos(a) * lean, h, z + Math.sin(a) * lean);
-    colors.push(...base, 0, ...base, 0, ...tip, 1);
+    const vary = 0.75 + rnd.next() * 0.5;
+    const t2: Rgb = [Math.min(1, tip[0] * vary), Math.min(1, tip[1] * (0.9 + vary * 0.1)), Math.min(1, tip[2])];
+    colors.push(...base, 0, ...base, 0, ...t2, 1);
     normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
     indices.push(n, n + 1, n + 2);
   }

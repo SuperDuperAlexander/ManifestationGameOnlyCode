@@ -48,6 +48,7 @@ varying vec3 vWorld;
 varying float vFog;
 varying float vMask;
 varying float vPhase;
+varying float vBig;
 void main(void) {
 #include<instancesVertex>
   vec4 wp = finalWorld * vec4(position, 1.0);
@@ -59,6 +60,16 @@ void main(void) {
   float sway = 0.0;
 #endif
   vMask = sway;
+  vBig = 1.0;
+#if defined(WIND) && defined(PAINTED)
+  // Small props shrink away as a whole when the camera comes close (no hollow shells).
+  if (length(finalWorld[0].xyz) < 8.0) {
+    vBig = 0.0;
+    vec3 ctr = finalWorld[3].xyz;
+    float k = smoothstep(4.5, 10.0, distance(ctr, uCamPos));
+    wp.xyz = ctr + (wp.xyz - ctr) * k;
+  }
+#endif
   vPhase = finalWorld[3].x * 0.9 + finalWorld[3].z * 1.3;
 #ifdef INSTANCESCOLOR
   vColor *= instanceColor.rgb;
@@ -92,6 +103,7 @@ varying vec3 vWorld;
 varying float vFog;
 varying float vMask;
 varying float vPhase;
+varying float vBig;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -105,7 +117,7 @@ void main(void) {
   // Plants right in front of the camera fade out (dithered), so they never block the view.
   float dc = distance(vWorld, uCamPos);
 #ifdef PAINTED
-  if (dc < 3.2) discard;
+  if (vBig > 0.5 && dc < 3.2) discard;
 #else
   if (dc < 2.6 && hash(gl_FragCoord.xy) > smoothstep(2.1, 2.6, dc)) discard;
 #endif

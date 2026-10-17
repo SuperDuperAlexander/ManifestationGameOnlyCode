@@ -19,7 +19,8 @@ import { WORLD_UNIFORMS, createPaperMaterial } from '../shaders/paperShader';
 import type { World, WorldId } from '../game/World';
 import { VALLEY_UNIFORMS, createValleyMaterial } from './valleyShader';
 import { ValleyTerrain } from './ValleyTerrain';
-import { ValleyProps, type Collider } from './ValleyProps';
+import { ValleyProps, placeThin, puffCloud, type Collider, type Placement } from './ValleyProps';
+import { Random } from '../core/Random';
 import { InnerGlow } from './InnerGlow';
 import { ValleySky, buildFarMountains } from './ValleySky';
 import { buildRiver, buildStream, buildWaterfall } from './ValleyWater';
@@ -70,6 +71,7 @@ export class InnerValley implements World, WalkGround {
   private readonly breath = new BreathSystem();
   private readonly breathVisuals: BreathVisuals;
   private readonly touch: boolean;
+  private plantsMat!: ShaderMaterial;
   private readonly root: HTMLDivElement;
   private active = false;
   private readonly diamond = new Vector3();
@@ -112,7 +114,7 @@ export class InnerValley implements World, WalkGround {
 
     const solid = createValleyMaterial('inner.solid', scene);
     const ground = createValleyMaterial('inner.ground', scene, { ground: true });
-    const plants = createValleyMaterial('inner.plants', scene, { wind: true, painted: true });
+    const plants = (this.plantsMat = createValleyMaterial('inner.plants', scene, { wind: true, painted: true }));
     const grass = createValleyMaterial('inner.grass', scene, { wind: true, tips: true, backFaceCulling: false });
     const far = createValleyMaterial('inner.far', scene, { unlit: true, fog: 0, backFaceCulling: false });
     const water = createValleyMaterial('inner.water', scene, { water: true, backFaceCulling: false });
@@ -182,6 +184,30 @@ export class InnerValley implements World, WalkGround {
     return false;
   }
 
+  /** Extra soft cloud blobs around the giant tree's crown (inner world only). */
+  private buildCrownPuffs(base: Vector3, scale: number): void {
+    const rnd = new Random('inner-crown-puffs');
+    const items: Placement[] = [];
+    const n = this.touch ? TUNING.inner.counts.crownPuffsTouch : TUNING.inner.counts.crownPuffs;
+    for (let i = 0; i < n; i++) {
+      const c = OLD_TREE.crown[i % OLD_TREE.crown.length]!;
+      const a = rnd.range(0, 6.28);
+      const d = c[3] * scale * rnd.range(0.4, 1.1);
+      const lit = rnd.next();
+      items.push({
+        x: base.x + c[0] * scale + Math.cos(a) * d,
+        y: base.y + c[1] * scale + rnd.jitter(c[3] * scale * 0.7) + c[3] * scale * 0.25,
+        z: base.z + c[2] * scale + Math.sin(a) * d,
+        scale: rnd.range(2.4, 4.4),
+        stretch: [1.2, 0.85, 1.2],
+        rotY: rnd.range(0, 6.28),
+        tint: [0.9 + lit * 0.25, 0.92 + lit * 0.2, 1.05 + lit * 0.15],
+      });
+    }
+    const mesh = puffCloud(this.scene);
+    placeThin(mesh, items, this.plantsMat);
+  }
+
   /** Soft column of light where the player arrives (LAYOUT.entrance). */
   private buildEntrance(): void {
     const e = TUNING.inner.entrance;
@@ -231,6 +257,7 @@ export class InnerValley implements World, WalkGround {
       rootHealth: 1,
     });
     colliders.push({ x: at.x, z: at.z, radius: T.trunkCollider * scale });
+    this.buildCrownPuffs(base, scale);
 
     // Walkable roots: the ground rises over each root.
     for (let i = 0; i < OLD_TREE.roots.length; i++) {

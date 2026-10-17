@@ -451,8 +451,11 @@ export const TUNING = {
       cypresses: 14,
       bushes: 18,
       rocks: 30,
-      grassTufts: 1600,
-      flowers: 120,
+      grassTufts: 5500,
+      flowers: 600,
+      bigCrystals: 120,
+      crownPuffs: 60,
+      crownPuffsTouch: 34,
     },
     /** Floating light motes (one pooled particle system, follows the player). */
     motes: { count: 150, radius: 12, height: 4.5, size: 0.5, rise: 0.25 },
