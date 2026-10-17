@@ -42,6 +42,10 @@ export const SHADES = {
   innerFarFar: '#C4B0E4',
   /** Soft ink for text: a deep, warm grey-blue. Never pure black. */
   ink: '#4E5566',
+  /** Thought Bubble: cloud edge shade (warm cream), rim outline (sandy brown) and text ink (deep blue-grey). */
+  bubbleEdge: '#E6CBA2',
+  bubbleRim: '#C98F5E',
+  bubbleInk: '#2E3444',
   /** The cloak's shadow side. */
   cloakShadow: '#7A2519',
   /** Scarf on the cloak, from the reference design. */

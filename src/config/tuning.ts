@@ -772,7 +772,9 @@ export const TUNING = {
     /** Metres: bubble width at pushLevel 0 (grows by waves.pushGrow per pushLevel). */
     width: 1.55,
     /** Glass: opacity in the middle and at the edge (fresnel power), highlight streak 0..1, and of the thin warm rim (text stays at 1). */
-    alpha: 0.38, edgeAlpha: 0.7, edgePower: 2.2, streak: 1, rimAlpha: 0.4, rimPower: 3,
+    alpha: 0.97, edgeAlpha: 1, edgePower: 2.4, streak: 0.25, rimAlpha: 0.95, rimPower: 1.6,
+    /** Rim warmth at full anger (0..1 mix toward ember orange) and the idle breathe of the cloud. */
+    rimWarmMax: 0.75, breatheAmount: 0.03,
     /** Share of the pushLevel growth (waves.pushGrow) that the bubble size follows. */
     growShare: 0.6,
     /** Head height above the feet where the small spheres start. */
@@ -782,7 +784,7 @@ export const TUNING = {
     /** Seconds: spheres rise, then the bubble puffs out. */
     formTime: 1.8,
     /** Sphere diameters (m) and their place on the way from head to bubble (0..1). */
-    sphereSize: [0.12, 0.2, 0.3],
+    sphereSize: [0.15, 0.24, 0.34],
     spherePath: [0.15, 0.42, 0.72],
     /** The bubble can be pushed once this share of forming is done. */
     pushableAfter: 0.55,
@@ -803,6 +805,14 @@ export const TUNING = {
     bumpSlowFactor: 0.45, bumpSlowTime: 0.9, wobbleTime: 1.1, wobbleAmount: 0.2,
     /** Seconds the citizen keeps walking on after the bump. */
     bumpWalkOn: 1.8, bumpGiveUp: 9,
+  },
+  ui: {
+    /** Seconds the centered quest banner stays before it shrinks to the quiet corner line. */
+    questBannerSeconds: 4,
+    /** Seconds the W A S D hint stays after the first movement before it fades. */
+    moveHintFadeDelay: 1.2,
+    /** Extra pixels the speech bubble sits higher above the speaker on phones. */
+    speechLiftPhone: 28,
   },
   performance: {
     /** Hardware scaling on phones: 1 = native pixels. Higher = fewer pixels. */

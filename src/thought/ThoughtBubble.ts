@@ -26,7 +26,7 @@ export interface BubbleHooks {
 const TEX_W = 1024;
 const TEX_H = 512;
 /** Text plane size inside the cloud (share of the bubble width). */
-const TEXT_W = 0.83;
+const TEXT_W = 0.94;
 
 /** Shared geometry and materials of one scene's bubbles. */
 export interface BubbleKit {
@@ -97,13 +97,18 @@ export class ThoughtBubble {
   private readonly tex: DynamicTexture;
   private readonly ivory = color3(PALETTE.ivory);
   private readonly hot = color3(SHADES.heatOrange);
+  private readonly edge = color3(SHADES.bubbleEdge);
+  private readonly rimBase = color3(SHADES.bubbleRim);
+  private readonly rimTint = new Color3();
+  /** Anger at spawn (0..1): warms the rim. */
+  private warmth = 0;
   private readonly tint = new Color3();
 
   constructor(scene: Scene, kit: BubbleKit, id: number) {
     this.root = new TransformNode(`bubble.${id}`, scene);
     this.fill = createGlassMaterial(`bubble.fill.${id}`, scene, {
       color: this.ivory,
-      edgeColor: color3('#FFFFFF'),
+      edgeColor: this.edge,
       centerAlpha: TUNING.bubbles.alpha,
       edgeAlpha: TUNING.bubbles.edgeAlpha,
       power: TUNING.bubbles.edgePower,
@@ -112,7 +117,7 @@ export class ThoughtBubble {
     });
     this.sphereMat = createGlassMaterial(`bubble.sphereMat.${id}`, scene, {
       color: this.ivory,
-      edgeColor: color3('#FFFFFF'),
+      edgeColor: this.edge,
       centerAlpha: TUNING.bubbles.alpha,
       edgeAlpha: TUNING.bubbles.edgeAlpha,
       power: TUNING.bubbles.edgePower,
@@ -120,8 +125,8 @@ export class ThoughtBubble {
       shape: new Vector3(2, 2, 2),
     });
     this.rimMat = createGlassMaterial(`bubble.rimMat.${id}`, scene, {
-      color: this.hot,
-      edgeColor: this.hot,
+      color: this.rimBase,
+      edgeColor: this.rimBase,
       centerAlpha: 0,
       edgeAlpha: TUNING.bubbles.rimAlpha,
       power: TUNING.bubbles.rimPower,
@@ -194,7 +199,8 @@ export class ThoughtBubble {
   /** Text of the current thought (presentation only, shown on the choice card). */
   thoughtText = '';
 
-  spawn(text: string, size: number, cx: number, cy: number, cz: number): void {
+  spawn(text: string, size: number, cx: number, cy: number, cz: number, anger = 0): void {
+    this.warmth = clamp01(anger);
     this.pushCueId = ThoughtBubble.nextPushCueId++;
     this.thoughtText = text;
     this.size = size;
@@ -254,7 +260,7 @@ export class ThoughtBubble {
         break;
       }
       case 'idle': {
-        scaleK = 1 + 0.025 * Math.sin(this.t * 1.7);
+        scaleK = 1 + TUNING.bubbles.breatheAmount * Math.sin(this.t * 1.7);
         this.follow(cx, cy + 0.06 * Math.sin(this.t * 1.1), cz, track);
         if (breathing) {
           this.breathT += dt;
@@ -347,6 +353,9 @@ export class ThoughtBubble {
     this.textPlane.visibility = vis;
     this.textPlane.setEnabled(textVis > 0.01 && this.state !== 'gone');
     this.tint.copyFrom(this.ivory).scaleInPlace(1 - this.flash * 0.6).addInPlace(this.hot.scale(this.flash * 0.6));
+    this.rimTint.copyFrom(this.rimBase).scaleInPlace(1 - this.warmth * B.rimWarmMax).addInPlace(this.hot.scale(this.warmth * B.rimWarmMax));
+    this.rimMat.setColor3('uColor', this.rimTint);
+    this.rimMat.setColor3('uEdgeColor', this.rimTint);
     this.sphereMat.setColor3('uColor', this.tint);
     this.fill.setColor3('uColor', this.tint);
 
@@ -375,52 +384,26 @@ export class ThoughtBubble {
   private drawText(text: string): void {
     const ctx = this.tex.getContext() as CanvasRenderingContext2D;
     ctx.clearRect(0, 0, TEX_W, TEX_H);
-    const maxW = TEX_W * 0.86;
-    let size = 112;
+    const maxW = TEX_W * 0.84;
+    let size = 150;
     let lines: string[] = [];
     for (; size >= 40; size -= 6) {
-      ctx.font = `500 ${size}px "Work Sans", system-ui, sans-serif`;
+      ctx.font = `600 ${size}px "Work Sans", system-ui, sans-serif`;
       lines = wrap(ctx, text, maxW);
-      if (lines.length <= 3 && lines.length * size * 1.15 < TEX_H * 0.8) break;
+      if (lines.length <= 3 && lines.length * size * 1.12 < TEX_H * 0.82) break;
     }
-    // Soft frosted pad behind the text so it reads over any background.
-    const pad = ctx.createRadialGradient(TEX_W / 2, TEX_H / 2, 0, TEX_W / 2, TEX_H / 2, TEX_W * 0.46);
-    pad.addColorStop(0, 'rgba(244,238,223,0.62)');
-    pad.addColorStop(0.7, 'rgba(244,238,223,0.4)');
-    pad.addColorStop(1, 'rgba(244,238,223,0)');
-    ctx.save();
-    ctx.translate(TEX_W / 2, TEX_H / 2);
-    ctx.scale(1, 0.62);
-    ctx.translate(-TEX_W / 2, -TEX_H / 2);
-    ctx.fillStyle = pad;
-    ctx.fillRect(0, 0, TEX_W, TEX_H);
-    ctx.restore();
-    // Soft diagonal highlight streaks (fake glass reflection).
-    ctx.save();
-    ctx.translate(TEX_W / 2, TEX_H / 2);
-    ctx.rotate(-0.5);
-    for (const [ox, w, a] of [[-0.3, 0.07, 0.16], [-0.18, 0.025, 0.12]] as const) {
-      const g = ctx.createLinearGradient((ox - w) * TEX_W, 0, (ox + w) * TEX_W, 0);
-      g.addColorStop(0, 'rgba(255,255,255,0)');
-      g.addColorStop(0.5, `rgba(255,255,255,${a})`);
-      g.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect((ox - w) * TEX_W, -TEX_H, 2 * w * TEX_W, TEX_H * 2);
-    }
-    ctx.restore();
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const lh = size * 1.15;
+    const lh = size * 1.12;
     const y0 = TEX_H / 2 - ((lines.length - 1) * lh) / 2;
     // Light halo, then opaque ink.
     ctx.lineJoin = 'round';
-    ctx.lineWidth = size * 0.16;
-    ctx.strokeStyle = 'rgba(244,238,223,0.75)';
-    ctx.shadowColor = 'rgba(244,238,223,0.9)';
-    ctx.shadowBlur = size * 0.2;
+    ctx.lineWidth = size * 0.1;
+    ctx.strokeStyle = 'rgba(244,238,223,0.8)';
+    ctx.shadowBlur = 0;
     lines.forEach((l, i) => ctx.strokeText(l, TEX_W / 2, y0 + i * lh));
     ctx.shadowBlur = 0;
-    ctx.fillStyle = SHADES.ink;
+    ctx.fillStyle = SHADES.bubbleInk;
     lines.forEach((l, i) => ctx.fillText(l, TEX_W / 2, y0 + i * lh));
     this.tex.update();
   }

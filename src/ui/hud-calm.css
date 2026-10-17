@@ -1,0 +1,207 @@
+/* Calm HUD layer (loaded last). Few elements, small chips, gentle fades.
+   One language: ivory chips (radius 999px), cards 18-22px, soft warm shadows, colours from the :root tokens. */
+:root {
+  --hud-chip-bg: color-mix(in srgb, var(--ivory) 82%, transparent);
+  --hud-chip-line: color-mix(in srgb, var(--gold) 34%, transparent);
+  --hud-chip-shadow: 0 3px 12px color-mix(in srgb, var(--umber) 14%, transparent);
+  --hud-band: color-mix(in srgb, var(--umber) 80%, transparent);
+  --hud-ease: cubic-bezier(.2, .8, .3, 1);
+}
+
+/* ---------- Desktop button cluster (bottom right) ---------- */
+.controls-hint { transition: opacity 1s ease; }
+.controls-hint:not(.thought-choice-active) .action-group {
+  position: absolute; right: 0; bottom: 0; flex-direction: column; align-items: flex-end; gap: 8px;
+}
+.controls-hint:not(.thought-choice-active) .thought-push-choice,
+.controls-hint:not(.thought-choice-active) .thought-breathe-choice,
+.controls-hint:not(.thought-choice-active) .thought-breathe-actions { display: contents; }
+.controls-hint:not(.thought-choice-active) .thought-choice-title { display: none; }
+
+.controls-hint:not(.thought-choice-active) .action-group button {
+  position: relative; display: flex; align-items: center; justify-content: flex-start; gap: 9px;
+  width: auto; min-width: 0; min-height: 40px; padding: 5px 16px 5px 6px; overflow: hidden;
+  border: 1px solid var(--hud-chip-line); border-radius: 999px; background: var(--hud-chip-bg);
+  color: var(--ui-deep); box-shadow: var(--hud-chip-shadow); font-size: 13px; font-weight: 600; letter-spacing: .01em;
+  transition: background .35s ease, box-shadow .35s ease, transform .25s var(--hud-ease);
+}
+.controls-hint:not(.thought-choice-active) .action-group button > * { position: relative; z-index: 1; }
+.controls-hint:not(.thought-choice-active) .action-group button svg { display: none; }
+.controls-hint:not(.thought-choice-active) .breath-hint { display: none; }
+.controls-hint:not(.thought-choice-active) .breath-copy { display: block; }
+.controls-hint:not(.thought-choice-active) .breath-verb,
+.controls-hint:not(.thought-choice-active) .action-label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+/* Round key badge in front of the verb. */
+.controls-hint:not(.thought-choice-active) .action-group kbd {
+  position: relative; inset: auto; order: -1; flex: 0 0 auto; display: grid; place-items: center; min-width: 28px; height: 28px; padding: 0 9px; margin: 0;
+  border: 0; border-radius: 999px; background: var(--ui-deep); color: var(--ui-paper);
+  font: 700 11px/1 'Work Sans', system-ui, sans-serif; letter-spacing: .02em; transform: none;
+}
+.controls-hint:not(.thought-choice-active) .action-group button.held {
+  background: color-mix(in srgb, var(--gold) 55%, var(--ivory)); box-shadow: 0 0 18px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+@media (hover: hover) {
+  .controls-hint:not(.thought-choice-active) .action-group button:hover { background: color-mix(in srgb, var(--ivory) 94%, transparent); }
+}
+/* Contextual actions rise in gently when they become available. */
+.controls-hint:not(.thought-choice-active) .push-shell:not(.off) { animation: chip-in .5s var(--hud-ease) both; }
+@keyframes chip-in { from { opacity: 0; transform: translateY(8px) scale(.9); } to { opacity: 1; transform: none; } }
+.controls-hint:not(.thought-choice-active) .action-group .push-action.collect-apple,
+.controls-hint:not(.thought-choice-active) .action-group .push-action.tree-interact {
+  background: color-mix(in srgb, var(--gold) 58%, var(--ivory)); border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--gold) 38%, transparent), var(--hud-chip-shadow);
+}
+.controls-hint:not(.thought-choice-active) .action-group .push-action.push-ready-pop {
+  background: color-mix(in srgb, var(--gold) 58%, var(--ivory)); border-color: color-mix(in srgb, var(--gold) 70%, transparent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--gold) 45%, transparent), var(--hud-chip-shadow);
+  animation: chip-ready .7s var(--hud-ease) both;
+}
+@keyframes chip-ready { 0% { transform: scale(1); } 40% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.push-action:disabled { opacity: .5; }
+
+/* Walking hint: small, quiet, gone after the first step. */
+.move-note {
+  max-width: min(260px, 40vw); padding: 7px 14px; border: 1px solid var(--hud-chip-line); border-radius: 999px; background: var(--hud-chip-bg);
+  box-shadow: var(--hud-chip-shadow); color: var(--ui-deep); font-size: 12px; line-height: 1.4;
+  transition: opacity 1.4s ease, transform 1.4s ease;
+}
+.move-note .keycap { display: inline-block; padding: 2px 8px; border-radius: 999px; background: var(--ui-deep); color: var(--ui-paper); font-size: 10px; font-weight: 700; letter-spacing: .08em; }
+.move-note.done { opacity: 0; transform: translateY(6px); pointer-events: none; }
+
+/* ---------- Touch controls: same chip language, 48px+ targets ---------- */
+body.touch .breath-button, body.touch .look-button, body.touch .hand-button {
+  border: 1px solid var(--hud-chip-line); background: color-mix(in srgb, var(--ivory) 84%, transparent); box-shadow: var(--hud-chip-shadow);
+  font-weight: 600;
+}
+body.touch .breath-button.held, body.touch .look-button:active { background: color-mix(in srgb, var(--gold) 60%, var(--ivory)); }
+body.touch .hand-button.push { background: color-mix(in srgb, var(--sandstone) 45%, var(--ivory)); }
+body.touch .hand-button.interact, body.touch .hand-button.collect { background: color-mix(in srgb, var(--gold) 58%, var(--ivory)); border-color: color-mix(in srgb, var(--gold) 70%, transparent); box-shadow: 0 0 14px color-mix(in srgb, var(--gold) 38%, transparent), var(--hud-chip-shadow); }
+body.touch .hand-button.push-ready-pop { animation: chip-ready .7s var(--hud-ease) both; box-shadow: 0 0 16px color-mix(in srgb, var(--gold) 45%, transparent), var(--hud-chip-shadow); }
+.joystick { background: color-mix(in srgb, var(--ivory) 20%, transparent); border: 1px solid color-mix(in srgb, var(--ivory) 55%, transparent); box-shadow: none; }
+
+/* ---------- Inner voice ---------- */
+.dialogue-line {
+  padding: 11px 24px; border: 1px solid color-mix(in srgb, var(--gold) 55%, transparent); border-radius: 20px; background: var(--hud-band);
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--umber) 22%, transparent); color: var(--ivory);
+  font: italic 17px/1.5 Georgia, 'Times New Roman', serif; letter-spacing: .01em; transition: opacity 1s ease, transform 1s ease;
+}
+.dl-mark { color: var(--gold); font-size: 13px; }
+body:not(.touch) .dialogue-line { bottom: calc(132px + var(--edge-bottom)); }
+body.thought-choice-open:not(.touch) .dialogue-line { bottom: calc(38dvh + 14px); }
+
+/* ---------- Breath ring ---------- */
+.breath-guide { width: 76px; height: 76px; margin-left: -38px; bottom: calc(44px + var(--edge-bottom)); }
+.bg-track { border: 1px solid color-mix(in srgb, var(--ivory) 70%, transparent); background: color-mix(in srgb, var(--olive) 18%, transparent); box-shadow: none; }
+.bg-guide { border-width: 1.5px; }
+.bg-label {
+  inset: auto auto -34px 50% !important; transform: translateX(-50%); width: max-content; min-height: 0; padding: 4px 12px; border: 1px solid var(--hud-chip-line); border-radius: 999px !important;
+  background: var(--hud-chip-bg); color: var(--ui-deep); font-size: 12px; font-weight: 600; box-shadow: var(--hud-chip-shadow);
+  transition: opacity .6s ease; white-space: nowrap;
+}
+
+/* ---------- Quest banner -> quiet objective ---------- */
+.next-step-hint {
+  top: calc(var(--edge-top) + 14px); left: 50%; transform: translateX(-50%); gap: 6px; max-width: min(560px, calc(100vw - 240px));
+  padding: 14px 30px; border: 0; border-radius: 20px; background: var(--hud-band); box-shadow: 0 6px 24px color-mix(in srgb, var(--umber) 20%, transparent);
+  color: var(--ivory); font: 22px/1.4 Georgia, 'Times New Roman', serif; letter-spacing: .01em; opacity: 1;
+  transition: left 1.2s var(--hud-ease), top 1.2s var(--hud-ease), transform 1.2s var(--hud-ease), font-size 1.2s var(--hud-ease),
+    padding 1.2s var(--hud-ease), max-width 1.2s var(--hud-ease), opacity .6s ease, background 1.2s ease;
+}
+.next-step-hint.banner { animation: quest-in 1.1s ease both; }
+@keyframes quest-in { from { opacity: 0; } to { opacity: 1; } }
+/* Small gold ornament lines above and below the banner. */
+.next-step-hint::before, .next-step-hint::after {
+  content: ''; position: absolute; left: 50%; width: 150px; height: 1.5px; transform: translateX(-50%);
+  background: linear-gradient(90deg, transparent, var(--gold), transparent); transition: opacity .8s ease;
+}
+.next-step-hint::before { top: -7px; }
+.next-step-hint::after { bottom: -7px; }
+.next-step-hint.quiet {
+  left: var(--edge-left); top: var(--edge-top); transform: none; max-width: min(360px, 38vw); padding: 7px 14px; border-radius: 16px;
+  font-size: 14px; line-height: 1.4; opacity: .9;
+}
+.next-step-hint.quiet::before, .next-step-hint.quiet::after { opacity: 0; }
+.next-step-badge { background: color-mix(in srgb, var(--gold) 30%, transparent); border-color: color-mix(in srgb, var(--gold) 60%, transparent); color: var(--ivory); font-size: 12px; font-weight: 600; padding: 0 10px; }
+.next-step-hint.quiet .next-step-badge { font-size: 11px; }
+body:has(.debug-overlay:not([hidden])) .next-step-hint.quiet { top: calc(var(--edge-top) + var(--debug-h, 250px)); }
+.next-step-marker { color: var(--ui-deep); }
+.next-step-marker > span:last-child { background: var(--hud-chip-bg); border: 1px solid var(--hud-chip-line); border-radius: 999px; padding: 3px 10px; box-shadow: var(--hud-chip-shadow); }
+@media (max-width: 600px) {
+  .next-step-hint { top: calc(var(--edge-top) + 64px); max-width: calc(100vw - 32px); font-size: 18px; padding: 12px 22px; }
+  .next-step-hint.quiet { top: calc(var(--edge-top) + 64px); left: var(--edge-left); max-width: calc(100vw - 32px); font-size: 13px; padding: 6px 12px; }
+  body:has(.debug-overlay:not([hidden])) .next-step-hint.quiet { top: calc(var(--edge-top) + var(--debug-h, 250px)); }
+}
+@media (max-height: 520px) {
+  .next-step-hint { top: calc(var(--edge-top) + 4px); font-size: 17px; padding: 9px 22px; max-width: min(520px, calc(100vw - 260px)); }
+  .next-step-hint.quiet { top: var(--edge-top); font-size: 12px; padding: 5px 10px; max-width: min(300px, 38vw); }
+  body:has(.debug-overlay:not([hidden])) .next-step-hint.quiet { top: calc(var(--edge-top) + var(--debug-h, 250px)); }
+}
+
+/* ---------- Imp breath progress: smaller and softer ---------- */
+.imp-breath-progress {
+  width: min(220px, calc(100% - 2 * var(--edge-left))); padding: 8px 14px 9px; border: 0; border-radius: 18px;
+  background: var(--hud-chip-bg); box-shadow: var(--hud-chip-shadow);
+}
+.imp-breath-title { font-size: 11px; }
+.imp-breath-count { font-size: 24px; }
+.imp-breath-marks { margin: 4px 0 3px; gap: 8px; }
+.imp-breath-mark { width: 10px; height: 10px; border-width: 1.5px; }
+.imp-breath-remaining { font-size: 12px; }
+.imp-breath-status { font-size: 11px; }
+
+/* ---------- Stranger speech bubble with a tail ---------- */
+.speech-bubble {
+  --tail-x: 50%; max-width: min(260px, calc(100vw - 32px)); padding: 10px 16px; border: 0; border-radius: 18px; background: var(--ivory);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--umber) 20%, transparent); color: var(--umber);
+  font-size: 15px; line-height: 1.45; text-align: center; transition: opacity .6s ease;
+}
+.speech-bubble::after {
+  content: ''; position: absolute; left: var(--tail-x); bottom: -9px; width: 16px; height: 16px; margin-left: -8px; background: var(--ivory);
+  clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 2px 2px color-mix(in srgb, var(--umber) 12%, transparent));
+}
+
+/* ---------- Reduced motion: fades only ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .controls-hint:not(.thought-choice-active) .push-shell:not(.off),
+  .controls-hint:not(.thought-choice-active) .action-group .push-action.push-ready-pop,
+  body.touch .hand-button.push-ready-pop { animation: quest-in .3s ease both; }
+  .next-step-hint { transition: opacity .4s ease; }
+  .next-step-hint.banner { animation: quest-in .4s ease both; }
+  .move-note, .move-note.done { transform: none; }
+  .controls-hint:not(.thought-choice-active) .action-group button { transition: background .2s ease; }
+}
+
+/* ---------- Thought choice card: two equal options, calm ---------- */
+.controls-hint.thought-choice-active .thought-push-choice { flex: 1 1 0; }
+.controls-hint.thought-choice-active .thought-breathe-choice { flex: 1.35 1 0; }
+.controls-hint.thought-choice-active .thought-breathe-actions svg { display: none; }
+.controls-hint.thought-choice-active .thought-breathe-actions > button { padding: 6px 10px; gap: 6px; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breathe-action { flex: 1.25 1 0; }
+.controls-hint.thought-choice-active .thought-push-choice .push-action { letter-spacing: .02em; }
+.controls-hint.thought-choice-active .action-group kbd { border-radius: 999px; padding: 2px 8px; background: color-mix(in srgb, var(--ui-deep) 14%, transparent); color: var(--ui-deep); }
+@media (min-height: 521px) {
+  body.thought-choice-open.touch .dialogue-line { bottom: calc(38dvh + 14px); }
+}
+
+/* ---------- Thought card round 2: two equal options, normal letter-spacing ---------- */
+.kbd-extra { display: none !important; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-secondary { display: none; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breathe-action { flex: 1 1 0; }
+.controls-hint.thought-choice-active .thought-push-choice, .controls-hint.thought-choice-active .thought-breathe-choice { flex: 1 1 0; }
+.controls-hint.thought-choice-active .thought-breathe-actions .kbd-extra { display: inline-block !important; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-verb,
+.controls-hint.thought-choice-active .thought-push-choice .push-action,
+body.touch .hand-button.thought-choice-active .control-label,
+body.touch .breath-button.thought-choice-active .control-label { letter-spacing: 0; font-size: 14px; }
+.controls-hint.thought-choice-active .breathe-action kbd { display: inline-block; }
+
+/* ---------- Phones (portrait): card sits just above Go inside; voice band right above the card ---------- */
+@media (min-height: 521px) {
+  body.touch { --tc-top: calc(100dvh - var(--edge-bottom) - 192px); }
+  body.thought-choice-open.touch .dialogue-line { bottom: calc(var(--edge-bottom) + 202px); }
+  body.touch .dialogue-line { font-size: 18px; padding: 9px 18px; }
+  body.touch .dialogue-line .dl-text { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+}
+@media (max-width: 700px) {
+  .speech-bubble { max-width: min(70vw, 210px); padding: 8px 13px; font-size: 15px; line-height: 1.4; }
+}

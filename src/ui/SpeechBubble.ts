@@ -2,6 +2,7 @@ import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { Engine } from '@babylonjs/core/Engines/engine';
 import type { Camera } from '@babylonjs/core/Cameras/camera';
 import type { Scene } from '@babylonjs/core/scene';
+import { TUNING } from '../config/tuning';
 
 /** A short spoken line above a character's head. DOM element, projected from a world point. */
 export class SpeechBubble {
@@ -57,7 +58,11 @@ export class SpeechBubble {
         const maxLeft = Math.max(edge, parentWidth - this.bubbleWidth - edge);
         const maxTop = Math.max(edge, parentHeight - this.bubbleHeight - edge);
         const left = Math.min(maxLeft, Math.max(edge, this.out.x * sx - this.bubbleWidth / 2));
-        const top = Math.min(maxTop, Math.max(edge, this.out.y * sy - this.bubbleHeight));
+        const tail = 10 + (parentWidth < 700 ? TUNING.ui.speechLiftPhone : 0);
+        const top = Math.min(maxTop, Math.max(edge, this.out.y * sy - this.bubbleHeight - tail));
+        // The tail points at the speaker, kept inside the rounded bubble.
+        const tailX = Math.min(this.bubbleWidth - 24, Math.max(24, this.out.x * sx - left));
+        this.el.style.setProperty('--tail-x', `${tailX.toFixed(1)}px`);
         this.el.style.transform = `translate(${left.toFixed(1)}px, ${top.toFixed(1)}px)`;
         visible = true;
       }

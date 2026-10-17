@@ -1,12 +1,12 @@
 /* Thought choice plaque: a card that pops up with the push / breathe choices inside it.
    Replaces the old "Thought choice draft" block. Colours come from the CSS variables in styles.css. */
 :root {
-  --tc-w: min(360px, calc(100vw - var(--edge-left) - var(--edge-right)));
-  --tc-top: calc(var(--edge-top) + 60px);
+  --tc-w: min(340px, calc(100vw - var(--edge-left) - var(--edge-right)));
+  --tc-top: 62dvh;
   --tc-pad: 12px;
   --tc-gap: 10px;
-  --tc-head: 52px;
-  --tc-btn-h: 64px;
+  --tc-head: 46px;
+  --tc-btn-h: 52px;
 }
 /* Derived values are re-resolved on body, because --tc-w differs between touch and desktop. */
 :root, body {
@@ -16,18 +16,18 @@
 /* Calmer: the top objective hint fades while the card is open. */
 .next-step-hint { transition: opacity 240ms ease; }
 body.thought-choice-open .next-step-hint { opacity: 0 !important; pointer-events: none; }
-body:not(.touch) { --tc-w: min(640px, calc(100vw - 32px)); }
+body:not(.touch) { --tc-w: min(460px, calc(100vw - 32px)); }
 @media (max-height: 520px) {
-  :root { --tc-top: calc(var(--edge-top) + 4px); --tc-pad: 8px; --tc-gap: 8px; --tc-head: 34px; --tc-btn-h: 52px; }
+  :root { --tc-top: calc(var(--edge-top) + 4px); --tc-pad: 8px; --tc-gap: 8px; --tc-head: 34px; --tc-btn-h: 48px; }
   body.touch { --tc-w: min(330px, calc(100vw - var(--edge-left) - var(--edge-right))); }
 }
 
 .thought-plaque {
   position: absolute; left: 50%; top: var(--tc-top); z-index: 5; width: var(--tc-w);
   height: calc(var(--tc-pad) * 2 + var(--tc-head) + var(--tc-btn-h));
-  padding: var(--tc-pad) var(--tc-pad) 0; border: 1px solid color-mix(in srgb, var(--gold) 80%, var(--ui-deep)); border-radius: 22px;
-  background: linear-gradient(180deg, var(--ui-paper), color-mix(in srgb, var(--ui-paper) 82%, var(--gold)));
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--umber) 24%, transparent), 0 0 0 4px color-mix(in srgb, var(--gold) 26%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--ui-paper) 70%, transparent);
+  padding: var(--tc-pad) var(--tc-pad) 0; border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); border-radius: 22px;
+  background: color-mix(in srgb, var(--ui-paper) 86%, transparent);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--umber) 16%, transparent);
   color: var(--ui-deep); text-align: center; pointer-events: none;
   opacity: 0; visibility: hidden; transform: translate(-50%, -10px) scale(.94); transform-origin: 50% 0;
   transition: opacity 260ms ease, transform 260ms ease, visibility 0s linear 260ms;
@@ -42,11 +42,11 @@ body:not(.touch) { --tc-w: min(640px, calc(100vw - 32px)); }
   60% { opacity: 1; transform: translate(-50%, 2px) scale(1.04); }
   100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
-.thought-plaque-title { font-size: 13px; font-weight: 700; letter-spacing: .24em; line-height: 1.2; text-transform: uppercase; }
+.thought-plaque-title { font-size: 12px; font-weight: 700; letter-spacing: .2em; line-height: 1.2; text-transform: uppercase; }
 .thought-plaque-text { display: none; margin-top: 4px; font-size: 14px; font-style: italic; line-height: 1.25; overflow: hidden; display: none; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; }
 .thought-plaque.has-text .thought-plaque-text { display: -webkit-box; }
 .thought-plaque.has-text .thought-plaque-prompt { display: none; }
-.thought-plaque-prompt { margin-top: 4px; color: var(--ui-muted); font-size: 13px; letter-spacing: .02em; line-height: 1.25; }
+.thought-plaque-prompt { margin-top: 3px; color: var(--ui-muted); font: italic 13px Georgia, 'Times New Roman', serif; letter-spacing: .02em; line-height: 1.25; }
 @media (max-height: 520px) {
   .thought-plaque-title { font-size: 12px; letter-spacing: .2em; }
   .thought-plaque-prompt { display: none; }
@@ -59,9 +59,9 @@ body:not(.touch) { --tc-w: min(640px, calc(100vw - 32px)); }
 body.touch .hand-button.thought-choice-active,
 body.touch .breath-button.thought-choice-active {
   position: relative; overflow: hidden; box-sizing: border-box; min-height: var(--tc-btn-h); border: 1px solid color-mix(in srgb, var(--gold) 70%, var(--ui-deep)); border-radius: 16px;
-  background: linear-gradient(180deg, #f6dc9f, var(--gold)); color: var(--ui-deep);
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--umber) 18%, transparent), inset 0 1px 0 color-mix(in srgb, var(--lantern-white) 70%, transparent);
-  font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  background: color-mix(in srgb, var(--gold) 62%, var(--ui-paper)); color: var(--ui-deep);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--umber) 12%, transparent);
+  font-weight: 700; letter-spacing: .06em; text-transform: none;
   cursor: pointer; transition: transform 140ms ease, box-shadow 180ms ease, filter 180ms ease;
 }
 body.touch .hand-button.thought-choice-active,
@@ -74,7 +74,7 @@ body.touch .hand-button.thought-choice-active.pressed { transform: scale(.96); b
 .controls-hint.thought-choice-active button:focus-visible,
 body.touch .thought-choice-active:focus-visible { outline: 3px solid var(--ui-deep); outline-offset: 3px; }
 .controls-hint.thought-choice-active .thought-push-choice .push-action,
-body.touch .hand-button.thought-choice-active { background: linear-gradient(180deg, color-mix(in srgb, var(--sandstone) 40%, var(--ui-paper)), color-mix(in srgb, var(--sandstone) 78%, var(--gold))); }
+body.touch .hand-button.thought-choice-active { background: color-mix(in srgb, var(--sandstone) 52%, var(--ui-paper)); }
 
 /* The breath choice fills like a vessel; --breath-level (0..1) is set from the real breath state in Game.ts. */
 .breathe-action::before, body.touch .breath-button.thought-choice-active::before {
@@ -94,10 +94,10 @@ body.touch .breath-button.thought-choice-active > * { position: relative; z-inde
 .controls-hint.thought-choice-active .action-group {
   position: fixed; left: 50%; top: var(--tc-btn-top); z-index: 6; width: calc(var(--tc-w) - 2 * var(--tc-pad)); display: flex; align-items: stretch; gap: var(--tc-gap); transform: translateX(-50%);
 }
-.controls-hint.thought-choice-active .look-shell { display: flex; flex: 0 0 auto; }
+.controls-hint.thought-choice-active .look-shell { display: none; }
 .controls-hint.thought-choice-active .look-action { width: 48px; min-width: 48px; justify-content: center; padding: 0 !important; border-radius: 16px; }
 .controls-hint.thought-choice-active .look-action .action-label, .controls-hint.thought-choice-active .look-action kbd { display: none; }
-.controls-hint.thought-choice-active .thought-push-choice { flex: 0 0 30%; display: flex; }
+.controls-hint.thought-choice-active .thought-push-choice { flex: 1 1 0; display: flex; }
 .controls-hint.thought-choice-active .thought-push-choice .push-shell { width: 100%; }
 .controls-hint.thought-choice-active .thought-breathe-choice { flex: 1 1 0; display: flex; min-width: 0; }
 .controls-hint.thought-choice-active .thought-choice-title { display: none; }
@@ -109,7 +109,7 @@ body.touch .breath-button.thought-choice-active > * { position: relative; z-inde
 .controls-hint.thought-choice-active .thought-breathe-actions .breathe-action { flex: 1.5 1 0; }
 .controls-hint.thought-choice-active .thought-breathe-actions .breath-secondary { flex: 1 1 0; }
 .controls-hint.thought-choice-active .thought-breathe-actions .breath-copy { display: grid; grid-column: auto; gap: 0; }
-.controls-hint.thought-choice-active .thought-breathe-actions .breath-verb { font-size: 12px; letter-spacing: .1em; white-space: nowrap; }
+.controls-hint.thought-choice-active .thought-breathe-actions .breath-verb { font-size: 12px; letter-spacing: .04em; white-space: nowrap; }
 .controls-hint.thought-choice-active .thought-breathe-actions .breath-hint { display: none; }
 .controls-hint.thought-choice-active .action-group kbd { font-size: 10px; letter-spacing: 0; background: color-mix(in srgb, var(--ui-paper) 55%, transparent); }
 .controls-hint.thought-choice-active .breath-secondary kbd { display: none; }
@@ -159,16 +159,16 @@ body.touch .breath-button.thought-choice-active .control-icon { width: 24px; hei
 }
 
 /* Tutorial action card: same plaque, one big action button. Never blocks movement (only the button takes taps). */
-.thought-plaque.action-card { height: auto; padding-bottom: var(--tc-pad); }
+.thought-plaque.action-card { --tc-w: min(420px, calc(100vw - var(--edge-left) - var(--edge-right))); top: calc(var(--edge-top) + 8px); height: auto; padding: 14px 18px 14px; background: color-mix(in srgb, var(--ui-paper) 78%, transparent); border-color: color-mix(in srgb, var(--gold) 32%, transparent); box-shadow: 0 6px 22px color-mix(in srgb, var(--umber) 12%, transparent); }
 .thought-plaque.action-card.open { pointer-events: none; }
-.action-card .thought-plaque-prompt { margin: 4px 22px 8px; font-size: 14px; color: var(--ui-deep); }
+.action-card .thought-plaque-prompt { margin: 4px 18px 10px; font-size: 14px; color: var(--ui-deep); }
 .action-card-row { display: flex; justify-content: center; }
 .action-card-button, .action-card-close { pointer-events: auto; cursor: pointer; font: inherit; }
 .action-card-button {
-  display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; min-width: 200px; padding: 8px 18px;
-  border: 1px solid color-mix(in srgb, var(--gold) 70%, var(--ui-deep)); border-radius: 16px; color: var(--ui-deep);
-  background: linear-gradient(180deg, #f6dc9f, var(--gold)); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 13px;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--umber) 18%, transparent), 0 0 18px color-mix(in srgb, var(--gold) 45%, transparent);
+  display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 44px; min-width: 160px; padding: 6px 20px;
+  border: 0; border-radius: 999px; color: var(--ui-deep);
+  background: color-mix(in srgb, var(--gold) 70%, var(--ui-paper)); font-weight: 700; letter-spacing: .04em; font-size: 13px;
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--umber) 12%, transparent);
 }
 .action-card-button:hover { filter: brightness(1.04); }
 .action-card-button.held { transform: scale(1.03); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lantern-white) 80%, transparent), 0 0 30px color-mix(in srgb, var(--gold) 80%, transparent); }
@@ -177,7 +177,7 @@ body.touch .breath-button.thought-choice-active .control-icon { width: 24px; hei
 .action-card-close { position: absolute; top: 4px; right: 8px; width: 32px; height: 32px; border: 0; background: none; color: var(--ui-muted); font-size: 22px; line-height: 1; }
 .action-card-button:focus-visible, .action-card-close:focus-visible { outline: 3px solid var(--ui-deep); outline-offset: 2px; }
 body.action-card-open .next-step-hint { opacity: 0 !important; pointer-events: none; }
-body.action-card-open .imp-breath-progress { top: calc(var(--tc-top) + 160px); }
+body.action-card-open .imp-breath-progress { top: calc(var(--edge-top) + 150px); }
 body.thought-choice-open .action-card { opacity: 0; visibility: hidden; }
 @media (max-height: 520px) {
   .action-card .thought-plaque-prompt { display: block; margin: 2px 22px 4px; font-size: 12px; }

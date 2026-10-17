@@ -8,6 +8,8 @@ export class NextStepHint {
   private readonly el = document.createElement('div');
   private readonly marker = document.createElement('div');
   private readonly text = document.createElement('span');
+  private lastLine = '';
+  private quietTimer = 0;
 
   constructor(parent: HTMLElement) {
     this.el.className = 'next-step-hint';
@@ -25,6 +27,18 @@ export class NextStepHint {
   update(key: string, line: string, label: string, turn: string, target: Vector3 | null, scene: Scene, camera: Camera, badge = ''): void {
     if (this.el.dataset.step !== key) {
       this.el.dataset.step = key;
+      // A new objective shows as a centered banner, then settles into the quiet corner line.
+      // Progress-only changes (same sentence, new badge) stay quiet.
+      if (line && line !== this.lastLine) {
+        this.el.classList.remove('quiet');
+        this.el.classList.add('banner');
+        window.clearTimeout(this.quietTimer);
+        this.quietTimer = window.setTimeout(() => {
+          this.el.classList.remove('banner');
+          this.el.classList.add('quiet');
+        }, TUNING.ui.questBannerSeconds * 1000);
+      }
+      this.lastLine = line;
       this.el.textContent = '';
       const main = document.createElement('span');
       main.className = 'next-step-line';

@@ -130,7 +130,7 @@ export class BubbleField implements ThoughtField, BubbleHooks {
     const size = B.width * (1 + (this.anger.waveScale() - 1) * B.growShare);
     const cx = p.x + fz * size * B.side;
     const cz = p.z - fx * size * B.side;
-    free.spawn(this.pickText(), size, cx, p.y + B.headY + B.lift, cz);
+    free.spawn(this.pickText(), size, cx, p.y + B.headY + B.lift, cz, this.anger.value);
     this.gap = B.gapCalm + (B.gapAngry - B.gapCalm) * this.anger.value;
   }
 

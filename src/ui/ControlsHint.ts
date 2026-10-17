@@ -1,5 +1,6 @@
 import { createControlIcon } from './ControlIcons';
 import { InputManager } from '../core/InputManager';
+import { TUNING } from '../config/tuning';
 
 /** Floating desktop actions. Text is supplied by the dialogue data. */
 export class ControlsHint {
@@ -14,6 +15,7 @@ export class ControlsHint {
   private readonly plaque: HTMLDivElement;
   private readonly thoughtEl: HTMLDivElement;
   private readonly touch: boolean;
+  private readonly inLabel: HTMLSpanElement;
   private readonly heldKeys = new Set<string>();
   private pushContext: 'push' | 'collectApple' | 'interact' = 'push';
 
@@ -39,6 +41,14 @@ export class ControlsHint {
     arrow.className = 'controls-arrow-keys';
     arrow.textContent = texts('controlsArrowKeys');
     this.moveNote.append(keycap, walk, document.createTextNode(' · '), arrow);
+    // The walking hint fades away for good after the first step.
+    const moveKeys = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']);
+    const onMove = (event: KeyboardEvent): void => {
+      if (!moveKeys.has(event.code)) return;
+      window.removeEventListener('keydown', onMove);
+      window.setTimeout(() => this.moveNote.classList.add('done'), TUNING.ui.moveHintFadeDelay * 1000);
+    };
+    window.addEventListener('keydown', onMove);
 
     const group = document.createElement('div');
     group.className = 'action-group';
@@ -60,6 +70,7 @@ export class ControlsHint {
     const breathCopy = document.createElement('span');
     breathCopy.className = 'breath-copy';
     const inLabel = document.createElement('span');
+    this.inLabel = inLabel;
     inLabel.className = 'breath-verb';
     inLabel.textContent = texts('controlsBreatheIn');
     const holdHint = document.createElement('small');
@@ -67,8 +78,12 @@ export class ControlsHint {
     holdHint.textContent = texts('guideHoldInDesktop');
     const key = document.createElement('kbd');
     key.textContent = 'Space';
+    // In the thought card the two breath buttons read as one option: Breathe [Space] [Shift].
+    const extraKey = document.createElement('kbd');
+    extraKey.className = 'kbd-extra';
+    extraKey.textContent = 'Shift';
     breathCopy.append(inLabel, holdHint);
-    breathe.append(breathCopy, key);
+    breathe.append(breathCopy, key, extraKey);
 
     const secondary = document.createElement('button');
     this.exhaleButton = secondary;
@@ -191,6 +206,7 @@ export class ControlsHint {
     this.el.classList.toggle('thought-choice-active', active);
     this.plaque.classList.toggle('open', active);
     document.body.classList.toggle('thought-choice-open', active);
+    this.inLabel.textContent = this.texts(active ? 'controlsBreathe' : 'controlsBreatheIn');
     if (!active) for (const button of [this.pushButton, this.inhaleButton, this.exhaleButton]) button.classList.remove('thought-choice-pop');
   }
   /** Shows the actual thought on the card (presentation only). */
