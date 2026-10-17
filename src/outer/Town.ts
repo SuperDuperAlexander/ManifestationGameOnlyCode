@@ -418,15 +418,15 @@ export class Town implements World {
   /** The look of the whole town: valley sky, mesas, shader materials, valley-like ground, one merged solid mesh. */
   private buildLook(): void {
     const sc = this.scene;
-    const solid = createValleyMaterial('town.solid', sc, { backFaceCulling: false });
-    const ground = createValleyMaterial('town.groundMat', sc, { ground: true });
-    const plants = createValleyMaterial('town.plants', sc, { wind: true, painted: true });
-    const far = createValleyMaterial('town.far', sc, { unlit: true, fog: 0, backFaceCulling: false });
-    const water = createValleyMaterial('town.water', sc, { water: true, backFaceCulling: false });
-    const falls = createValleyMaterial('town.falls', sc, { falls: true, backFaceCulling: false });
+    const solid = createValleyMaterial('town.solid', sc, { look: 'outer', backFaceCulling: false });
+    const ground = createValleyMaterial('town.groundMat', sc, { look: 'outer', ground: true });
+    const plants = createValleyMaterial('town.plants', sc, { look: 'outer', wind: true, painted: true });
+    const far = createValleyMaterial('town.far', sc, { look: 'outer', unlit: true, fog: 0, backFaceCulling: false });
+    const water = createValleyMaterial('town.water', sc, { look: 'outer', water: true, backFaceCulling: false });
+    const falls = createValleyMaterial('town.falls', sc, { look: 'outer', falls: true, backFaceCulling: false });
 
-    new ValleySky(sc);
-    const mesas = buildFarMountains(sc);
+    new ValleySky(sc, 'outer');
+    const mesas = buildFarMountains(sc, 'outer');
     mesas.material = far;
     mesas.unfreezeWorldMatrix();
     mesas.position.set(TUNING.outer.look.mesaCentre.x, 0, TUNING.outer.look.mesaCentre.z);

@@ -49,6 +49,10 @@ void main(void) {
   vec3 c = mix(uHorizon, uZenith, smoothstep(0.0, 0.6, up));
   // Soft pink-magenta glow around the light, and a gentle pearl disc.
   float s = max(dot(d, uSunDir), 0.0);
+#ifdef OUTER
+  c += vec3(0.20, 0.13, 0.04) * pow(s, 5.0) + vec3(0.25, 0.2, 0.1) * pow(s, 60.0);
+  c = mix(c, vec3(1.0, 0.98, 0.92), smoothstep(0.9965, 0.9985, s));
+#else
   c += uGlow * (pow(s, 4.0) * 0.25 + pow(s, 40.0) * 0.2);
   c = mix(c, vec3(1.0, 0.94, 0.98), smoothstep(0.9965, 0.9985, s));
   // A few twinkling stars and a faint spiral nebula high up.
@@ -62,12 +66,18 @@ void main(void) {
   float ang = atan(q.y, q.x) + length(q) * 4.0 - uTime * 0.01;
   float neb = pow(0.5 + 0.5 * cos(ang * 2.0), 3.0) * exp(-length(q) * 1.8) * smoothstep(0.1, 0.4, up);
   c += vec3(0.75, 0.45, 0.95) * neb * 0.9;
+#endif
   // Soft cream clouds, drifting slowly. Only above the horizon.
   vec2 p = d.xz / (up + 0.25) * 1.6 + vec2(uTime * 0.006, uTime * 0.002);
   float n = noise(p * 1.1) * 0.62 + noise(p * 2.6 + 3.1) * 0.38;
   float cloud = smoothstep(0.56, 0.78, n) * smoothstep(0.03, 0.18, up) * (1.0 - smoothstep(0.45, 0.85, up));
+#ifdef OUTER
+  vec3 cloudCol = mix(vec3(0.98, 0.95, 0.89), vec3(1.0, 0.93, 0.82), pow(s, 3.0));
+  c = mix(c, cloudCol, cloud * 0.8);
+#else
   vec3 cloudCol = mix(vec3(0.86, 0.78, 0.96), vec3(1.0, 0.82, 0.92), pow(s, 3.0));
   c = mix(c, cloudCol, cloud * 0.5);
+#endif
   // Mood: a grey, heavy sky with force; a warm, golden one with light.
   float lum = dot(c, vec3(0.3, 0.59, 0.11));
   if (uMood < 0.0) c = mix(c, vec3(lum) * vec3(0.55, 0.57, 0.68), -uMood);
@@ -86,7 +96,7 @@ export class ValleySky {
   readonly dome: Mesh;
   private readonly mat: ShaderMaterial;
 
-  constructor(scene: Scene) {
+  constructor(scene: Scene, look: 'inner' | 'outer' = 'inner') {
     this.dome = MeshBuilder.CreateSphere('valley.sky', { diameter: 1200, segments: 16, sideOrientation: Mesh.BACKSIDE }, scene);
     this.dome.infiniteDistance = true;
     this.dome.isPickable = false;
@@ -95,12 +105,12 @@ export class ValleySky {
       'valley.skyMat',
       scene,
       { vertex: 'valleySky', fragment: 'valleySky' },
-      { attributes: ['position'], uniforms: ['worldViewProjection', 'uHorizon', 'uZenith', 'uSunDir', 'uTime', 'uMood', 'uGlow'] },
+      { attributes: ['position'], uniforms: ['worldViewProjection', 'uHorizon', 'uZenith', 'uSunDir', 'uTime', 'uMood', 'uGlow'], defines: look === 'outer' ? ['OUTER'] : [] },
     );
     this.mat.disableDepthWrite = true;
     this.mat.backFaceCulling = false;
     const horizon = VALLEY_UNIFORMS.fogColor;
-    const zenith = rgb(SHADES.innerSkyTop);
+    const zenith = rgb(look === 'outer' ? SHADES.outerSkyTop : SHADES.innerSkyTop);
     const glow = rgb(SHADES.innerSkyGlow);
     this.mat.onBindObservable.add(() => {
       const e = this.mat.getEffect();
@@ -120,9 +130,14 @@ export class ValleySky {
  * Three rings of far mesas, merged into one mesh. Colours are painted in:
  * each ring hazier than the one before, and every ring fades into the haze at its foot.
  */
-export function buildFarMountains(scene: Scene): Mesh {
-  const haze = rgb(SHADES.innerHaze);
-  const rings = [
+export function buildFarMountains(scene: Scene, look: 'inner' | 'outer' = 'inner'): Mesh {
+  const outer = look === 'outer';
+  const haze = rgb(outer ? SHADES.outerHaze : SHADES.innerHaze);
+  const rings = outer ? [
+    { radius: 150, base: 8, amp: 46, freq: 5, color: SHADES.outerFarNear, top: SHADES.outerFarNearTop, seed: 1 },
+    { radius: 230, base: 30, amp: 60, freq: 4, color: SHADES.outerFarMid, top: SHADES.outerFarMidTop, seed: 2 },
+    { radius: 330, base: 55, amp: 70, freq: 3, color: SHADES.outerFarFar, top: SHADES.outerFarFarTop, seed: 3 },
+  ] : [
     { radius: 150, base: 8, amp: 46, freq: 5, color: SHADES.innerFarNear, top: '#AE98D8', seed: 1 },
     { radius: 230, base: 30, amp: 60, freq: 4, color: '#A894D4', top: '#B8A6E0', seed: 2 },
     { radius: 330, base: 55, amp: 70, freq: 3, color: SHADES.innerFarFar, top: '#C8B6EA', seed: 3 },

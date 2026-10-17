@@ -356,7 +356,7 @@ export class ValleyProps {
  * and a crown of soft clumps. Each clump is shaded on its own, so the crown
  * reads as layered cut-paper clouds. About 5 m tall.
  */
-export function roundTree(scene: Scene, puffy = false): Mesh {
+export function roundTree(scene: Scene, puffy = false, outer = false): Mesh {
   const wood: Mesh[] = [];
   const trunk = MeshBuilder.CreateCylinder('tree.trunk', { height: 2.4, diameterTop: 0.3, diameterBottom: 0.5, tessellation: 7 }, scene);
   trunk.position.y = 1.2;
@@ -406,7 +406,7 @@ export function roundTree(scene: Scene, puffy = false): Mesh {
     }
   }
   const crown = Mesh.MergeMeshes(clumps, true)!;
-  paintGradient(crown, SHADES.innerFoliage, SHADES.innerFoliageLit, 2.2);
+  paintGradient(crown, outer ? SHADES.outerFoliage : SHADES.innerFoliage, outer ? SHADES.outerFoliageLit : SHADES.innerFoliageLit, 2.2);
   const parts = [trunkMesh, crown];
   if (puffy) {
     const rnd = new Random('puffy-sparks');
@@ -452,7 +452,7 @@ export function puffCloud(scene: Scene): Mesh {
 }
 
 /** Cypress: a tall soft flame of dark green. About 5.8 m tall. */
-export function cypress(scene: Scene): Mesh {
+export function cypress(scene: Scene, outer = false): Mesh {
   const trunk = MeshBuilder.CreateCylinder('cyp.trunk', { height: 1.2, diameterTop: 0.14, diameterBottom: 0.24, tessellation: 6 }, scene);
   trunk.position.y = 0.6;
   trunk.bakeCurrentTransformIntoVertices();
@@ -468,14 +468,14 @@ export function cypress(scene: Scene): Mesh {
   ];
   const body = MeshBuilder.CreateLathe('cyp.body', { shape, tessellation: 10 }, scene);
   roundNormals(body, new Vector3(0, 3.0, 0), 0.35);
-  paintGradient(body, '#5A62B4', '#A4AEEC', 1.0);
+  paintGradient(body, outer ? SHADES.outerCypress : '#5A62B4', outer ? SHADES.outerCypressLit : '#A4AEEC', 1.0);
   const tree = Mesh.MergeMeshes([trunk, body], true)!;
   tree.name = 'valley.cypress';
   return tree;
 }
 
 /** A low bush of three to four soft clumps. About 1.2 m tall. */
-export function bush(scene: Scene): Mesh {
+export function bush(scene: Scene, outer = false): Mesh {
   const parts: Mesh[] = [];
   const blobs: [number, number, number, number][] = [
     [0, 0.55, 0, 0.75],
@@ -492,13 +492,13 @@ export function bush(scene: Scene): Mesh {
     parts.push(b);
   }
   const m = Mesh.MergeMeshes(parts, true)!;
-  paintGradient(m, '#626ABC', '#B0B8F2', 0.3);
+  paintGradient(m, outer ? SHADES.outerBush : '#626ABC', outer ? SHADES.outerBushLit : '#B0B8F2', 0.3);
   m.name = 'valley.bush';
   return m;
 }
 
 /** A soft, lumpy rock. About 1 m wide. */
-export function rock(scene: Scene, seed: number): Mesh {
+export function rock(scene: Scene, seed: number, outer = false): Mesh {
   const m = MeshBuilder.CreateSphere('valley.rock', { diameter: 1, segments: 5, updatable: true }, scene);
   const pos = m.getVerticesData(VertexBuffer.PositionKind)!;
   for (let i = 0; i < pos.length; i += 3) {
@@ -517,32 +517,32 @@ export function rock(scene: Scene, seed: number): Mesh {
   VertexData.ComputeNormals(pos, idx, normals);
   m.updateVerticesData(VertexBuffer.NormalKind, normals);
   roundNormals(m, new Vector3(0, 0.1, 0), 0.5);
-  paintGradient(m, '#8C70A8', '#E4C0DE');
+  paintGradient(m, outer ? SHADES.outerRock : '#8C70A8', outer ? SHADES.outerRockLit : '#E4C0DE');
   return m;
 }
 
 /** A tuft of grass: a few thin blades. Normals point up, so it takes the ground's light. */
-export function grassTuft(scene: Scene, rnd: Random): Mesh {
+export function grassTuft(scene: Scene, rnd: Random, outer = false): Mesh {
   const positions: number[] = [];
   const colors: number[] = [];
   const indices: number[] = [];
   const normals: number[] = [];
-  const base = rgb(SHADES.innerGrass);
-  const tip = rgb(SHADES.innerGrassTip);
-  const blades = 13;
+  const base = rgb(outer ? SHADES.outerGrass : SHADES.innerGrass);
+  const tip = rgb(outer ? SHADES.outerGrassTip : SHADES.innerGrassTip);
+  const blades = outer ? 8 : 13;
   for (let b = 0; b < blades; b++) {
     const a = (b / blades) * Math.PI * 2 + rnd.jitter(0.4);
-    const r = rnd.range(0, 0.14);
+    const r = rnd.range(0, outer ? 0.1 : 0.14);
     const x = Math.cos(a) * r;
     const z = Math.sin(a) * r;
-    const h = rnd.range(0.3, 0.62);
+    const h = outer ? rnd.range(0.22, 0.42) : rnd.range(0.3, 0.62);
     const lean = rnd.range(0.08, 0.18);
-    const w = 0.05;
+    const w = outer ? 0.045 : 0.05;
     const sx = -Math.sin(a) * w;
     const sz = Math.cos(a) * w;
     const n = positions.length / 3;
     positions.push(x - sx, 0, z - sz, x + sx, 0, z + sz, x + Math.cos(a) * lean, h, z + Math.sin(a) * lean);
-    const vary = 0.75 + rnd.next() * 0.5;
+    const vary = outer ? 1 : 0.75 + rnd.next() * 0.5;
     const t2: Rgb = [Math.min(1, tip[0] * vary), Math.min(1, tip[1] * (0.9 + vary * 0.1)), Math.min(1, tip[2])];
     colors.push(...base, 0, ...base, 0, ...t2, 1);
     normals.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
@@ -559,7 +559,8 @@ export function grassTuft(scene: Scene, rnd: Random): Mesh {
 }
 
 /** A small white flower on a thin stem. */
-export function flower(scene: Scene): Mesh {
+export function flower(scene: Scene, outer = false): Mesh {
+  if (outer) return whiteFlower(scene);
   // A cluster of 5 faceted crystals in pink, violet and turquoise, leaning outward.
   const cols = [SHADES.innerCrystal, SHADES.innerCrystalPink, SHADES.innerCrystalBlue, SHADES.innerCrystal, SHADES.innerCrystalPink];
   const parts: Mesh[] = [];
@@ -614,4 +615,29 @@ function roundNormals(mesh: Mesh, centre: Vector3, amount: number): void {
     out[i + 2] = nz;
   }
   mesh.setVerticesData(VertexBuffer.NormalKind, out);
+}
+
+/** Outer town: the original small white flower on a thin stem. */
+function whiteFlower(scene: Scene): Mesh {
+  const stem = MeshBuilder.CreateCylinder('fl.stem', { height: 0.24, diameter: 0.02, tessellation: 3 }, scene);
+  stem.position.y = 0.12;
+  stem.bakeCurrentTransformIntoVertices();
+  paintFlat(stem, SHADES.outerStem, 0.4);
+  const petals = MeshBuilder.CreateDisc('fl.petals', { radius: 0.12, tessellation: 6 }, scene);
+  petals.rotation.x = Math.PI / 2;
+  petals.position.y = 0.24;
+  petals.bakeCurrentTransformIntoVertices();
+  paintFlat(petals, SHADES.outerPetal, 1);
+  const heart = MeshBuilder.CreateDisc('fl.heart', { radius: 0.042, tessellation: 6 }, scene);
+  heart.rotation.x = Math.PI / 2;
+  heart.position.y = 0.245;
+  heart.bakeCurrentTransformIntoVertices();
+  paintFlat(heart, '#EBC57A', 1);
+  const m = Mesh.MergeMeshes([stem, petals, heart], true)!;
+  const count = m.getTotalVertices();
+  const normals = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) normals[i * 3 + 1] = 1;
+  m.setVerticesData(VertexBuffer.NormalKind, normals);
+  m.name = 'valley.flower';
+  return m;
 }

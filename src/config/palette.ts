@@ -40,6 +40,27 @@ export const SHADES = {
   /** Inner world: far mountains, violet (near / far). */
   innerFarNear: '#9C84C8',
   innerFarFar: '#C4B0E4',
+  /** Outer town (original sunny look): sky top, haze, far mesas (near / mid / far, with tops), foliage, cypress, bush, grass, rock. */
+  outerSkyTop: '#9DB9DA',
+  outerHaze: '#EAE3D5',
+  outerFarNear: '#B7A99F',
+  outerFarNearTop: '#C6B6A6',
+  outerFarMid: '#B6BBCB',
+  outerFarMidTop: '#C3C6D2',
+  outerFarFar: '#C9D2DE',
+  outerFarFarTop: '#D3DAE3',
+  outerFoliage: '#6D7B52',
+  outerFoliageLit: '#B3B67A',
+  outerCypress: '#55623E',
+  outerCypressLit: '#8F9C62',
+  outerBush: '#66744C',
+  outerBushLit: '#A5AD72',
+  outerRock: '#8E8A90',
+  outerRockLit: '#D0C7BC',
+  outerGrass: '#6F8447',
+  outerGrassTip: '#B6C173',
+  outerStem: '#7F8A55',
+  outerPetal: '#FBF6EA',
   /** Soft ink for text: a deep, warm grey-blue. Never pure black. */
   ink: '#4E5566',
   /** Thought Bubble: cloud edge shade (warm cream), rim outline (sandy brown) and text ink (deep blue-grey). */

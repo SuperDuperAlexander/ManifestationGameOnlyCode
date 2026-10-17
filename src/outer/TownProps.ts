@@ -87,7 +87,7 @@ export class TownProps {
     private readonly scene: Scene,
     private readonly groundAt: (x: number, z: number) => number,
   ) {
-    const opts = {};
+    const opts = { look: 'outer' as const };
     this.plants = createValleyMaterial('town.props.plants', scene, { ...opts, wind: true, painted: true });
     this.grass = createValleyMaterial('town.props.grass', scene, { ...opts, wind: true, backFaceCulling: false });
     this.solid = createValleyMaterial('town.props.solid', scene, opts);
@@ -102,12 +102,12 @@ export class TownProps {
       ...this.wallTufts(Math.round(this.p.wallTufts * grassShare)),
       ...this.spotTufts(),
     ];
-    placeThin(grassTuft(scene, this.rnd), tufts, this.grass);
-    placeThin(flower(scene), this.flowers(Math.round(this.p.flowers * flowerShare)), this.grass);
-    placeThin(bush(scene), this.spots(TOWN_PROPS.bushes, 0.1, 0.0), this.plants);
-    placeThin(cypress(scene), this.spots(TOWN_PROPS.cypresses, 0.1, 0.12), this.plants);
-    placeThin(roundTree(scene), this.spots(TOWN_PROPS.trees, 0.15, 0.0), this.plants);
-    placeThin(rock(scene, 7), this.stones(this.p.stones), this.solid);
+    placeThin(grassTuft(scene, this.rnd, true), tufts, this.grass);
+    placeThin(flower(scene, true), this.flowers(Math.round(this.p.flowers * flowerShare)), this.grass);
+    placeThin(bush(scene, true), this.spots(TOWN_PROPS.bushes, 0.1, 0.0), this.plants);
+    placeThin(cypress(scene, true), this.spots(TOWN_PROPS.cypresses, 0.1, 0.12), this.plants);
+    placeThin(roundTree(scene, false, true), this.spots(TOWN_PROPS.trees, 0.15, 0.0), this.plants);
+    placeThin(rock(scene, 7, true), this.stones(this.p.stones), this.solid);
 
     const details = this.buildDetails();
     if (details) {

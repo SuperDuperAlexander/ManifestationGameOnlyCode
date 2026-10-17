@@ -61,7 +61,7 @@ void main(void) {
 #endif
   vMask = sway;
   vBig = 1.0;
-#if defined(WIND) && defined(PAINTED)
+#if defined(WIND) && defined(PAINTED) && !defined(OUTER)
   // Small props shrink away as a whole when the camera comes close (no hollow shells).
   if (length(finalWorld[0].xyz) < 8.0) {
     vBig = 0.0;
@@ -116,14 +116,16 @@ void main(void) {
 #ifdef WIND
   // Plants right in front of the camera fade out (dithered), so they never block the view.
   float dc = distance(vWorld, uCamPos);
-#ifdef PAINTED
+#ifdef OUTER
+  if (dc < 4.0 && hash(gl_FragCoord.xy) > smoothstep(2.0, 4.0, dc)) discard;
+#elif defined(PAINTED)
   if (vBig > 0.5 && dc < 3.2) discard;
 #else
   if (dc < 2.6 && hash(gl_FragCoord.xy) > smoothstep(2.1, 2.6, dc)) discard;
 #endif
 #endif
   vec3 base = vColor * uTint;
-#if defined(WIND) && !defined(PAINTED)
+#if defined(WIND) && !defined(PAINTED) && !defined(OUTER)
   base *= 0.8 + 0.4 * fract(sin(vPhase * 12.9898) * 43758.5453);
 #endif
 #ifdef GROUND
@@ -150,20 +152,41 @@ void main(void) {
   float t = uWind.x;
   vec2 flow = vWorld.xz * 0.8 + vec2(t * 0.35, t * 0.12);
   float w = noise(flow) * noise(vWorld.xz * 1.6 - vec2(t * 0.2, 0.0));
+#ifdef OUTER
+  c = mix(vec3(0.56, 0.69, 0.81), vec3(0.74, 0.84, 0.90), noise(vWorld.xz * 0.3 + t * 0.05));
+  c += vec3(1.0, 0.97, 0.88) * smoothstep(0.4, 0.6, w) * 0.4;
+#else
   // Inner pond: a glowing cyan-blue with pale sparkles.
   c = mix(vec3(0.28, 0.82, 0.94), vec3(0.50, 0.94, 1.0), noise(vWorld.xz * 0.3 + t * 0.05));
   c += vec3(0.85, 0.95, 1.0) * smoothstep(0.4, 0.6, w) * 0.55;
   float fres = pow(1.0 - clamp(normalize(uCamPos - vWorld).y, 0.0, 1.0), 2.0);
   c = mix(c, vec3(0.80, 0.78, 1.0), fres * 0.45);
+#endif
 #elif defined(FALLS)
   // Waterfall: bright streaks running down.
   float t = uWind.x;
   float s = noise(vec2((vWorld.x + vWorld.z) * 2.6, vWorld.y * 0.7 + t * 3.2));
+#ifdef OUTER
+  c = mix(vec3(0.70, 0.80, 0.90), vec3(0.97, 0.97, 0.94), smoothstep(0.35, 0.75, s));
+#else
   c = mix(vec3(0.52, 0.80, 0.94), vec3(0.93, 0.96, 1.0), smoothstep(0.35, 0.75, s));
   c += vec3(0.10, 0.08, 0.16) * (0.5 + 0.5 * sin(t * 2.0 + vWorld.y * 3.0));
+#endif
 #else
   vec3 n = normalize(vNormal);
   float ndl = dot(n, uLightDir);
+#ifdef OUTER
+#ifdef PAINTED
+  float lit = smoothstep(-0.08, 0.22, ndl);
+  c = mix(base * vec3(0.70, 0.75, 0.84), base * vec3(1.08, 1.04, 0.9), lit);
+  c = mix(c, c * vec3(1.12, 1.08, 0.82) + vec3(0.06, 0.05, 0.0), smoothstep(0.55, 0.85, ndl) * 0.8);
+#else
+  float lit = smoothstep(-0.3, 0.5, ndl);
+  c = mix(base * vec3(0.72, 0.72, 0.86), base * vec3(1.06, 1.0, 0.9), lit);
+  c += vec3(0.07, 0.045, 0.0) * smoothstep(0.55, 0.95, ndl);
+#endif
+  c += vec3(0.04, 0.045, 0.06) * clamp(n.y, 0.0, 1.0);
+#else
 #ifdef PAINTED
   // Painted foliage: a clear lit side and a cool shaded side, and a warm highlight on top.
   float lit = smoothstep(-0.08, 0.22, ndl);
@@ -192,6 +215,7 @@ void main(void) {
 #endif
   c *= 0.9;
 #endif
+#endif
   // Soft paper grain: a gentle mottling, no hard pixels.
   float g = noise(vWorld.xz * 2.3 + vWorld.y * 1.7) * 0.6 + noise(vWorld.xz * 6.1 - vWorld.y * 3.3) * 0.4;
   c *= 0.975 + g * 0.05;
@@ -203,8 +227,12 @@ void main(void) {
   vec3 bright = mix(vec3(lum), c, 1.15) * 1.06 + vec3(0.05, 0.035, 0.0);
   c = m < 0.0 ? mix(c, dark, -m) : mix(c, bright, m);
 
+#ifdef OUTER
+  c = mix(c, uFogColor, vFog);
+#else
   float mist = 0.16 * smoothstep(5.0, -1.0, vWorld.y) * smoothstep(6.0, 30.0, distance(vWorld, uCamPos));
   c = mix(c, uFogColor, max(vFog, mist));
+#endif
   gl_FragColor = vec4(c, 1.0);
 }
 `;
@@ -233,6 +261,8 @@ export interface ValleyMaterialOptions {
   fog?: number;
   /** Multiplies the mood. 0 = not touched by it (light things stay bright). */
   mood?: number;
+  /** 'outer' = the original sunny town look (no violet, no glow). Default 'inner'. */
+  look?: 'inner' | 'outer';
   /** Multiplies the painted colours (inner tree trunk). */
   tint?: [number, number, number];
   backFaceCulling?: boolean;
@@ -246,6 +276,7 @@ export function createValleyMaterial(name: string, scene: Scene, opts: ValleyMat
   if (opts.unlit) defines.push('UNLIT');
   if (opts.water) defines.push('WATER');
   if (opts.falls) defines.push('FALLS');
+  if (opts.look === 'outer') defines.push('OUTER');
   if (opts.glow) defines.push('GLOW');
   if (opts.glowTint) defines.push('GLOWTINT');
   if (opts.tips) defines.push('TIPS');

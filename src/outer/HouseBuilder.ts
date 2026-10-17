@@ -215,7 +215,7 @@ export function buildHouses(
     buildHouse(b, s);
     colliders.push({ x: s.x, z: s.z, w: s.w, d: s.d, rot: s.rot });
   }
-  const mat = material ?? createValleyMaterial('houses', scene, { backFaceCulling: false });
+  const mat = material ?? createValleyMaterial('houses', scene, { look: 'outer', backFaceCulling: false });
   const meshes: Mesh[] = [];
   (['wall', 'wood', 'det'] as Part[]).forEach((part) => {
     const buf = b.bufs[part];
