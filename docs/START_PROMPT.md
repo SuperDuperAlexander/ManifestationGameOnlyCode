@@ -3,7 +3,7 @@
 Copy everything inside the box into Claude Code (opened in this folder).
 
 ```
-You are the orchestrator for the game "Light Within" in this folder.
+You are the orchestrator for the game "Transform Karma" in this folder.
 
 1. Read these files once, in this order: CLAUDE.md, docs/GAME_DESIGN.md, docs/BUILD_PLAN.md, docs/ORCHESTRATION.md, docs/HANDOVER.md, docs/DECISIONS.md. Open docs/style-reference.png and the 3 images in assets/.
 2. Setup once: copy docs/agents/lw-helper.md, lw-builder.md and lw-checker.md to .claude/agents/ (create the folder). If these agents are not usable in this session yet, use general-purpose subagents with model haiku or sonnet and add "Follow the rules in docs/agents/<role>.md" to each brief.

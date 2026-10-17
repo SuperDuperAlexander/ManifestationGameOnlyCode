@@ -1,4 +1,4 @@
-# GAME DESIGN — Light Within: "The Lantern" (Anger proof of concept)
+# GAME DESIGN — Transform Karma: "The Lantern" (Anger proof of concept)
 
 - Owner: Alexander. Written with Claude on 2026-10-11.
 - Changed 2026-10-12: Thought Waves became comic **Thought Bubbles** (formerly Thought Wave). See `docs/DECISIONS.md`.

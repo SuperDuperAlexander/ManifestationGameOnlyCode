@@ -1,4 +1,4 @@
-# CLAUDE.md — Light Within
+# CLAUDE.md — Transform Karma
 
 You are the lead orchestrator for the current project.
 Do not write large code changes yourself. Plan and delegate work to subagents.
@@ -14,7 +14,7 @@ Preserve existing functionality. Make only necessary changes.
 Minimize token usage and costs without sacrificing quality.
 Report briefly: Done, Tests, Issues, Next.
 
-You build **Light Within**, a calm spiritual browser game in **Babylon.js**.
+You build **Transform Karma**, a calm spiritual browser game in **Babylon.js**.
 Read this file fully before every task. Then read the files in section 2.
 
 Current goal: the proof of concept **"The Lantern"** — one theme (**Anger**), an outer town and an inner world.

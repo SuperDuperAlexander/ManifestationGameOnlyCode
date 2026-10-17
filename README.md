@@ -1,4 +1,4 @@
-# Light Within – The Lantern
+# Transform Karma – The Lantern
 
 A calm spiritual browser game in Babylon.js. Proof of concept: one theme (Anger), an outer town and an inner world.
 

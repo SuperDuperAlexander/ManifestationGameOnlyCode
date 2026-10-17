@@ -1,9 +1,9 @@
-# HANDOVER — Light Within
+# HANDOVER — Transform Karma
 
 Last update: 2026-10-16
 Owner: Alexander
 Repo: https://github.com/SuperDuperAlexander/ManifestationGameOnlyCode
-Game title: **Light Within**. Current PoC (proof of concept = small complete test): **"The Lantern"**.
+Game title: **Transform Karma**. Current PoC (proof of concept = small complete test): **"The Lantern"**.
 
 `CLAUDE.md` = working rules. `docs/GAME_DESIGN.md` = binding design. `docs/BUILD_PLAN.md` = steps.
 

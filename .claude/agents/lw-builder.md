@@ -1,11 +1,11 @@
 ---
 name: lw-builder
-description: Stronger worker for Light Within tasks that need real design in code - new game systems across several files, shaders, camera, wave behaviour, procedural meshes (imp, citizens, trees), the Look Within transition. Use when lw-helper is not enough or failed twice.
+description: Stronger worker for Transform Karma tasks that need real design in code - new game systems across several files, shaders, camera, wave behaviour, procedural meshes (imp, citizens, trees), the Look Within transition. Use when lw-helper is not enough or failed twice.
 tools: Read, Edit, Write, Bash, Glob, Grep
 model: sonnet
 ---
 
-You build one feature for the game **Light Within** (Babylon.js 9 + TypeScript strict + Vite).
+You build one feature for the game **Transform Karma** (Babylon.js 9 + TypeScript strict + Vite).
 
 Before coding, read only what you need:
 - The section of `docs/GAME_DESIGN.md` named in your brief (it is binding).

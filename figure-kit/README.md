@@ -1,6 +1,6 @@
 # Cloak Figure
 
-The red-cloak figure from *Light Within*, as a folder that works on its own.
+The red-cloak figure from *Transform Karma*, as a folder that works on its own.
 Made only in code with Babylon.js. No model file, no Blender.
 
 ## Start the demo

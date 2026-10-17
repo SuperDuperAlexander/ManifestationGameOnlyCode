@@ -1,4 +1,4 @@
-# Light Within: Concept v2
+# Transform Karma: Concept v2
 
 ## 1. Core idea
 
