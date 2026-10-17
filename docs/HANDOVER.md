@@ -94,3 +94,8 @@ Game title: **Transform Karma**. Current PoC (proof of concept = small complete 
 
 ## Update: first inner visit after the bump
 Bump -> `stepAngry` (Q) -> imp recognised (`impFirst`, sets `sawImp`) -> `stepReturnAlley` -> alley. Apples locked until `sawImp`. Walk speed while breathing: `TUNING.breath.walkFactor`. Scenario `scenarios.mjs` updated (lantern-alt, guidance).
+
+## Update: tutorial action cards (2026-10-17)
+- `src/ui/ActionCard.ts` + `.action-card` in `thought-card.css`. Story picks a card per step key (`Story.cardFor`), shows it once (`cardDone`), hides on step change/dismiss/transition. Texts: `card*` in en.json (drafts, see L39).
+- Top hint hidden while a card is open; opening bottom hint lines and `angryLookWithin` removed. Idle reminders wait while a card is open.
+- Not carded: push vs breathe on waves (existing thought card), explore, square return.

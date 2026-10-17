@@ -142,7 +142,7 @@ export class Game {
         if (choice === 'begin') StoryState.clear();
         InputManager.resetAll();
         window.dispatchEvent(new Event('blur'));
-        this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch });
+        this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch, actions: { look: () => this.toggle(), press: () => this.press() } });
         this.story.endCard.setLabels(dl.line('endStatus'), dl.line('endContinue'));
         this.story.endCard.onDismiss = () => {
           InputManager.resetAll();

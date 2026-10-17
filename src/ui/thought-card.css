@@ -157,3 +157,29 @@ body.touch .breath-button.thought-choice-active .control-icon { width: 24px; hei
   body.touch .hand-button.thought-choice-active.pressed { transform: none; }
   .breathe-action::before, body.touch .breath-button.thought-choice-active::before { transform: none; opacity: calc(var(--breath-level, 0) * .85); }
 }
+
+/* Tutorial action card: same plaque, one big action button. Never blocks movement (only the button takes taps). */
+.thought-plaque.action-card { height: auto; padding-bottom: var(--tc-pad); }
+.thought-plaque.action-card.open { pointer-events: none; }
+.action-card .thought-plaque-prompt { margin: 4px 22px 8px; font-size: 14px; color: var(--ui-deep); }
+.action-card-row { display: flex; justify-content: center; }
+.action-card-button, .action-card-close { pointer-events: auto; cursor: pointer; font: inherit; }
+.action-card-button {
+  display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 48px; min-width: 200px; padding: 8px 18px;
+  border: 1px solid color-mix(in srgb, var(--gold) 70%, var(--ui-deep)); border-radius: 16px; color: var(--ui-deep);
+  background: linear-gradient(180deg, #f6dc9f, var(--gold)); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 13px;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--umber) 18%, transparent), 0 0 18px color-mix(in srgb, var(--gold) 45%, transparent);
+}
+.action-card-button:hover { filter: brightness(1.04); }
+.action-card-button.held { transform: scale(1.03); box-shadow: 0 0 0 3px color-mix(in srgb, var(--lantern-white) 80%, transparent), 0 0 30px color-mix(in srgb, var(--gold) 80%, transparent); }
+.action-card-button .control-icon { width: 24px; height: 24px; flex: 0 0 auto; }
+.action-card-button kbd { font-size: 10px; letter-spacing: 0; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--ui-paper) 55%, transparent); }
+.action-card-close { position: absolute; top: 4px; right: 8px; width: 32px; height: 32px; border: 0; background: none; color: var(--ui-muted); font-size: 22px; line-height: 1; }
+.action-card-button:focus-visible, .action-card-close:focus-visible { outline: 3px solid var(--ui-deep); outline-offset: 2px; }
+body.action-card-open .next-step-hint { opacity: 0 !important; pointer-events: none; }
+body.action-card-open .imp-breath-progress { top: calc(var(--tc-top) + 160px); }
+body.thought-choice-open .action-card { opacity: 0; visibility: hidden; }
+@media (max-height: 520px) {
+  .action-card .thought-plaque-prompt { display: block; margin: 2px 22px 4px; font-size: 12px; }
+  .action-card-button { min-height: 40px; padding: 4px 14px; }
+}

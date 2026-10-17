@@ -12,6 +12,7 @@ import { TOWN } from '../outer/townLayout';
 import { EndCard } from '../ui/EndCard';
 import { Beacon } from './Beacon';
 import { NextStepHint } from '../ui/NextStepHint';
+import { ActionCard, type ActionCardView } from '../ui/ActionCard';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import type { Anger } from './Anger';
 import type { Lantern } from './Lantern';
@@ -29,6 +30,7 @@ export interface StoryDeps {
   outerLantern: Lantern;
   innerLantern: Lantern;
   touch: boolean;
+  actions: { look: () => void; press: () => void };
 }
 
 const dist2 = (ax: number, az: number, bx: number, bz: number): number => Math.hypot(ax - bx, az - bz);
@@ -52,7 +54,8 @@ export class Story {
   private readonly beacon: Beacon;
   private readonly innerBeacon: Beacon;
   private readonly nextStep: NextStepHint;
-  private hintT = 0;
+  private readonly card: ActionCard;
+  private readonly cardDone = new Set<string>();
   /** Idle reminder: current step signature and seconds spent in it. */
   private stepSig = '';
   private stepIdleT = 0;
@@ -88,6 +91,8 @@ export class Story {
     this.innerBeacon = new Beacon(deps.inner.scene, 0, 0, 0);
     this.innerBeacon.hide();
     this.nextStep = new NextStepHint(deps.ui);
+    this.card = new ActionCard(deps.ui, deps.dialogue.line('cardClose'), deps.actions);
+    this.card.onDismiss = (id) => this.cardDone.add(id);
     // Before the bump both trees are healthy and the root is not burned (reveal rule).
     deps.outer.setOldTreeBranchHealth(1);
     deps.inner.setBranchHealth(1);
@@ -128,8 +133,6 @@ export class Story {
     this.begun = true;
     if (this.state.restored) return;
     this.say('taskLantern');
-    this.hint('hintMove');
-    this.hint('hintBreathe');
   }
 
   lastLine(): string {
@@ -234,31 +237,19 @@ export class Story {
       this.lookWithinOpen = true;
       this.state.reach(1);
       this.cancelOpeningHints();
-      this.say(this.d.touch ? 'hintLookWithinTouch' : 'hintLookWithin', true);
-      this.hintT = 0;
     }
 
-    // Gentle repeat of the current hint until the step is done.
-    const needBreath = this.needsBreathHelp();
-    const needLook = this.lookWithinOpen && !this.innerVisited && !f.bumped && this.state.beat <= 1;
+    // The action card now guides the step; this bottom line only repeats while the card is dismissed.
     const nearAlley = dist2(outerPosition.x, outerPosition.z, TOWN.alleyStory.basket.x, TOWN.alleyStory.basket.z) < TUNING.story.guidanceNearRadius;
     // Not while the player is already busy with the alley (that is the current step).
     const needAngry = f.bumped && !this.angryInnerVisited && !f.helped && !nearAlley;
     if (shown === 'outer' && !busy && needAngry) {
       this.angryT += dt;
-      if (this.angryT >= TUNING.story.hintRepeatS * 0.5 && !d.dialogue.busy) {
+      if (this.angryT >= TUNING.story.hintRepeatS * 0.5 && !d.dialogue.busy && this.card.id === '') {
         this.angryT = 0;
         this.say('angryLookWithin');
       }
     } else this.angryT = 0;
-    if (shown === 'outer' && !busy && !breathing && (needBreath || needLook)) {
-      this.hintT += dt;
-      if (this.hintT >= TUNING.story.hintRepeatS && !d.dialogue.busy) {
-        this.hintT = 0;
-        this.hint(needBreath ? 'hintBreathe' : 'hintLookWithin');
-      }
-    } else this.hintT = 0;
-
     // Beat 3: the bump, once the player crosses the line on Main Street.
     if (shown === 'outer' && !busy && this.lookWithinOpen && this.innerVisited && this.state.beat >= 2 && !f.bumped && d.outer.bump.bumpTriggerReached(d.outer.playerPosition())) {
       this.startBump();
@@ -365,8 +356,39 @@ export class Story {
       uiKey = `${key}${left}`;
       sig = uiKey;
     } else if (key === 'stepImp') sig = `${key}${this.impBreaths}`;
-    this.updateReminder(dt, sig, key, busy);
+    this.updateCard(key, busy);
+    this.updateReminder(dt, sig, key, busy || this.card.id !== '');
     this.nextStep.update(uiKey, line, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera, badge);
+  }
+
+  private cardFor(key: string): ActionCardView | null {
+    const dl = this.d.dialogue;
+    const f = this.state.flags;
+    let id = '';
+    let kind: ActionCardView['kind'] = 'ok';
+    let icon: ActionCardView['icon'] = 'look-within';
+    let keyCap = '';
+    if (key === 'stepSquare') {
+      if (this.begun && !this.movedSinceBegin) id = 'cardMove';
+      else if (this.needsBreathHelp()) { id = 'cardBreathe'; kind = 'hold'; icon = 'breathe'; keyCap = 'Space'; }
+    } else if (key === 'stepFirstInside') { id = 'cardLookFirst'; kind = 'look'; keyCap = 'Q'; }
+    else if (key === 'stepAngry') { id = 'cardLookImp'; kind = 'look'; keyCap = 'Q'; }
+    else if (key === 'stepInside') { id = 'cardLookInside'; kind = 'look'; keyCap = 'Q'; }
+    else if (key === 'stepReturn' || key === 'stepReturnAlley' || key === 'stepReturnTree') { id = 'cardGoOut'; kind = 'look'; keyCap = 'Q'; }
+    else if (key === 'stepAlley') id = 'cardAlley';
+    else if (key === 'stepApples') { id = 'cardApples'; kind = 'press'; icon = 'collect'; keyCap = 'E'; }
+    else if (key === 'stepImp' || key === 'stepImpApproach') { id = f.helped ? 'cardImp' : ''; kind = 'hold'; icon = 'breathe'; keyCap = 'Space'; }
+    else if (key === 'stepTree') { id = 'cardTree'; kind = 'press'; icon = 'push'; keyCap = 'E'; }
+    if (!id || this.cardDone.has(id)) return null;
+    return { id, kind, icon, key: this.d.touch ? '' : keyCap, title: dl.line(`${id}Title`), text: dl.line(`${id}Text`), button: dl.line(`${id}Button`) };
+  }
+
+  /** One tutorial card per step. It closes when the step is done or on dismiss, and never comes back. */
+  private updateCard(key: string, busy: boolean): void {
+    const want = this.cardFor(key);
+    if (this.card.id && this.card.id !== want?.id) this.cardDone.add(this.card.id);
+    if (!want || busy || this.d.dialogue.line('cardClose') === '') this.card.hide();
+    else this.card.show(want);
   }
 
   /** Calm reminder when the player stays in one step for a while. Stale reminders are dropped on step change. */
@@ -485,7 +507,6 @@ export class Story {
     d.inner.setBranchHealth(0);
     this.sound.impGrowl();
     this.say('bumpAfter', true);
-    this.say('angryLookWithin');
     this.angryT = 0;
   }
 
@@ -641,11 +662,6 @@ export class Story {
   private say(key: string, interrupt = false): void {
     this.lastLineKey = key;
     void this.d.dialogue.say(key, { interrupt });
-  }
-
-  /** A control hint; touch devices get the `<key>Touch` variant. */
-  private hint(key: string): void {
-    this.say(this.d.touch ? `${key}Touch` : key);
   }
 
   private cancelOpeningHints(): void {
