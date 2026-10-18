@@ -8,7 +8,7 @@ import { Random } from '../core/Random';
  * Soft textures painted in code with a 2D canvas: glows, blob shadows, fog puffs.
  * Made once per scene and shared.
  */
-export type ProcTexName = 'dot' | 'halo' | 'aura' | 'wing' | 'shadow' | 'ring' | 'softRing' | 'puff' | 'cliff' | 'mist' | 'plank' | 'soft';
+export type ProcTexName = 'dot' | 'halo' | 'aura' | 'wing' | 'shadow' | 'ring' | 'softRing' | 'puff' | 'cliff' | 'mist' | 'plank' | 'soft' | 'beam';
 
 const cache = new WeakMap<Scene, Map<ProcTexName, DynamicTexture>>();
 
@@ -52,6 +52,26 @@ function paint(scene: Scene, name: ProcTexName): DynamicTexture {
         [0.3, 'rgba(255,255,255,0.55)'],
         [1, 'rgba(255,255,255,0)'],
       ]);
+      tex.update();
+      return tex;
+    }
+    case 'beam': {
+      // Light pillar: soft across, strongest at the bottom, fading out at the top (white, tinted by the material).
+      const [tex, ctx] = make(scene, name, 64, 256);
+      const across = ctx.createLinearGradient(0, 0, 64, 0);
+      across.addColorStop(0, 'rgba(255,255,255,0)');
+      across.addColorStop(0.5, 'rgba(255,255,255,1)');
+      across.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = across;
+      ctx.fillRect(0, 0, 64, 256);
+      ctx.globalCompositeOperation = 'destination-in';
+      const up = ctx.createLinearGradient(0, 0, 0, 256);
+      up.addColorStop(0, 'rgba(0,0,0,0.25)');
+      up.addColorStop(0.5, 'rgba(0,0,0,0.85)');
+      up.addColorStop(1, 'rgba(0,0,0,1)');
+      ctx.fillStyle = up;
+      ctx.fillRect(0, 0, 64, 256);
+      ctx.globalCompositeOperation = 'source-over';
       tex.update();
       return tex;
     }

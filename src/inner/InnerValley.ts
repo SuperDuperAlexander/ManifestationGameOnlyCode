@@ -541,6 +541,11 @@ export class InnerValley implements World, WalkGround {
     return this.walker.position;
   }
 
+  /** Terrain height at (x, z). */
+  groundY(x: number, z: number): number {
+    return this.terrain.height(x, z);
+  }
+
   diamondPosition(): Vector3 {
     const emblem = this.scene.getMeshByName('player.emblem');
     if (emblem) return this.diamond.copyFrom(emblem.getAbsolutePosition());

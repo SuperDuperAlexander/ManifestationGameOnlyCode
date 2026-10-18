@@ -1,0 +1,9 @@
+file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-action-cues.mjs:9
+const check = (ok, message) => { if (!ok) throw new Error(message); };
+                                                ^
+
+Error: desktop inhale and exhale controls are missing
+    at check (file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-action-cues.mjs:9:49)
+    at file:///D:/MyDrive/ALEXANDER/PROJEKTE/ManifestationGameOnlyCode/scripts/check-action-cues.mjs:44:3
+
+Node.js v22.13.1

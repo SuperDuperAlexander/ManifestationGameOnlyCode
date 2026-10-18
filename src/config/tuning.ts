@@ -607,6 +607,45 @@ export const TUNING = {
     flicker: 0.5,
   },
 
+  /** Ground chevron trail and floating arrow that point to the current target. */
+  wayfinding: {
+    /** Chevrons on the ground. */
+    count: 5,
+    /** Distance between chevrons (m). */
+    spacing: 1.9,
+    /** First chevron this far in front of the player (m). */
+    startOffset: 2.6,
+    /** Trail never reaches further than this from the player (m). */
+    maxLength: 12,
+    /** Chevron size (m): width, length. */
+    width: 1.7,
+    length: 1.7,
+    thickness: 0.5,
+    groundOffset: 0.1,
+    /** Flow speed toward the target (m/s). */
+    flowSpeed: 0.9,
+    /** Peak opacity of a chevron. */
+    alpha: 0.95,
+    /** Trail fades out when the target is closer than this (m); gone at fadeEnd. */
+    fadeNear: 10,
+    fadeEnd: 3,
+    /** Fade speed (1/s). */
+    fadeSpeed: 2.5,
+    /** Floating arrow shows when the target is further than this (m). */
+    farDistance: 15,
+    farHeight: 2.6,
+    farScale: 1.5,
+    farForward: 1.4,
+    farBob: 0.12,
+    farBobSpeed: 1.4,
+    farAlpha: 0.7,
+    /** Soft dark outline under each chevron so it reads on pale ground. */
+    underScale: 1.3,
+    underAlpha: 0.5,
+    /** Mix from gold toward warm lantern orange (0..1), for contrast on pale ground. */
+    warmMix: 0.65,
+  },
+
   story: {
     /** Hint is shown again after this many seconds of silence until the step is done. */
     hintRepeatS: 12,
@@ -615,17 +654,19 @@ export const TUNING = {
     /** Gold guide light on Main Street: brightness waiting (before beat 2) and lit. */
     beaconDim: 0.22,
     beaconLit: 0.85,
-    beaconRadius: 3.2,
+    beaconRadius: 4.2,
     beaconGroundOffset: 0.06,
-    beaconWidth: 1.6,
-    beaconHeight: 5,
+    beaconWidth: 2.6,
+    beaconHeight: 16,
     beaconFadeSpeed: 1.5,
-    beaconPulse: 0.12,
-    beaconPulseSpeed: 1.6,
+    beaconPulse: 0.14,
+    beaconPulseSpeed: 1.1,
     /** Arrival radius around the town-square centre that invites Look Within. */
     squareArrivalRadius: 7,
     beaconVisibleAlpha: 0.01,
-    beaconAlpha: 0.7,
+    beaconAlpha: 1,
+    /** Beacon colour: gold mixed toward warm lantern orange, so it reads on pale ground and sky. */
+    beaconWarmMix: 0.7,
     guidanceNearRadius: 7,
     guidanceMarkerHeight: 3,
     guidanceMarkerPadding: 8,

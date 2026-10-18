@@ -766,3 +766,6 @@ body.touch .hand-button.collect {
 body.look-pulse .look-button, body.look-pulse .look-action { box-shadow: 0 0 0 3px rgba(235, 197, 122, 0.55), 0 0 18px 4px rgba(235, 197, 122, 0.5), var(--soft-shadow); animation: look-pulse 2.4s ease-in-out infinite; }
 @keyframes look-pulse { 0%, 100% { opacity: 0.78; box-shadow: 0 0 0 2px rgba(235, 197, 122, 0.3), 0 0 8px 1px rgba(235, 197, 122, 0.25), var(--soft-shadow); } 50% { opacity: 1; box-shadow: 0 0 0 4px rgba(235, 197, 122, 0.7), 0 0 22px 6px rgba(235, 197, 122, 0.6), var(--soft-shadow); } }
 @media (prefers-reduced-motion: reduce) { body.look-pulse .look-button, body.look-pulse .look-action { animation: none; opacity: 1; } }
+
+/* Less reading on phones: no key chips, no long button subtexts. */
+body.touch kbd, body.touch .control-hint, body.touch .breath-hint { display: none; }

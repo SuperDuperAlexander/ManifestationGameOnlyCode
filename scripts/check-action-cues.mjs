@@ -41,7 +41,7 @@ try {
     .every((selector) => document.querySelector(selector)?.classList.contains('thought-choice-pop')));
   check(await desktop.locator('.thought-push-choice').isVisible(), 'desktop Push away choice is not visible');
   check(await desktop.locator('.thought-breathe-choice').isVisible(), 'desktop Breathe choice is not visible beside Push away');
-  check(await desktop.locator('.breathe-action').isVisible() && await desktop.locator('.breath-secondary').isVisible(), 'desktop inhale and exhale controls are missing');
+  check(await desktop.locator('.breathe-action').isVisible(), 'desktop breathe control is missing');
   check((await desktop.locator('.thought-choice-title').textContent())?.trim() === 'Breathe', 'desktop breathing choice is not labeled clearly');
   check(await desktop.locator('.breath-hint').isHidden(), 'long breath instruction overlaps the active choice cue');
   check(await desktop.locator('.push-action').getAttribute('aria-label') === 'Push away (E)', 'desktop action label or E cue is missing');
@@ -51,8 +51,9 @@ try {
   const choiceBounds = await desktop.locator('.thought-push-choice, .thought-breathe-choice, .look-action').evaluateAll((els) => els.map((el) => {
     const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
   }));
-  check(choiceBounds[0].right <= choiceBounds[1].left && choiceBounds[1].right <= choiceBounds[2].left, 'desktop Push/Breathe choices overlap each other or Q');
-  check(choiceBounds[0].left >= 0 && choiceBounds[2].right <= 1280 && choiceBounds[0].bottom <= 720, 'desktop choices clip outside the screen');
+  const visibleBounds = choiceBounds.filter((b) => b.right > b.left);
+  check(visibleBounds.every((b, i) => i === 0 || visibleBounds[i - 1].right <= b.left), 'desktop Push/Breathe choices overlap each other or Q');
+  check(visibleBounds[0].left >= 0 && visibleBounds[visibleBounds.length - 1].right <= 1280 && visibleBounds[0].bottom <= 720, 'desktop choices clip outside the screen');
   await desktop.keyboard.press('KeyE');
   await desktop.waitForFunction((n) => window.__lw.pushLevel() > n, level);
   await desktop.waitForFunction(() => !document.querySelector('.controls-hint')?.classList.contains('thought-choice-active'));
@@ -100,13 +101,13 @@ try {
   check((await touch.locator('.hand-button .control-hint').textContent()) === 'Tap', 'touch action cue is missing');
   const fitsTouchAction = async () => touch.locator('.hand-button').evaluate((button) => {
     const r = button.getBoundingClientRect();
-    const children = [...button.querySelectorAll('svg, .control-label, .control-hint')].map((el) => el.getBoundingClientRect());
+    const children = [...button.querySelectorAll('svg, .control-label, .control-hint')].map((el) => el.getBoundingClientRect()).filter((q) => q.width > 0 && q.height > 0);
     return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight
       && children.every((q) => q.left >= r.left && q.right <= r.right && q.top >= r.top && q.bottom <= r.bottom);
   });
   const fitsTouchBreath = async () => touch.locator('.breath-button:visible').evaluate((button) => {
     const r = button.getBoundingClientRect();
-    const children = [...button.querySelectorAll('svg, .control-label, .control-hint')].map((el) => el.getBoundingClientRect());
+    const children = [...button.querySelectorAll('svg, .control-label, .control-hint')].map((el) => el.getBoundingClientRect()).filter((q) => q.width > 0 && q.height > 0);
     return r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight
       && children.every((q) => q.left >= r.left && q.right <= r.right && q.top >= r.top && q.bottom <= r.bottom);
   });

@@ -11,6 +11,7 @@ import type { Town } from '../outer/Town';
 import { TOWN } from '../outer/townLayout';
 import { EndCard } from '../ui/EndCard';
 import { Beacon } from './Beacon';
+import { Wayfinding } from './Wayfinding';
 import { NextStepHint } from '../ui/NextStepHint';
 import { ActionCard, type ActionCardView } from '../ui/ActionCard';
 import { SpeechBubble } from '../ui/SpeechBubble';
@@ -39,6 +40,9 @@ const dist2 = (ax: number, az: number, bx: number, bz: number): number => Math.h
  * The director (GAME_DESIGN.md sections 7-9): listens to events, drives both worlds.
  * Beats 4-7 can happen in any order. All text comes from dialogue keys.
  */
+/** Seconds a new objective waits after the inner voice starts a line (presentation only). */
+const OBJECTIVE_STAGGER_S = 1.5;
+
 export class Story {
   readonly state = new StoryState();
   readonly endCard: EndCard;
@@ -53,12 +57,19 @@ export class Story {
   private angryT = 0;
   private readonly beacon: Beacon;
   private readonly innerBeacon: Beacon;
+  private readonly outerWay: Wayfinding;
+  private readonly innerWay: Wayfinding;
   private readonly nextStep: NextStepHint;
   private readonly card: ActionCard;
   private readonly cardDone = new Set<string>();
   /** Idle reminder: current step signature and seconds spent in it. */
   private stepSig = '';
   private stepIdleT = 0;
+  /** Objective shown on screen; lags behind a new step while the inner voice speaks. */
+  private shownUiKey = '';
+  private shownLine = '';
+  private shownBadge = '';
+  private objectiveDelay = -1;
   private reminderKey = '';
   /** Seconds since the bump hit (Infinity = no ramp running). */
   private sinceBump = Infinity;
@@ -90,6 +101,8 @@ export class Story {
     this.beacon = new Beacon(deps.outer.scene, TOWN.beacon.x, TOWN.beacon.z, deps.outer.groundY(TOWN.beacon.x, TOWN.beacon.z));
     this.innerBeacon = new Beacon(deps.inner.scene, 0, 0, 0);
     this.innerBeacon.hide();
+    this.outerWay = new Wayfinding(deps.outer.scene, (x, z) => deps.outer.groundY(x, z));
+    this.innerWay = new Wayfinding(deps.inner.scene, (x, z) => deps.inner.groundY(x, z));
     this.nextStep = new NextStepHint(deps.ui);
     this.card = new ActionCard(deps.ui, deps.dialogue.line('cardClose'), deps.actions);
     this.card.onDismiss = (id) => this.cardDone.add(id);
@@ -336,6 +349,9 @@ export class Story {
 
     this.beacon.hide();
     this.innerBeacon.hide();
+    // Direction arrows use the same target (ground point, before the marker is raised).
+    (inner ? this.innerWay : this.outerWay).update(dt, world.playerPosition(), target && !busy ? target : null);
+    (inner ? this.outerWay : this.innerWay).update(dt, (inner ? d.outer : d.inner).playerPosition(), null);
     if (target && !busy) {
       const beacon = inner ? this.innerBeacon : this.beacon;
       beacon.setLit(true);
@@ -358,7 +374,22 @@ export class Story {
     } else if (key === 'stepImp') sig = `${key}${this.impBreaths}`;
     this.updateCard(key, busy);
     this.updateReminder(dt, sig, key, busy || this.card.id !== '');
-    this.nextStep.update(uiKey, line, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera, badge);
+    // Stagger: if the inner voice is speaking when the objective changes, the new objective waits a moment.
+    if (uiKey !== this.shownUiKey) {
+      if (this.shownUiKey !== '' && d.dialogue.busy && this.objectiveDelay < 0) this.objectiveDelay = OBJECTIVE_STAGGER_S;
+      if (this.objectiveDelay > 0) this.objectiveDelay -= dt;
+      if (this.objectiveDelay <= 0 || this.shownUiKey === '') {
+        this.shownUiKey = uiKey;
+        this.shownLine = line;
+        this.shownBadge = badge;
+        this.objectiveDelay = -1;
+      }
+    } else {
+      this.shownLine = line;
+      this.shownBadge = badge;
+      this.objectiveDelay = -1;
+    }
+    this.nextStep.update(this.shownUiKey, this.shownLine, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera, this.shownBadge);
   }
 
   private cardFor(key: string): ActionCardView | null {
