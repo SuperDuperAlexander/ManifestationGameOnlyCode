@@ -70,6 +70,8 @@ export class Story {
   private shownLine = '';
   private shownBadge = '';
   private objectiveDelay = -1;
+  /** Seconds the current tutorial card has been visible. */
+  private cardT = 0;
   private reminderKey = '';
   /** Seconds since the bump hit (Infinity = no ramp running). */
   private sinceBump = Infinity;
@@ -145,7 +147,8 @@ export class Story {
     if (this.begun) return;
     this.begun = true;
     if (this.state.restored) return;
-    this.say('taskLantern');
+    this.lastLineKey = 'taskLantern';
+    void this.d.dialogue.say('taskLantern', { seconds: TUNING.ui.introLineSeconds });
   }
 
   lastLine(): string {
@@ -372,7 +375,7 @@ export class Story {
       uiKey = `${key}${left}`;
       sig = uiKey;
     } else if (key === 'stepImp') sig = `${key}${this.impBreaths}`;
-    this.updateCard(key, busy);
+    this.updateCard(key, busy, dt);
     this.updateReminder(dt, sig, key, busy || this.card.id !== '');
     // Stagger: if the inner voice is speaking when the objective changes, the new objective waits a moment.
     if (uiKey !== this.shownUiKey) {
@@ -389,7 +392,9 @@ export class Story {
       this.shownBadge = badge;
       this.objectiveDelay = -1;
     }
-    this.nextStep.update(this.shownUiKey, this.shownLine, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy ? null : target, world.scene, world.camera, this.shownBadge);
+    // While a card or the opening line is the one text on screen, the objective and its label stay hidden.
+    const alone = this.card.id !== '' || (d.dialogue.busy && this.lastLineKey === 'taskLantern');
+    this.nextStep.update(alone ? `${this.shownUiKey}#` : this.shownUiKey, alone ? '' : this.shownLine, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy || alone ? null : target, world.scene, world.camera, this.shownBadge);
   }
 
   private cardFor(key: string): ActionCardView | null {
@@ -415,11 +420,22 @@ export class Story {
   }
 
   /** One tutorial card per step. It closes when the step is done or on dismiss, and never comes back. */
-  private updateCard(key: string, busy: boolean): void {
+  private updateCard(key: string, busy: boolean, dt: number): void {
     const want = this.cardFor(key);
     if (this.card.id && this.card.id !== want?.id) this.cardDone.add(this.card.id);
-    if (!want || busy || this.d.dialogue.line('cardClose') === '') this.card.hide();
-    else this.card.show(want);
+    // A card never stacks with an inner-voice line: it waits (and comes back) while a line is shown.
+    if (!want || busy || this.d.dialogue.busy || this.d.dialogue.line('cardClose') === '') {
+      this.card.hide();
+      return;
+    }
+    if (this.card.id !== want.id) this.cardT = 0;
+    this.cardT += dt;
+    if (this.cardT >= TUNING.ui.cardSeconds) {
+      this.cardDone.add(want.id);
+      this.card.hide();
+      return;
+    }
+    this.card.show(want);
   }
 
   /** Calm reminder when the player stays in one step for a while. Stale reminders are dropped on step change. */

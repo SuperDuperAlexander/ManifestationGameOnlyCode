@@ -769,3 +769,4 @@ body.look-pulse .look-button, body.look-pulse .look-action { box-shadow: 0 0 0 3
 
 /* Less reading on phones: no key chips, no long button subtexts. */
 body.touch kbd, body.touch .control-hint, body.touch .breath-hint { display: none; }
+body.touch .controls-hint { display: none; }

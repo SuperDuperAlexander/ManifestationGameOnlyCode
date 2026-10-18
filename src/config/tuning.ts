@@ -850,6 +850,10 @@ export const TUNING = {
   ui: {
     /** Seconds the centered quest banner stays before it shrinks to the quiet corner line. */
     questBannerSeconds: 4,
+    /** Seconds the opening line ("Bring the lantern...") stays alone before anything else shows. */
+    introLineSeconds: 3,
+    /** Seconds a tutorial card stays before it closes by itself (it also closes on the first move or tap). */
+    cardSeconds: 4,
     /** Seconds the W A S D hint stays after the first movement before it fades. */
     moveHintFadeDelay: 1.2,
     /** Extra pixels the speech bubble sits higher above the speaker on phones. */

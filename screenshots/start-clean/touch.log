@@ -1,0 +1,10 @@
+
+> transform-karma@0.1.0 check:browser
+> node scripts/check-browser.mjs http://localhost:5173/?debug&skipintro&touch --mobile --scenario touchui --out screenshots/start-clean/touch
+
+screenshot: screenshots\start-clean\touch\touch-portrait.png
+screenshot: screenshots\start-clean\touch\touch-landscape.png
+touchui: PASS
+stats: undefined
+renderer: ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)
+console problems: 0

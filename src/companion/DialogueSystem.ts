@@ -7,6 +7,7 @@ export type DialogueTable = Record<string, string | string[]>;
 interface Queued {
   id: string;
   text: string;
+  seconds?: number;
   resolve: () => void;
 }
 
@@ -98,10 +99,10 @@ export class DialogueSystem {
    * Says all lines of a key, one after another. Resolves when the last one is gone.
    * `once`: a key is said only the first time.
    */
-  say(key: string, opts: { once?: boolean; interrupt?: boolean } = {}): Promise<void> {
+  say(key: string, opts: { once?: boolean; interrupt?: boolean; seconds?: number } = {}): Promise<void> {
     if (opts.once && this.said.has(key)) return Promise.resolve();
     this.said.add(key);
-    return this.sayLines(key, this.lines(key), opts.interrupt ?? false);
+    return this.sayLines(key, this.lines(key), opts.interrupt ?? false, opts.seconds);
   }
 
   /** Says one specific line of a key. */
@@ -110,7 +111,7 @@ export class DialogueSystem {
     return this.sayLines(key, text ? [text] : [], opts.interrupt ?? false);
   }
 
-  private sayLines(id: string, texts: string[], interrupt: boolean): Promise<void> {
+  private sayLines(id: string, texts: string[], interrupt: boolean, seconds?: number): Promise<void> {
     if (interrupt) {
       for (const q of this.queue.splice(0)) q.resolve();
       if (this.current) {
@@ -125,7 +126,7 @@ export class DialogueSystem {
     const promises = texts.map(
       (text) =>
         new Promise<void>((resolve) => {
-          this.queue.push({ id, text, resolve });
+          this.queue.push({ id, text, seconds, resolve });
         }),
     );
     return promises[promises.length - 1]!;
@@ -150,7 +151,7 @@ export class DialogueSystem {
     const next = this.queue.shift();
     if (!next) return;
     this.current = next;
-    this.timer = f.lineBase + next.text.length * f.linePerChar;
+    this.timer = next.seconds ?? f.lineBase + next.text.length * f.linePerChar;
     this.textEl.textContent = next.text;
     this.el.classList.add('show');
     this.events.emit('lineShown', { id: next.id, text: next.text });

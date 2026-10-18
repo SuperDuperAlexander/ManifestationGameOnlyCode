@@ -49,7 +49,7 @@ export class BreathGuide {
     this.el.classList.toggle('in-rhythm', close && breath.state !== 'idle');
     const phase = breath.guideIsInhaling ? 'in' : 'out';
     const L = this.labels;
-    if (breath.state === 'idle') this.label.textContent = this.wanted ? (phase === 'in' ? L.holdIn : L.holdOut) : '';
+    if (breath.state === 'idle') this.label.textContent = '';
     else this.label.textContent = phase === 'in' ? L.breatheIn : L.breatheOut;
     this.label.style.opacity = this.label.textContent ? '1' : '0';
   }
