@@ -18,6 +18,7 @@ import { SpeechBubble } from '../ui/SpeechBubble';
 import type { Anger } from './Anger';
 import type { Lantern } from './Lantern';
 import { SoundCues } from './SoundCues';
+import { audio } from '../core/Audio';
 import { StoryState } from './StoryState';
 import type { WorldId } from './World';
 
@@ -469,6 +470,7 @@ export class Story {
       const i = d.outer.alley.nearestPickable(p);
       if (i !== null) {
         d.outer.alley.pickApple(i);
+        audio.apple();
         if (d.outer.alley.applesLeft() === 0) this.onHelped();
         return true;
       }
@@ -561,6 +563,7 @@ export class Story {
   private onHelped(): void {
     const d = this.d;
     this.state.set('helped');
+    audio.basket();
     this.state.reach(7);
     d.outer.alley.standUpAndWave();
     this.bubble.show(d.dialogue.line('strangerSorry'), () => d.outer.alley.strangerSpeechAnchor(), TUNING.story.bubbleS);
@@ -592,6 +595,7 @@ export class Story {
     this.state.set('delivered');
     this.state.reach(9);
     d.outerLantern.hangAt(d.outer.treeLanternAnchor(), instant);
+    if (!instant) audio.lanternBells();
     d.innerLantern.setVisible(false);
     if (instant) {
       d.outer.setOldTreeBranchHealth(1);

@@ -1,6 +1,7 @@
 import { Engine } from '@babylonjs/core/Engines/engine';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { PALETTE } from '../config/palette';
+import { audio } from '../core/Audio';
 import { InputManager } from '../core/InputManager';
 import { isTouchDevice, Performance } from '../core/Performance';
 import { InnerValley } from '../inner/InnerValley';
@@ -169,6 +170,7 @@ export class Game {
         this.applyShared(to);
         this.showOverlay(to.id);
         this.story.onWorldShown(to.id);
+        audio.setWorld(to.id);
       },
       (w) => this.syncCamera(w),
     );
@@ -209,6 +211,7 @@ export class Game {
 
   toggle(): void {
     if (this.menu?.isOpen || (this.storyReady && this.story.endCard.open) || this.transition.active || !this.storyReady || !this.story.canLookWithin()) return;
+    audio.swell();
     this.transition.start(this.current, this.current === this.outer ? this.inner : this.outer);
   }
 
@@ -285,6 +288,7 @@ export class Game {
     shown ??= this.current;
     const field = this.fields.get(shown.id);
     if (paused) {
+      audio.breath('idle', 0);
       this.controls?.setPushVisible(false);
       this.controls?.cuePushOpportunity('');
       this.controls?.setThoughtChoiceActive(false);
@@ -325,6 +329,7 @@ export class Game {
         this.controls?.setActionContext(this.story.interactionContext());
       }
       this.guide.update(dt, shown.breathSystem());
+      audio.breath(shown.breathSystem().state, shown.breathSystem().breathLevel);
       const context = this.storyReady ? this.story.interactionContext() : 'push';
       const pushToken = !paused && shown === this.current && !this.transition.active && context === 'push' ? this.pushCueToken(field) : '';
       const push = !this.transition.active && (context !== 'push' || pushToken !== '');
@@ -342,6 +347,7 @@ export class Game {
         if (!pushToken) {
           this.controls.cuePushOpportunity('');
         } else if (this.hasNewPushOpportunity(this.lastPushCueToken, pushToken)) {
+          audio.cardPop();
           this.controls.cueThoughtChoice();
           HandButton.cueThoughtChoice();
           BreathButton.cueThoughtChoice();
@@ -388,6 +394,7 @@ export class Game {
   private installHooks(): void {
     const w = window as unknown as { __lw: unknown };
     w.__lw = {
+      audioState: () => audio.state(),
       world: () => this.current.id,
       transitioning: () => this.transition.active,
       playerPos: () => {

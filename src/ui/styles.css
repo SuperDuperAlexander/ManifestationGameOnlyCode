@@ -770,3 +770,16 @@ body.look-pulse .look-button, body.look-pulse .look-action { box-shadow: 0 0 0 3
 /* Less reading on phones: no key chips, no long button subtexts. */
 body.touch kbd, body.touch .control-hint, body.touch .breath-hint { display: none; }
 body.touch .controls-hint { display: none; }
+
+.menu-sound-settings { display: grid; gap: 4px; margin-top: 8px; padding-top: 8px; border-top: 1px solid color-mix(in srgb, var(--ui-sage) 36%, transparent); }
+.menu-sound-settings h3 { margin: 0 0 2px; color: var(--ui-muted); font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; }
+.menu-sound-row { display: flex; align-items: center; gap: 14px; min-height: 48px; }
+.menu-sound-toggle { flex: 0 0 auto; min-height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid color-mix(in srgb, var(--ui-sage) 50%, transparent); background: transparent; color: var(--ui-muted); font: inherit; font-size: 13px; cursor: pointer; }
+.menu-sound-toggle[aria-pressed="false"] { opacity: 0.6; }
+.menu-sound-volume { display: flex; flex: 1 1 auto; align-items: center; gap: 10px; min-width: 0; color: var(--ui-muted); font-size: 12px; }
+.menu-sound-volume .breath-setting-slider { flex: 1 1 auto; min-width: 0; margin: 0; }
+@media (max-width: 520px) {
+  .menu-sound-row { flex-direction: column; align-items: stretch; gap: 6px; }
+  .menu-sound-toggle { align-self: flex-start; }
+  .menu-sound-volume { width: 100%; }
+}

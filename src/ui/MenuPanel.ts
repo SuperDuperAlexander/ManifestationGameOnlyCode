@@ -1,4 +1,5 @@
 export type MenuText = (key: string) => string;
+import { audio } from '../core/Audio';
 import { BREATH_DURATION_CHOICES, getBreathPreferences, setBreathPreference } from '../player/BreathPreferences';
 
 /** A native pause menu that keeps the current world and story alive. */
@@ -34,6 +35,7 @@ export class MenuPanel {
         <p></p>
         <section class="menu-controls" aria-label=""></section>
         <section class="menu-breath-settings" aria-label=""></section>
+        <section class="menu-sound-settings" aria-label=""></section>
         <button type="button" class="menu-return"></button>
       </div>
       <button type="button" class="menu-close"></button>`;
@@ -116,6 +118,50 @@ export class MenuPanel {
       row.append(label, value, slider);
       settings.append(row);
     }
+    const sound = this.dialog.querySelector<HTMLElement>('.menu-sound-settings')!;
+    sound.setAttribute('aria-label', text('soundTitle'));
+    const soundHeading = document.createElement('h3');
+    soundHeading.textContent = text('soundTitle');
+    const soundToggle = document.createElement('button');
+    soundToggle.type = 'button';
+    soundToggle.className = 'menu-sound-toggle';
+    const refreshToggle = () => {
+      soundToggle.textContent = text(audio.enabled ? 'soundOn' : 'soundOff');
+      soundToggle.setAttribute('aria-pressed', String(audio.enabled));
+    };
+    refreshToggle();
+    soundToggle.addEventListener('click', () => {
+      audio.setEnabled(!audio.enabled);
+      refreshToggle();
+    });
+    const soundRow = document.createElement('div');
+    soundRow.className = 'menu-sound-row';
+    const volGroup = document.createElement('div');
+    volGroup.className = 'menu-sound-volume';
+    const volLabel = document.createElement('span');
+    volLabel.textContent = text('soundVolume');
+    const volSlider = document.createElement('input');
+    volSlider.type = 'range';
+    volSlider.className = 'breath-setting-slider';
+    volSlider.min = '0';
+    volSlider.max = '100';
+    volSlider.step = '5';
+    volSlider.value = String(Math.round(audio.volume * 100));
+    volSlider.setAttribute('aria-label', text('soundVolume'));
+    volSlider.addEventListener('keydown', (event) => {
+      if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key)) {
+        event.stopPropagation();
+      }
+    });
+    volSlider.addEventListener('input', () => {
+      audio.setVolume(Number(volSlider.value) / 100);
+      volSlider.style.setProperty('--slider-progress', `${volSlider.value}%`);
+    });
+    volSlider.addEventListener('change', () => audio.tick());
+    volSlider.style.setProperty('--slider-progress', `${volSlider.value}%`);
+    volGroup.append(volLabel, volSlider);
+    soundRow.append(soundToggle, volGroup);
+    sound.append(soundHeading, soundRow);
     const returnButton = this.dialog.querySelector<HTMLButtonElement>('.menu-return')!;
     returnButton.textContent = text('menuReturn');
     returnButton.setAttribute('aria-label', text('menuReturn'));

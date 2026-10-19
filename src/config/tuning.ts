@@ -713,6 +713,32 @@ export const TUNING = {
     fountainHigh: 1,
   },
 
+  /** Procedural audio (src/core/Audio.ts). All gains are soft on purpose. */
+  audio: {
+    /** Default volume 0..1 (the menu slider changes it). */
+    defaultVolume: 0.7,
+    /** Overall output level at volume 1. */
+    master: 0.5,
+    musicBus: 0.9,
+    sfxBus: 0.8,
+    /** Share of the sfx sent into the soft reverb. */
+    reverbSend: 0.28,
+    reverbSeconds: 2.4,
+    /** Most sounds playing at once. */
+    maxVoices: 12,
+    /** Fade time between the worlds' ambience (s). */
+    crossfadeS: 2.2,
+    windGain: 0.07,
+    padGain: 0.05,
+    /** Distant birds in the town: pause between calls (s). */
+    birdGapMin: 7,
+    birdGapMax: 16,
+    birdGain: 0.018,
+    breathWhooshGain: 0.05,
+    breathShimmerGain: 0.012,
+    sfxGain: 0.16,
+  },
+
   /** Soft synth cues (src/core/Sound.ts, src/game/SoundCues.ts). Keep all quiet. */
   sound: {
     /** Overall level of every cue (gain). */
