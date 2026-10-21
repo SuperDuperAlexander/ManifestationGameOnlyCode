@@ -70,7 +70,7 @@ class AudioSystem {
     // Very soft tick for calm UI buttons (menu, cards, start, end).
     document.addEventListener('click', (e) => {
       const t = e.target;
-      if (t instanceof Element && t.closest('.menu-open,.menu-close,.menu-return,.action-card-button,.action-card-close,.ec-continue,.start-screen button')) {
+      if (t instanceof Element && t.closest('.menu-open,.menu-close,.menu-return,.ec-continue,.start-screen button')) {
         this.tick();
       }
     });

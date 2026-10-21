@@ -205,3 +205,16 @@ body.touch .breath-button.thought-choice-active .control-label { letter-spacing:
 @media (max-width: 700px) {
   .speech-bubble { max-width: min(70vw, 210px); padding: 8px 13px; font-size: 15px; line-height: 1.4; }
 }
+
+/* ---------- Control spotlight: glow on the real button + small callout (replaces the tutorial cards) ---------- */
+.control-callout { position: fixed; left: 0; top: 0; z-index: 9; max-width: min(260px, calc(100vw - 32px)); padding: 9px 14px; border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--ui-paper) 94%, transparent); box-shadow: 0 6px 20px color-mix(in srgb, var(--umber) 14%, transparent); color: var(--ui-deep); font-size: 14px; line-height: 1.35; text-align: center; pointer-events: none; opacity: 0; transition: opacity .5s ease; }
+.control-callout.show { opacity: 1; }
+.control-callout-tail { position: absolute; width: 12px; height: 12px; background: inherit; border: inherit; transform: rotate(45deg); }
+.control-callout[data-side="above"] .control-callout-tail { left: var(--tail-x, 50%); bottom: -7px; margin-left: -6px; border-top: 0; border-left: 0; }
+.control-callout[data-side="below"] .control-callout-tail { left: var(--tail-x, 50%); top: -7px; margin-left: -6px; border-bottom: 0; border-right: 0; }
+.control-callout[data-side="left"] .control-callout-tail { top: var(--tail-y, 50%); right: -7px; margin-top: -6px; border-bottom: 0; border-left: 0; }
+.control-callout[data-side="right"] .control-callout-tail { top: var(--tail-y, 50%); left: -7px; margin-top: -6px; border-top: 0; border-right: 0; }
+.spotlit { box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 70%, transparent), 0 0 22px 6px color-mix(in srgb, var(--gold) 55%, transparent) !important; animation: spot-pulse 1.6s ease-in-out infinite; }
+@keyframes spot-pulse { 0%, 100% { box-shadow: 0 0 0 2px color-mix(in srgb, var(--gold) 45%, transparent), 0 0 12px 2px color-mix(in srgb, var(--gold) 35%, transparent); } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--gold) 80%, transparent), 0 0 26px 8px color-mix(in srgb, var(--gold) 60%, transparent); } }
+body.spot-on :is(.breathe-action, .breath-secondary, .push-action, .look-action, .breath-button, .hand-button, .look-button):not(.spotlit) { opacity: .55; }
+@media (prefers-reduced-motion: reduce) { .spotlit { animation: none; } .control-callout { transition: none; } }

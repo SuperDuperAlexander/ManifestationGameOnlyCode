@@ -19,13 +19,58 @@ const errorsOn = (page) => {
 };
 const waitForCue = (page) => page.waitForFunction(() => window.__lw.pushCueToken() !== '', null, { timeout: 20000 });
 
+const calloutInside = (page) => page.evaluate(() => {
+  const c = document.querySelector('.control-callout.show');
+  if (!c) return false;
+  const r = c.getBoundingClientRect();
+  return r.width > 0 && r.left >= 15 && r.top >= 15 && r.right <= innerWidth - 15 && r.bottom <= innerHeight - 15 && getComputedStyle(c).pointerEvents === 'none';
+});
+/** Tutorial spotlight: glow on the real control + callout inside the viewport; no duplicate action card. */
+const checkSpotlight = async (page, selector, shot, label) => {
+  await page.waitForFunction((sel) => (!sel || [...document.querySelectorAll(sel)].some((el) => el.classList.contains('spotlit'))) && !!document.querySelector('.control-callout.show'), selector, { timeout: 30000 });
+  await page.waitForTimeout(700);
+  check(await calloutInside(page), `${label}: callout missing or outside the viewport`);
+  check(await page.locator('.action-card').count() === 0, `${label}: an action card still exists`);
+  check(!selector || await page.locator('.spotlit').count() === 1, `${label}: exactly one control should be spotlit`);
+  await page.screenshot({ path: `${outDir}/${shot}.png` });
+};
+
 try {
   const fresh = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   errorsOn(fresh);
   await waitStarted(fresh, '.ss-begin');
   check(await fresh.evaluate(() => window.__lw.pushCueToken()) === '', 'fresh Begin reports a push opportunity with no thought');
   check(await fresh.locator('.push-shell').isHidden(), 'Push Away control is visible without an eligible thought');
+  await checkSpotlight(fresh, '.move-note', 'desktop-spotlight-move', 'desktop move');
+  await fresh.keyboard.down('KeyD');
+  await fresh.waitForTimeout(600);
+  await fresh.keyboard.up('KeyD');
+  await checkSpotlight(fresh, '.breathe-action', 'desktop-spotlight-breathe', 'desktop breathe');
+  check(await fresh.locator('.breathe-action').evaluate((el) => el.classList.contains('spotlit')), 'desktop breathe control is not spotlit');
   await fresh.close();
+
+  const freshTouch = await browser.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const ft = await freshTouch.newPage();
+  errorsOn(ft);
+  await ft.goto(`${url}${url.includes('?') ? '&' : '?'}touch`, { waitUntil: 'load' });
+  await ft.waitForFunction(() => !!window.__lw);
+  await ft.locator('.ss-begin').click();
+  await ft.locator('.start-screen').waitFor({ state: 'detached', timeout: 5000 });
+  check(await ft.locator('.controls-hint').evaluate((el) => getComputedStyle(el).display === 'none'), 'touch: desktop controls still on screen');
+  await checkSpotlight(ft, null, 'touch-portrait-spotlight-move', 'touch portrait move');
+  const cdp = await freshTouch.newCDPSession(ft);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: 200, y: 600 }] });
+  for (let i = 1; i <= 8; i++) {
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: 200, y: 600 - i * 10 }] });
+    await ft.waitForTimeout(80);
+  }
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await checkSpotlight(ft, '.breath-button', 'touch-portrait-spotlight-breathe', 'touch portrait breathe');
+  await ft.setViewportSize({ width: 915, height: 412 });
+  await ft.waitForTimeout(800);
+  check(await calloutInside(ft), 'touch landscape: callout outside the viewport');
+  await ft.screenshot({ path: `${outDir}/touch-landscape-spotlight-breathe.png` });
+  await freshTouch.close();
 
   const desktopContext = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   await desktopContext.addInitScript(() => {

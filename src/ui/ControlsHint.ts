@@ -23,8 +23,10 @@ export class ControlsHint {
     parent: HTMLElement,
     private readonly texts: (key: string) => string,
     actions?: { push: () => void; lookWithin: () => void },
+    touch = false,
   ) {
-    this.touch = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    // Same decision as Game (isTouchDevice or ?touch): only one control set is on screen.
+    this.touch = touch;
     this.el = document.createElement('div');
     this.el.className = 'controls-hint';
     if (this.touch) this.el.style.display = 'none';

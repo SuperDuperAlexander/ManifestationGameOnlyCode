@@ -104,7 +104,7 @@ export class Game {
       this.controls = new ControlsHint(ui, (key) => this.dialogue.line(key), {
         push: () => this.press(),
         lookWithin: () => this.toggle(),
-      });
+      }, this.touch);
       this.updateLookWithinLabels();
       BreathButton.setTexts(this.dialogue.line('controlsBreathe'), this.dialogue.line('controlsHoldRelease'));
       HandButton.setTexts(this.dialogue.line('controlsPush'), this.dialogue.line('controlsInteract'), this.dialogue.line('controlsCollectApple'), this.dialogue.line('controlsTapAction'));
@@ -143,7 +143,7 @@ export class Game {
         if (choice === 'begin') StoryState.clear();
         InputManager.resetAll();
         window.dispatchEvent(new Event('blur'));
-        this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch, actions: { look: () => this.toggle(), press: () => this.press() } });
+        this.story = new Story({ engine: this.engine, ui, outer: this.outer, inner: this.inner, anger: this.anger, dialogue: this.dialogue, outerLantern, innerLantern, touch: this.touch, actions: { look: () => this.toggle(), press: () => this.press() } });
         this.story.endCard.setLabels(dl.line('endStatus'), dl.line('endContinue'));
         this.story.endCard.onDismiss = () => {
           InputManager.resetAll();

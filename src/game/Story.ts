@@ -13,7 +13,7 @@ import { EndCard } from '../ui/EndCard';
 import { Beacon } from './Beacon';
 import { Wayfinding } from './Wayfinding';
 import { NextStepHint } from '../ui/NextStepHint';
-import { ActionCard, type ActionCardView } from '../ui/ActionCard';
+import { ControlSpotlight, type SpotlightTarget } from '../ui/ControlSpotlight';
 import { SpeechBubble } from '../ui/SpeechBubble';
 import type { Anger } from './Anger';
 import type { Lantern } from './Lantern';
@@ -61,7 +61,8 @@ export class Story {
   private readonly outerWay: Wayfinding;
   private readonly innerWay: Wayfinding;
   private readonly nextStep: NextStepHint;
-  private readonly card: ActionCard;
+  private readonly spot: ControlSpotlight;
+  private spotId = '';
   private readonly cardDone = new Set<string>();
   /** Idle reminder: current step signature and seconds spent in it. */
   private stepSig = '';
@@ -107,8 +108,7 @@ export class Story {
     this.outerWay = new Wayfinding(deps.outer.scene, (x, z) => deps.outer.groundY(x, z));
     this.innerWay = new Wayfinding(deps.inner.scene, (x, z) => deps.inner.groundY(x, z));
     this.nextStep = new NextStepHint(deps.ui);
-    this.card = new ActionCard(deps.ui, deps.dialogue.line('cardClose'), deps.actions);
-    this.card.onDismiss = (id) => this.cardDone.add(id);
+    this.spot = new ControlSpotlight(deps.ui, deps.touch);
     // Before the bump both trees are healthy and the root is not burned (reveal rule).
     deps.outer.setOldTreeBranchHealth(1);
     deps.inner.setBranchHealth(1);
@@ -262,7 +262,7 @@ export class Story {
     const needAngry = f.bumped && !this.angryInnerVisited && !f.helped && !nearAlley;
     if (shown === 'outer' && !busy && needAngry) {
       this.angryT += dt;
-      if (this.angryT >= TUNING.story.hintRepeatS * 0.5 && !d.dialogue.busy && this.card.id === '') {
+      if (this.angryT >= TUNING.story.hintRepeatS * 0.5 && !d.dialogue.busy && this.spotId === '') {
         this.angryT = 0;
         this.say('angryLookWithin');
       }
@@ -377,7 +377,7 @@ export class Story {
       sig = uiKey;
     } else if (key === 'stepImp') sig = `${key}${this.impBreaths}`;
     this.updateCard(key, busy, dt);
-    this.updateReminder(dt, sig, key, busy || this.card.id !== '');
+    this.updateReminder(dt, sig, key, busy || this.spotId !== '');
     // Stagger: if the inner voice is speaking when the objective changes, the new objective waits a moment.
     if (uiKey !== this.shownUiKey) {
       if (this.shownUiKey !== '' && d.dialogue.busy && this.objectiveDelay < 0) this.objectiveDelay = OBJECTIVE_STAGGER_S;
@@ -394,49 +394,50 @@ export class Story {
       this.objectiveDelay = -1;
     }
     // While a card or the opening line is the one text on screen, the objective and its label stay hidden.
-    const alone = this.card.id !== '' || (d.dialogue.busy && this.lastLineKey === 'taskLantern');
+    const alone = this.spot.shown || (d.dialogue.busy && this.lastLineKey === 'taskLantern');
     this.nextStep.update(alone ? `${this.shownUiKey}#` : this.shownUiKey, alone ? '' : this.shownLine, label ? d.dialogue.line(label) : '', d.dialogue.line('targetTurn'), busy || alone ? null : target, world.scene, world.camera, this.shownBadge);
   }
 
-  private cardFor(key: string): ActionCardView | null {
+  private cardFor(key: string): { id: string; target: SpotlightTarget; text: string } | null {
     const dl = this.d.dialogue;
     const f = this.state.flags;
     let id = '';
-    let kind: ActionCardView['kind'] = 'ok';
-    let icon: ActionCardView['icon'] = 'look-within';
-    let keyCap = '';
+    let target: SpotlightTarget = 'look';
+    let text = 'spotLook';
     if (key === 'stepSquare') {
-      if (this.begun && !this.movedSinceBegin) id = 'cardMove';
-      else if (this.needsBreathHelp()) { id = 'cardBreathe'; kind = 'hold'; icon = 'breathe'; keyCap = 'Space'; }
-    } else if (key === 'stepFirstInside') { id = 'cardLookFirst'; kind = 'look'; keyCap = 'Q'; }
-    else if (key === 'stepAngry') { id = 'cardLookImp'; kind = 'look'; keyCap = 'Q'; }
-    else if (key === 'stepInside') { id = 'cardLookInside'; kind = 'look'; keyCap = 'Q'; }
-    else if (key === 'stepReturn' || key === 'stepReturnAlley' || key === 'stepReturnTree') { id = 'cardGoOut'; kind = 'look'; keyCap = 'Q'; }
-    else if (key === 'stepAlley') id = 'cardAlley';
-    else if (key === 'stepApples') { id = 'cardApples'; kind = 'press'; icon = 'collect'; keyCap = 'E'; }
-    else if (key === 'stepImp' || key === 'stepImpApproach') { id = f.helped ? 'cardImp' : ''; kind = 'hold'; icon = 'breathe'; keyCap = 'Space'; }
-    else if (key === 'stepTree') { id = 'cardTree'; kind = 'press'; icon = 'push'; keyCap = 'E'; }
+      if (this.begun && !this.movedSinceBegin) { id = 'cardMove'; target = 'move'; text = this.d.touch ? 'spotMoveTouch' : 'spotMove'; }
+      else if (this.needsBreathHelp()) { id = 'cardBreathe'; target = 'breathe'; text = 'spotBreathe'; }
+    } else if (key === 'stepFirstInside') id = 'cardLookFirst';
+    else if (key === 'stepAngry') id = 'cardLookImp';
+    else if (key === 'stepInside') id = 'cardLookInside';
+    else if (key === 'stepReturn' || key === 'stepReturnAlley' || key === 'stepReturnTree') { id = 'cardGoOut'; text = 'spotGoOut'; }
+    else if (key === 'stepApples') { id = 'cardApples'; target = 'hand'; text = 'spotApples'; }
+    else if (key === 'stepImp' || key === 'stepImpApproach') { id = f.helped ? 'cardImp' : ''; target = 'breathe'; text = 'spotImp'; }
+    else if (key === 'stepTree') { id = 'cardTree'; target = 'hand'; text = 'spotTree'; }
     if (!id || this.cardDone.has(id)) return null;
-    return { id, kind, icon, key: this.d.touch ? '' : keyCap, title: dl.line(`${id}Title`), text: dl.line(`${id}Text`), button: dl.line(`${id}Button`) };
+    return { id, target, text: dl.line(text) };
   }
 
-  /** One tutorial card per step. It closes when the step is done or on dismiss, and never comes back. */
+  /** One control spotlight per step. It ends when the step is done or the timer runs out, and never comes back. */
   private updateCard(key: string, busy: boolean, dt: number): void {
     const want = this.cardFor(key);
-    if (this.card.id && this.card.id !== want?.id) this.cardDone.add(this.card.id);
-    // A card never stacks with an inner-voice line: it waits (and comes back) while a line is shown.
-    if (!want || busy || this.d.dialogue.busy || this.d.dialogue.line('cardClose') === '') {
-      this.card.hide();
+    if (this.spotId && this.spotId !== want?.id) this.cardDone.add(this.spotId);
+    // The callout never stacks with an inner-voice line: it waits (and comes back) while a line is shown.
+    if (!want || busy || this.d.dialogue.busy || want.text === '') {
+      this.spotId = '';
+      this.spot.spotlight(null, '');
       return;
     }
-    if (this.card.id !== want.id) this.cardT = 0;
+    if (this.spotId !== want.id) this.cardT = 0;
     this.cardT += dt;
     if (this.cardT >= TUNING.ui.cardSeconds) {
       this.cardDone.add(want.id);
-      this.card.hide();
+      this.spotId = '';
+      this.spot.spotlight(null, '');
       return;
     }
-    this.card.show(want);
+    this.spotId = want.id;
+    this.spot.spotlight(want.target, want.text);
   }
 
   /** Calm reminder when the player stays in one step for a while. Stale reminders are dropped on step change. */
