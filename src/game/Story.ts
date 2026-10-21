@@ -429,7 +429,8 @@ export class Story {
       return;
     }
     if (this.spotId !== want.id) this.cardT = 0;
-    this.cardT += dt;
+    // The timer only runs while the callout is really visible (the control can be hidden, e.g. during a thought choice).
+    if (this.spot.shown) this.cardT += dt;
     if (this.cardT >= TUNING.ui.cardSeconds) {
       this.cardDone.add(want.id);
       this.spotId = '';

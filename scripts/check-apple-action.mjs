@@ -6,6 +6,7 @@ const outDir = 'screenshots/apple-action';
 mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch({ headless: true, args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist', '--enable-unsafe-swiftshader'] });
 const errors = [];
+const seedSave = () => localStorage.setItem('lw.lantern.save.v1', JSON.stringify({ beat: 6, flags: { bumped: true, sawImp: true } }));
 const check = (ok, message) => { if (!ok) throw new Error(message); };
 const waitForAction = (page, action) => page.waitForFunction((a) => window.__lw.interactionContext() === a, action, { timeout: 5000 });
 const label = (page) => page.locator('.push-action .action-label').textContent();
@@ -28,21 +29,18 @@ const assertLabelFits = async (page, selector) => {
 
 try {
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  await context.addInitScript(seedSave);
   const page = await context.newPage();
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForFunction(() => !!window.__lw);
-  await page.evaluate(() => window.__lw.clearSave());
-  await page.locator('.ss-begin').click();
-  await page.evaluate(() => window.__lw.debugBreath());
-  await page.evaluate(() => window.__lw.teleport(0, 41));
-  await page.waitForFunction(() => window.__lw.beat() >= 1);
-  await page.evaluate(() => window.__lw.toggle());
-  await page.waitForFunction(() => window.__lw.world() === 'inner' && !window.__lw.transitioning());
-  await page.evaluate(() => window.__lw.toggle());
+  await page.locator('.ss-continue').click();
+  await page.waitForFunction(() => !document.querySelector('.start-screen'));
+  if (await page.evaluate(() => window.__lw.world()) !== 'outer') {
+    await page.evaluate(() => window.__lw.toggle());
+  }
   await page.waitForFunction(() => window.__lw.world() === 'outer' && !window.__lw.transitioning());
-  await page.waitForFunction(() => window.__lw.flags().bumped, null, { timeout: 25000 });
 
   const apples = await page.evaluate(() => window.__lw.alleyApplePositions());
   const teleport = async (p) => page.evaluate((q) => window.__lw.teleport(q.x, q.z), p);
@@ -90,7 +88,7 @@ try {
   await page.screenshot({ path: `${outDir}/desktop-tree-interact.png` });
 
   const touchContext = await browser.newContext({ viewport: { width: 412, height: 915 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-  await touchContext.addInitScript(() => localStorage.setItem('lw.lantern.save.v1', JSON.stringify({ beat: 3, flags: { bumped: true } })));
+  await touchContext.addInitScript(seedSave);
   const touchPage = await touchContext.newPage();
   touchPage.on('pageerror', (e) => errors.push(e.message));
   touchPage.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
