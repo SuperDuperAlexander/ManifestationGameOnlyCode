@@ -722,7 +722,30 @@ export const TUNING = {
     musicBus: 0.9,
     sfxBus: 0.8,
     /** Share of the sfx sent into the soft reverb. */
-    reverbSend: 0.28,
+    reverbSend: 0.38,
+    /** Low-pass on the sfx bus and the reverb return (Hz): nothing sharp. */
+    sfxLowpassHz: 2400,
+    /** Attack of cues (s) and release stretch factor (>1 = longer tail). */
+    sfxAttackS: 0.045,
+    sfxReleaseMul: 1.35,
+    /** Strength of the quiet bell overtone (0 = none). */
+    sfxOvertoneMul: 0.3,
+    /** Soft tick (UI): pitch Hz, length s, gain. */
+    tickHz: 620,
+    tickLenS: 0.22,
+    tickGain: 0.3,
+    /** Push thump: pitches Hz, gain, attack s. */
+    pushHzA: 82,
+    pushHzB: 58,
+    pushGain: 0.7,
+    pushAttackS: 0.07,
+    pushAirGain: 0.03,
+    /** Bird chirp: base pitch range Hz, sweep ratio, attack s, length s. */
+    birdHzMin: 1800,
+    birdHzRange: 800,
+    birdSweep: 1.1,
+    birdAttackS: 0.04,
+    birdLenS: 0.2,
     reverbSeconds: 2.4,
     /** Most sounds playing at once. */
     maxVoices: 12,
@@ -733,10 +756,10 @@ export const TUNING = {
     /** Distant birds in the town: pause between calls (s). */
     birdGapMin: 7,
     birdGapMax: 16,
-    birdGain: 0.018,
-    breathWhooshGain: 0.05,
-    breathShimmerGain: 0.012,
-    sfxGain: 0.16,
+    birdGain: 0.01,
+    breathWhooshGain: 0.03,
+    breathShimmerGain: 0.007,
+    sfxGain: 0.09,
   },
 
   /** Soft synth cues (src/core/Sound.ts, src/game/SoundCues.ts). Keep all quiet. */

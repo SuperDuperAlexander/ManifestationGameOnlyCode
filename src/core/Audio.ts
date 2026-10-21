@@ -138,7 +138,11 @@ class AudioSystem {
     this.music.connect(this.master);
     this.sfx = ctx.createGain();
     this.sfx.gain.value = T.sfxBus;
-    this.sfx.connect(this.master);
+    const sfxLp = ctx.createBiquadFilter();
+    sfxLp.type = 'lowpass';
+    sfxLp.frequency.value = T.sfxLowpassHz;
+    sfxLp.Q.value = 0.5;
+    this.sfx.connect(sfxLp).connect(this.master);
 
     // Soft reverb: decaying stereo noise impulse.
     const len = Math.floor(ctx.sampleRate * T.reverbSeconds);
@@ -157,7 +161,10 @@ class AudioSystem {
     this.reverbIn.gain.value = T.reverbSend;
     const wet = ctx.createGain();
     wet.gain.value = 0.7;
-    this.reverbIn.connect(conv).connect(wet).connect(this.master);
+    const wetLp = ctx.createBiquadFilter();
+    wetLp.type = 'lowpass';
+    wetLp.frequency.value = T.sfxLowpassHz;
+    this.reverbIn.connect(conv).connect(wet).connect(wetLp).connect(this.master);
 
     // Shared noise (smooth, brownish).
     const n = ctx.sampleRate * 3;
@@ -255,7 +262,7 @@ class AudioSystem {
     this.shimmerGain.gain.value = 0;
     this.shimmerGain.connect(this.sfx);
     this.shimmerGain.connect(this.reverbIn);
-    for (const f of [PENTA[3]! * 2, PENTA[5]! * 2]) {
+    for (const f of [PENTA[3]!, PENTA[5]!]) {
       const o = ctx.createOscillator();
       o.frequency.value = f;
       o.detune.value = 3;
@@ -310,18 +317,18 @@ class AudioSystem {
   private bird(): void {
     const ctx = this.ctx;
     if (!ctx || this.voices >= TUNING.audio.maxVoices) return;
-    const base = 2400 + Math.random() * 1200;
+    const base = TUNING.audio.birdHzMin + Math.random() * TUNING.audio.birdHzRange;
     const n = 2 + Math.floor(Math.random() * 2);
     for (let i = 0; i < n; i++) {
-      const t = ctx.currentTime + 0.02 + i * 0.16;
+      const t = ctx.currentTime + 0.02 + i * 0.22;
       this.voice((o, g) => {
         o.type = 'sine';
         o.frequency.setValueAtTime(base, t);
-        o.frequency.exponentialRampToValueAtTime(base * 1.25, t + 0.09);
+        o.frequency.exponentialRampToValueAtTime(base * TUNING.audio.birdSweep, t + 0.12);
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(TUNING.audio.birdGain, t + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-        return t + 0.15;
+        g.gain.linearRampToValueAtTime(TUNING.audio.birdGain, t + TUNING.audio.birdAttackS);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + TUNING.audio.birdLenS);
+        return t + TUNING.audio.birdLenS + 0.03;
       }, this.music, true);
     }
   }
@@ -350,21 +357,22 @@ class AudioSystem {
   }
 
   /** Soft sine bell/pluck with an optional quiet overtone. */
-  private note(freq: number, delay: number, len: number, gain: number, over = 0, type: OscillatorType = 'sine'): void {
+  private note(freq: number, delay: number, len: number, gain: number, over = 0, attack: number = TUNING.audio.sfxAttackS): void {
     const ctx = this.ctx;
     if (!ctx) return;
     const t = ctx.currentTime + delay;
+    len *= TUNING.audio.sfxReleaseMul;
     const make = (f: number, a: number, l: number): void =>
       this.voice((o, g) => {
-        o.type = type;
+        o.type = 'sine';
         o.frequency.value = f;
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(a, t + 0.012);
+        g.gain.linearRampToValueAtTime(a, t + attack);
         g.gain.exponentialRampToValueAtTime(0.0001, t + l);
         return t + l;
       }, this.sfx, true);
     make(freq, gain * TUNING.audio.sfxGain, len);
-    if (over > 0) make(freq * 2.76, gain * TUNING.audio.sfxGain * over, len * 0.35);
+    if (over > 0) make(freq * 2, gain * TUNING.audio.sfxGain * over * TUNING.audio.sfxOvertoneMul, len * 0.5);
   }
 
   /** Airy noise burst through a sweeping band filter. */
@@ -382,7 +390,7 @@ class AudioSystem {
     f.frequency.exponentialRampToValueAtTime(to, t + len);
     const g = ctx.createGain();
     g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(gain, t + len * 0.45);
+    g.gain.linearRampToValueAtTime(gain, t + len * 0.55);
     g.gain.linearRampToValueAtTime(0, t + len);
     s.connect(f).connect(g).connect(this.sfx);
     g.connect(this.reverbIn);
@@ -410,7 +418,7 @@ class AudioSystem {
     for (const o of this.shimmerOscs) o.detune.setTargetAtTime(3 + level * 12, now, 0.2);
     if (level >= 0.97 && !this.peaked) {
       this.peaked = true;
-      this.note(PENTA[5]! * 2, 0, 1.6, 0.8, 0.25);
+      this.note(PENTA[5]!, 0, 1.8, 0.6, 0.25);
     } else if (level < 0.5) {
       this.peaked = false;
     }
@@ -421,7 +429,8 @@ class AudioSystem {
 
   /** Soft button tick. */
   tick(): void {
-    this.note(1320, 0, 0.09, 0.35, 0, 'triangle');
+    const T = TUNING.audio;
+    this.note(T.tickHz, 0, T.tickLenS, T.tickGain, 0, 0.03);
   }
 
   /** A thought card appears: soft bell. */
@@ -432,9 +441,10 @@ class AudioSystem {
 
   /** Push away: low muffled thump. */
   push(): void {
-    this.note(92, 0, 0.55, 1.1, 0, 'sine');
-    this.note(64, 0.02, 0.7, 0.9, 0, 'sine');
-    this.air(300, 120, 0, 0.35, 0.05);
+    const T = TUNING.audio;
+    this.note(T.pushHzA, 0, 0.6, T.pushGain, 0, T.pushAttackS);
+    this.note(T.pushHzB, 0.03, 0.8, T.pushGain * 0.8, 0, T.pushAttackS);
+    this.air(260, 110, 0, 0.45, T.pushAirGain);
   }
 
   /** Breathe choice: warm chime. */
@@ -450,8 +460,7 @@ class AudioSystem {
     this.lastAppleAt = t;
     const f = PENTA[Math.min(this.appleCount, PENTA.length - 1)]! * 0.5;
     this.appleCount++;
-    this.note(f, 0, 0.5, 1.0, 0, 'triangle');
-    this.note(f * 4, 0, 0.12, 0.35);
+    this.note(f, 0, 0.6, 0.9, 0.2, 0.03);
   }
 
   /** Basket complete: small three-note arpeggio. */
@@ -464,8 +473,8 @@ class AudioSystem {
 
   /** Look within / go outside: soft swell. */
   swell(): void {
-    this.air(250, 1400, 0, 1.4, 0.07);
-    this.air(1400, 300, 1.3, 1.6, 0.05);
+    this.air(250, 1100, 0, 1.6, 0.04);
+    this.air(1100, 300, 1.4, 1.8, 0.03);
     this.note(PENTA[1]! * 0.5, 0.5, 2.2, 0.5);
   }
 
