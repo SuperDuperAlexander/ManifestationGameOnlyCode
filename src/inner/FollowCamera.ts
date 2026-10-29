@@ -88,13 +88,20 @@ export class FollowCamera {
     this.lastY = y;
   }
 
-  dragMove(x: number, y: number): void {
-    this.turn(x - this.lastX, y - this.lastY);
+  dragMove(x: number, y: number, speed = 1): void {
+    this.turn((x - this.lastX) * speed, (y - this.lastY) * speed);
     this.lastX = x;
     this.lastY = y;
   }
 
   dragEnd(): void {}
+
+  /** Multiplies the camera distance (pinch or wheel), inside the usual limits. */
+  zoomBy(factor: number): void {
+    const c = TUNING.inner.camera;
+    this.zoom = clamp(this.zoom * factor, c.minDistance / c.distance, c.maxDistance / c.distance);
+    this.idle = 0;
+  }
 
   /** Lifts the look target toward `point` and pulls back, by `weight` 0..1 (e.g. near the big Anger Imp). */
   setFocus(point: Vector3 | null, weight: number, extraDist: number, blend: number): void {

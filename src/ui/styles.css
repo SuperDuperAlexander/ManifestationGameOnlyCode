@@ -175,6 +175,7 @@ body:has(.start-screen:not(.gone)) .joystick { visibility: hidden; pointer-event
 /* Touch hit areas sit above the two camera and walk zones. */
 .touch-zone { position: absolute; top: 0; bottom: 0; left: 0; width: 100%; pointer-events: auto; touch-action: none; }
 .joystick { position: absolute; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 50%; background: rgba(244, 238, 223, 0.25); border: 2px solid rgba(244, 238, 223, 0.5); box-shadow: var(--soft-shadow); opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 1; }
+.joystick.pending { opacity: 0.3; }
 .joystick.active { opacity: 1; }
 .js-knob { position: absolute; left: 50%; top: 50%; width: 52px; height: 52px; border: 1px solid var(--olive); border-radius: 50%; transform: translate(-50%, -50%); background: var(--ivory); box-shadow: var(--soft-shadow); }
 .breath-button, .hand-button, .look-button { position: absolute; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--umber); border: 1px solid var(--olive); border-radius: 50%; background: var(--paper); box-shadow: 0 3px 0 rgba(74, 52, 40, 0.14), var(--soft-shadow); pointer-events: auto; touch-action: none; z-index: 4; transition: transform 0.2s, background 0.4s, box-shadow 0.4s, opacity 0.4s; }

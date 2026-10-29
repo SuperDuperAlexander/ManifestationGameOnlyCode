@@ -104,7 +104,7 @@
   "thoughtCardTitle": "A thought arrives",
   "cardClose": "Close",
   "spotMove": "Walk around the square.",
-  "spotMoveTouch": "Drag anywhere to walk.",
+  "spotMoveTouch": "Hold and drag to walk. Swipe to look around.",
   "spotBreathe": "Hold to breathe in.",
   "spotLook": "Look within.",
   "spotGoOut": "Go back outside.",

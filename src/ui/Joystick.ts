@@ -23,12 +23,25 @@ export class Joystick {
     parent.appendChild(this.el);
   }
 
+  /** A finger rests here and may start walking: show the ring faintly. */
+  preview(x: number, y: number): void {
+    this.el.style.left = `${x}px`;
+    this.el.style.top = `${y}px`;
+    this.knob.style.transform = 'translate(-50%, -50%)';
+    this.el.classList.add('pending');
+  }
+
+  hidePreview(): void {
+    this.el.classList.remove('pending');
+  }
+
   /** A finger starts walking here: the base appears under it. */
   begin(x: number, y: number): void {
     this.baseX = x;
     this.baseY = y;
     this.el.style.left = `${x}px`;
     this.el.style.top = `${y}px`;
+    this.el.classList.remove('pending');
     this.el.classList.add('active');
     this.move(x, y);
     this.input.markInteracted();

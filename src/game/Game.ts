@@ -402,6 +402,12 @@ export class Game {
         return { x: p.x, y: p.y, z: p.z };
       },
       toggle: () => this.toggle(),
+      cameraState: () => {
+        const c = this.current.camera;
+        const p = this.current.playerPosition();
+        const cam = c as unknown as { rotation: { y: number }; position: { x: number; y: number; z: number } };
+        return { yaw: cam.rotation.y, dist: Math.hypot(cam.position.x - p.x, cam.position.y - p.y, cam.position.z - p.z) };
+      },
       anger: () => this.anger.value,
       pushLevel: () => this.anger.pushLevel,
       waves: () => this.fields.get(this.current.id)?.count ?? 0,

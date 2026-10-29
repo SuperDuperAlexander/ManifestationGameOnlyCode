@@ -413,6 +413,14 @@ export const TUNING = {
   touch: {
     /** Joystick travel radius in px. */
     joystickRadius: 56,
+    /** A finger that moves farther than this (px) within holdMs turns the camera. */
+    swipeStartPx: 14,
+    /** A finger that rests this long (ms) becomes a walker. */
+    holdMs: 160,
+    /** Camera turn speed for a touch swipe, times the normal drag speed. */
+    lookSpeed: 1.5,
+    /** Pinch zoom strength: 1 = camera distance follows finger distance. */
+    pinchSensitivity: 1,
   },
   inner: {
     /** Half size of the valley floor, east-west and north-south. */
